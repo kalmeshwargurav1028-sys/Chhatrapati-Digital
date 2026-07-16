@@ -1,5 +1,4 @@
 import os
-import sqlite3
 import csv
 import smtplib
 from email.mime.text import MIMEText
@@ -7,191 +6,65 @@ from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, g
 from werkzeug.utils import secure_filename
+import pymongo
+from bson.objectid import ObjectId
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-DATABASE = 'inquiries.db'
 
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
-    return db
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
-
-def init_db():
-    with app.app_context():
-        db = get_db()
-        cursor = db.cursor()
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS inquiries (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                service TEXT NOT NULL,
-                details TEXT NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                status TEXT DEFAULT 'New'
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS admin_profile (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT NOT NULL,
-                phone TEXT,
-                last_login DATETIME,
-                avatar TEXT,
-                username TEXT,
-                role TEXT,
-                date_joined DATETIME,
-                bio TEXT
-            )
-        ''')
-        
-        # Safely add columns if they don't exist (SQLite ALTER TABLE limitation workaround)
-        try: cursor.execute("ALTER TABLE admin_profile ADD COLUMN phone TEXT")
-        except: pass
-        try: cursor.execute("ALTER TABLE admin_profile ADD COLUMN last_login DATETIME")
-        except: pass
-        try: cursor.execute("ALTER TABLE admin_profile ADD COLUMN username TEXT")
-        except: pass
-        try: cursor.execute("ALTER TABLE admin_profile ADD COLUMN role TEXT")
-        except: pass
-        try: cursor.execute("ALTER TABLE admin_profile ADD COLUMN date_joined DATETIME")
-        except: pass
-        try: cursor.execute("ALTER TABLE admin_profile ADD COLUMN bio TEXT")
-        except: pass
-
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS notifications (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                type TEXT NOT NULL,
-                message TEXT NOT NULL,
-                is_read INTEGER DEFAULT 0,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS reviews (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                client_name TEXT NOT NULL,
-                rating INTEGER NOT NULL,
-                review_text TEXT,
-                video_path TEXT,
-                status TEXT DEFAULT 'Pending',
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS pricing_packages (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                price TEXT NOT NULL,
-                features TEXT NOT NULL,
-                is_popular INTEGER DEFAULT 0
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS services (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                icon TEXT NOT NULL,
-                title TEXT NOT NULL,
-                description TEXT NOT NULL
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS portfolio (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                project_name TEXT NOT NULL,
-                category TEXT NOT NULL,
-                image_url TEXT NOT NULL
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS our_story (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                headline TEXT NOT NULL,
-                paragraph TEXT NOT NULL,
-                stats TEXT NOT NULL
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS invoices (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                client_name TEXT NOT NULL,
-                po_num TEXT NOT NULL,
-                total REAL NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS client_tickets (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                subject TEXT NOT NULL,
-                message TEXT NOT NULL,
-                status TEXT DEFAULT 'Open',
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        # Auto-migrate: add work_process column to portfolio if it doesn't exist
-        try:
-            cursor.execute("ALTER TABLE portfolio ADD COLUMN work_process TEXT DEFAULT ''")
-        except sqlite3.OperationalError:
-            pass # Column likely already exists
-        
-        # Seed initial admin profile if empty
-        cursor.execute("SELECT COUNT(*) FROM admin_profile")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("INSERT INTO admin_profile (name, email, username, role, date_joined) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)", ("Rao Chethan", "raochethan604@gmail.com", "rao.chethan", "Super Admin"))
-            
-        # Seed CMS data if empty
-        cursor.execute("SELECT COUNT(*) FROM pricing_packages")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("INSERT INTO pricing_packages (name, price, features, is_popular) VALUES (?, ?, ?, ?)", ('Basic Branding', '₹4,999', 'Logo Design (2 Concepts)|Business Card Design|Social Media Kit (3 Posts)', 0))
-            cursor.execute("INSERT INTO pricing_packages (name, price, features, is_popular) VALUES (?, ?, ?, ?)", ('Pro Photography', '₹14,999', 'Full Day Event Coverage|Cinematic Video Edit|50+ Edited Photos', 1))
-            cursor.execute("INSERT INTO pricing_packages (name, price, features, is_popular) VALUES (?, ?, ?, ?)", ('Premium Signage', 'Custom', '3D LED Letters|Neon Board Design|Complete Installation', 0))
-
-        cursor.execute("SELECT COUNT(*) FROM services")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("INSERT INTO services (icon, title, description) VALUES (?, ?, ?)", ('fa-paint-brush', 'Graphic Design & Branding', 'Logos, business cards, social media posts, and complete brand identity packages.'))
-            cursor.execute("INSERT INTO services (icon, title, description) VALUES (?, ?, ?)", ('fa-sign', 'Premium Signage (LED & 3D)', 'Eye-catching glow signs, neon boards, 3D acrylic letters, and flex banners.'))
-            cursor.execute("INSERT INTO services (icon, title, description) VALUES (?, ?, ?)", ('fa-camera', 'Event Photography & Video', 'Cinematic coverage for weddings, corporate events, and product shoots.'))
-            cursor.execute("INSERT INTO services (icon, title, description) VALUES (?, ?, ?)", ('fa-laptop-code', 'Web Development', 'Custom websites, e-commerce stores, and SEO optimization.'))
-            
-        cursor.execute("SELECT COUNT(*) FROM portfolio")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("INSERT INTO portfolio (project_name, category, image_url) VALUES (?, ?, ?)", ('Wedding Photography', 'photography', '/static/assets/wedding_photography_1784128887323.png'))
-            cursor.execute("INSERT INTO portfolio (project_name, category, image_url) VALUES (?, ?, ?)", ('Logo Design', 'branding', '/static/assets/graphic_design_logo_1784128898227.png'))
-            cursor.execute("INSERT INTO portfolio (project_name, category, image_url) VALUES (?, ?, ?)", ('Signage Solutions', 'signage', '/static/assets/neon_signage_1784128909986.png'))
-            cursor.execute("INSERT INTO portfolio (project_name, category, image_url) VALUES (?, ?, ?)", ('Event Photography', 'photography', 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop'))
-            cursor.execute("INSERT INTO portfolio (project_name, category, image_url) VALUES (?, ?, ?)", ('Brand Identity', 'branding', 'https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2071&auto=format&fit=crop'))
-            cursor.execute("INSERT INTO portfolio (project_name, category, image_url) VALUES (?, ?, ?)", ('Neon Design', 'signage', 'https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?q=80&w=2070&auto=format&fit=crop'))
-
-        cursor.execute("SELECT COUNT(*) FROM our_story")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute("INSERT INTO our_story (headline, paragraph, stats) VALUES (?, ?, ?)", ('Who We Are', 'Founded in the heart of the city, Chhatrapati Digital started with a simple mission: to help local businesses shine brighter. From crafting a simple logo to installing massive 3D glowing storefronts, we combine artistry with technology to deliver results that wow your customers.', '150+|Projects Delivered,15+|Years Combined Exp,50+|5-Star Reviews'))
-
-        db.commit()
+# Initialize MongoDB
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://kalmeshwargurav1028_db_user:OzKo1PYkMjTN5xOR@cluster0.ipegkdw.mongodb.net/chhatrapati_digital?retryWrites=true&w=majority&appName=Cluster0")
+client = pymongo.MongoClient(MONGO_URI)
+db = client.chhatrapati_digital
 
 # Initialize DB on startup
+def init_db():
+    # Seed initial admin profile if empty
+    if db.admin_profile.count_documents({}) == 0:
+        db.admin_profile.insert_one({"name": "Rao Chethan", "email": "raochethan604@gmail.com", "username": "rao.chethan", "role": "Super Admin", "date_joined": datetime.now()})
+        
+    # Seed CMS data if empty
+    if db.pricing_packages.count_documents({}) == 0:
+        db.pricing_packages.insert_many([
+            {"name": 'Basic Branding', "price": '₹4,999', "features": 'Logo Design (2 Concepts)|Business Card Design|Social Media Kit (3 Posts)', "is_popular": 0},
+            {"name": 'Pro Photography', "price": '₹14,999', "features": 'Full Day Event Coverage|Cinematic Video Edit|50+ Edited Photos', "is_popular": 1},
+            {"name": 'Premium Signage', "price": 'Custom', "features": '3D LED Letters|Neon Board Design|Complete Installation', "is_popular": 0}
+        ])
+
+    if db.services.count_documents({}) == 0:
+        db.services.insert_many([
+            {"icon": 'fa-paint-brush', "title": 'Graphic Design & Branding', "description": 'Logos, business cards, social media posts, and complete brand identity packages.'},
+            {"icon": 'fa-sign', "title": 'Premium Signage (LED & 3D)', "description": 'Eye-catching glow signs, neon boards, 3D acrylic letters, and flex banners.'},
+            {"icon": 'fa-camera', "title": 'Event Photography & Video', "description": 'Cinematic coverage for weddings, corporate events, and product shoots.'},
+            {"icon": 'fa-laptop-code', "title": 'Web Development', "description": 'Custom websites, e-commerce stores, and SEO optimization.'}
+        ])
+        
+    if db.portfolio.count_documents({}) == 0:
+        db.portfolio.insert_many([
+            {"project_name": 'Wedding Photography', "category": 'photography', "image_url": '/static/assets/wedding_photography_1784128887323.png', "work_process": ""},
+            {"project_name": 'Logo Design', "category": 'branding', "image_url": '/static/assets/graphic_design_logo_1784128898227.png', "work_process": ""},
+            {"project_name": 'Signage Solutions', "category": 'signage', "image_url": '/static/assets/neon_signage_1784128909986.png', "work_process": ""},
+            {"project_name": 'Event Photography', "category": 'photography', "image_url": 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2069&auto=format&fit=crop', "work_process": ""},
+            {"project_name": 'Brand Identity', "category": 'branding', "image_url": 'https://images.unsplash.com/photo-1626785774573-4b799315345d?q=80&w=2071&auto=format&fit=crop', "work_process": ""},
+            {"project_name": 'Neon Design', "category": 'signage', "image_url": 'https://images.unsplash.com/photo-1563203369-26f2e4a5ccf7?q=80&w=2070&auto=format&fit=crop', "work_process": ""}
+        ])
+
+    if db.our_story.count_documents({}) == 0:
+        db.our_story.insert_one({"headline": 'Who We Are', "paragraph": 'Founded in the heart of the city, Chhatrapati Digital started with a simple mission: to help local businesses shine brighter. From crafting a simple logo to installing massive 3D glowing storefronts, we combine artistry with technology to deliver results that wow your customers.', "stats": '150+|Projects Delivered,15+|Years Combined Exp,50+|5-Star Reviews'})
+
 init_db()
+
+def convert_id(doc):
+    if doc and '_id' in doc:
+        doc['id'] = str(doc['_id'])
+    return doc
+
+def convert_ids(cursor):
+    return [convert_id(doc) for doc in cursor]
 
 def send_email_notification(inquiry_id, service, details):
     sender_email = "agent4@indusschool.com"
@@ -199,7 +72,7 @@ def send_email_notification(inquiry_id, service, details):
     receiver_email = "agent4@indusschool.com"
 
     subject = f"NEW INQUIRY: {service}"
-    body = f"--- NEW INQUIRY [{service}] ---\nID: #{inquiry_id}\nTime: {datetime.now().isoformat()}\nDetails: {details}\n-------------------------------\n"
+    body = f"--- NEW INQUIRY [{service}]\nID: #{inquiry_id}\nTime: {datetime.now().isoformat()}\nDetails: {details}\n-------------------------------\n"
 
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -238,22 +111,11 @@ def sync_to_spreadsheet(inquiry_id, service, details):
 
 @app.route('/')
 def index():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM reviews WHERE status = 'Approved' ORDER BY timestamp DESC")
-    reviews = cursor.fetchall()
-    
-    cursor.execute("SELECT * FROM pricing_packages")
-    pricing = cursor.fetchall()
-    
-    cursor.execute("SELECT * FROM services")
-    services = cursor.fetchall()
-    
-    cursor.execute("SELECT * FROM portfolio")
-    portfolio = cursor.fetchall()
-    
-    cursor.execute("SELECT * FROM our_story LIMIT 1")
-    story = cursor.fetchone()
+    reviews = convert_ids(db.reviews.find({"status": "Approved"}).sort("timestamp", -1))
+    pricing = convert_ids(db.pricing_packages.find())
+    services = convert_ids(db.services.find())
+    portfolio = convert_ids(db.portfolio.find())
+    story = convert_id(db.our_story.find_one())
     
     # Process features and stats for easy rendering
     pricing_processed = []
@@ -264,7 +126,6 @@ def index():
         
     story_processed = dict(story) if story else {}
     if story_processed:
-        # Split "150+|Projects,15+|Years" into pairs
         stats_raw = story_processed['stats'].split(',')
         story_processed['stats_list'] = []
         for s in stats_raw:
@@ -283,49 +144,27 @@ def submit_order():
     if not service or not details:
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
         
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO inquiries (service, details) VALUES (?, ?)", (service, details))
-    inquiry_id = cursor.lastrowid
+    result = db.inquiries.insert_one({"service": service, "details": details, "timestamp": datetime.now(), "status": "New"})
+    inquiry_id = str(result.inserted_id)
     
-    # Add notification
-    cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("NEW INQUIRY", f"#{inquiry_id} - {service}"))
-    db.commit()
+    db.notifications.insert_one({"type": "NEW INQUIRY", "message": f"#{inquiry_id} - {service}", "timestamp": datetime.now(), "is_read": 0})
     
-    # Simulate real-time email notification
     send_email_notification(inquiry_id, service, details)
-    
-    # Simulate real-time spreadsheet sync
     sync_to_spreadsheet(inquiry_id, service, details)
     
     return jsonify({"status": "success", "message": "Order submitted successfully! We will contact you soon."})
 
 @app.route('/admin/inquiries')
 def admin_inquiries():
-    db = get_db()
-    cursor = db.cursor()
+    inquiries = convert_ids(db.inquiries.find().sort("timestamp", -1))
+    profile = convert_id(db.admin_profile.find_one())
+    reviews = convert_ids(db.reviews.find().sort("timestamp", -1))
     
-    # Get inquiries
-    cursor.execute("SELECT * FROM inquiries ORDER BY timestamp DESC")
-    inquiries = cursor.fetchall()
+    pricing = convert_ids(db.pricing_packages.find())
+    services = convert_ids(db.services.find())
+    portfolio = convert_ids(db.portfolio.find())
+    story = convert_id(db.our_story.find_one())
     
-    # Get profile
-    cursor.execute("SELECT * FROM admin_profile LIMIT 1")
-    profile = cursor.fetchone()
-    
-    # Get reviews
-    cursor.execute("SELECT * FROM reviews ORDER BY timestamp DESC")
-    reviews = cursor.fetchall()
-    
-    # Get CMS Data for Admin
-    cursor.execute("SELECT * FROM pricing_packages")
-    pricing = cursor.fetchall()
-    cursor.execute("SELECT * FROM services")
-    services = cursor.fetchall()
-    cursor.execute("SELECT * FROM portfolio")
-    portfolio = cursor.fetchall()
-    cursor.execute("SELECT * FROM our_story LIMIT 1")
-    story = cursor.fetchone()
     if story:
         stats_raw = story['stats'].split('|')
         stats_list = [{'val': s.split(':')[0], 'label': s.split(':')[1]} for s in stats_raw if ':' in s]
@@ -338,19 +177,13 @@ def admin_inquiries():
         'story': story
     }
     
-    # Get invoices history
-    cursor.execute("SELECT * FROM invoices ORDER BY timestamp DESC")
-    invoices = cursor.fetchall()
+    invoices = convert_ids(db.invoices.find().sort("timestamp", -1))
+    tickets = convert_ids(db.client_tickets.find().sort("timestamp", -1))
     
-    # Calculate simple metrics
     total_inquiries = len(inquiries)
-    pending_review = sum(1 for i in inquiries if i['status'] in ('New', 'Pending'))
-    active_projects = sum(1 for i in inquiries if i['status'] == 'Active Project')
-    completed_projects = sum(1 for i in inquiries if i['status'] == 'Completed')
-    
-    # Get client tickets
-    cursor.execute("SELECT * FROM client_tickets ORDER BY timestamp DESC")
-    tickets = [dict(row) for row in cursor.fetchall()]
+    pending_review = sum(1 for i in inquiries if i.get('status', 'New') in ('New', 'Pending'))
+    active_projects = sum(1 for i in inquiries if i.get('status') == 'Active Project')
+    completed_projects = sum(1 for i in inquiries if i.get('status') == 'Completed')
     
     if total_inquiries > 0:
         conversion_rate = round(((active_projects + completed_projects) / total_inquiries) * 100, 1)
@@ -363,23 +196,19 @@ def admin_inquiries():
         "active": active_projects,
         "conversion": conversion_rate,
         "total_tickets": len(tickets),
-        "unresolved_tickets": sum(1 for t in tickets if t['status'] != 'Resolved')
+        "unresolved_tickets": sum(1 for t in tickets if t.get('status') != 'Resolved')
     }
     
     return render_template('admin_dashboard.html', inquiries=inquiries, reviews=reviews, metrics=metrics, profile=profile, cms=cms_data, invoices=invoices, tickets=tickets)
 
 @app.route('/api/profile', methods=['GET', 'POST'])
 def handle_profile():
-    db = get_db()
-    cursor = db.cursor()
-    
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
         phone = request.form.get('phone')
         bio = request.form.get('bio')
         
-        # Check if an avatar file was uploaded
         avatar_path = None
         if 'avatar_file' in request.files:
             file = request.files['avatar_file']
@@ -387,48 +216,36 @@ def handle_profile():
                 filename = secure_filename(file.filename)
                 filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
                 file.save(filepath)
-                # Store the web-accessible URL
                 avatar_path = '/static/uploads/' + filename
                 
-        # If a file was uploaded, update the avatar column, else keep it unchanged
+        update_data = {"name": name, "email": email, "phone": phone, "bio": bio}
         if avatar_path:
-            cursor.execute("UPDATE admin_profile SET name = ?, email = ?, phone = ?, avatar = ?, bio = ? WHERE id = 1", (name, email, phone, avatar_path, bio))
-        else:
-            cursor.execute("UPDATE admin_profile SET name = ?, email = ?, phone = ?, bio = ? WHERE id = 1", (name, email, phone, bio))
+            update_data["avatar"] = avatar_path
             
-        db.commit()
-        
-        # Also conditionally update the DB's seed email since user asked to "remove that email and add raochethan604@gmail.com"
-        # The form submission handles email updates normally, but we will force update it here if the user's request meant to globally reset it.
-        # It's already handled via request.form.get('email').
-
+        profile = db.admin_profile.find_one()
+        if profile:
+            db.admin_profile.update_one({"_id": profile["_id"]}, {"$set": update_data})
+            
         return jsonify({"status": "success", "avatar": avatar_path})
         
-    cursor.execute("SELECT * FROM admin_profile LIMIT 1")
-    profile = dict(cursor.fetchone())
+    profile = convert_id(db.admin_profile.find_one())
     return jsonify({"status": "success", "profile": profile})
 
 @app.route('/api/notifications', methods=['GET'])
 def get_notifications():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM notifications ORDER BY timestamp DESC LIMIT 5")
-    notifications = [dict(row) for row in cursor.fetchall()]
+    notifications = convert_ids(db.notifications.find().sort("timestamp", -1).limit(5))
     return jsonify({"status": "success", "notifications": notifications})
 
-@app.route('/api/inquiries/<int:inquiry_id>/status', methods=['POST'])
+@app.route('/api/inquiries/<inquiry_id>/status', methods=['POST'])
 def update_inquiry_status(inquiry_id):
     data = request.json
     new_status = data.get('status')
     
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("UPDATE inquiries SET status = ? WHERE id = ?", (new_status, inquiry_id))
+    db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {"$set": {"status": new_status}})
     
     email_dispatched = False
     if new_status == 'Active Project':
-        # Simulate sending automated welcome email
-        cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("AUTOMATED EMAIL", f"Welcome packet sent for #{inquiry_id}"))
+        db.notifications.insert_one({"type": "AUTOMATED EMAIL", "message": f"Welcome packet sent for #{inquiry_id}", "timestamp": datetime.now(), "is_read": 0})
         email_dispatched = True
         
         with open('email_outbox.txt', 'a') as f:
@@ -438,31 +255,22 @@ def update_inquiry_status(inquiry_id):
             f.write(f"Body: Hello! We are thrilled to start working on your project. Here is your welcome packet and timeline...\n")
             f.write("-------------------------------\n\n")
             
-    db.commit()
     return jsonify({"status": "success", "email_dispatched": email_dispatched})
 
-@app.route('/api/inquiries/<int:inquiry_id>/action', methods=['POST'])
+@app.route('/api/inquiries/<inquiry_id>/action', methods=['POST'])
 def execute_inquiry_action(inquiry_id):
     data = request.json
     action_type = data.get('action_type')
     details = data.get('details')
     
-    db = get_db()
-    cursor = db.cursor()
-    
     if action_type == 'quote':
-        msg = f"Generated Quote: {details}"
-        cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("QUOTE SENT", f"#{inquiry_id} - ₹{details.get('cost')}"))
+        db.notifications.insert_one({"type": "QUOTE SENT", "message": f"#{inquiry_id} - ₹{details.get('cost')}", "timestamp": datetime.now(), "is_read": 0})
     elif action_type == 'email':
-        msg = f"Sent Email: {details}"
-        cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("EMAIL SENT", f"#{inquiry_id}"))
+        db.notifications.insert_one({"type": "EMAIL SENT", "message": f"#{inquiry_id}", "timestamp": datetime.now(), "is_read": 0})
     elif action_type == 'consultation':
-        msg = "Scheduled Consultation"
-        cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("CONSULTATION", f"#{inquiry_id}"))
-        cursor.execute("UPDATE inquiries SET status = 'Contacted' WHERE id = ?", (inquiry_id,))
+        db.notifications.insert_one({"type": "CONSULTATION", "message": f"#{inquiry_id}", "timestamp": datetime.now(), "is_read": 0})
+        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {"$set": {"status": 'Contacted'}})
         
-    db.commit()
-    
     with open('email_outbox.txt', 'a') as f:
         f.write(f"--- ACTION PERFORMED ON #{inquiry_id} ---\n")
         f.write(f"Type: {action_type}\n")
@@ -487,56 +295,60 @@ def leave_review():
                 file.save(filepath)
                 video_path = '/static/uploads/' + filename
                 
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("INSERT INTO reviews (client_name, rating, review_text, video_path) VALUES (?, ?, ?, ?)", (client_name, rating, review_text, video_path))
-        review_id = cursor.lastrowid
-        cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("NEW REVIEW", f"By {client_name} - {rating} Stars"))
-        db.commit()
+        result = db.reviews.insert_one({
+            "client_name": client_name,
+            "rating": rating,
+            "review_text": review_text,
+            "video_path": video_path,
+            "status": "Pending",
+            "timestamp": datetime.now()
+        })
+        
+        db.notifications.insert_one({"type": "NEW REVIEW", "message": f"By {client_name} - {rating} Stars", "timestamp": datetime.now(), "is_read": 0})
         return render_template('leave_review.html', success=True)
         
     return render_template('leave_review.html')
 
-@app.route('/api/reviews/<int:review_id>/status', methods=['POST'])
+@app.route('/api/reviews/<review_id>/status', methods=['POST'])
 def update_review_status(review_id):
     data = request.json
     new_status = data.get('status')
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("UPDATE reviews SET status = ? WHERE id = ?", (new_status, review_id))
-    db.commit()
+    db.reviews.update_one({"_id": ObjectId(review_id)}, {"$set": {"status": new_status}})
     return jsonify({"status": "success"})
 
 @app.route('/api/cms/pricing', methods=['POST'])
 def update_pricing():
     data = request.json
-    db = get_db()
-    cursor = db.cursor()
     for item in data.get('packages', []):
-        cursor.execute("UPDATE pricing_packages SET name = ?, price = ?, features = ?, is_popular = ? WHERE id = ?", 
-                       (item['name'], item['price'], item['features'], item['is_popular'], item['id']))
-    db.commit()
+        db.pricing_packages.update_one({"_id": ObjectId(item['id'])}, {"$set": {
+            "name": item['name'],
+            "price": item['price'],
+            "features": item['features'],
+            "is_popular": item['is_popular']
+        }})
     return jsonify({"status": "success"})
 
 @app.route('/api/cms/services', methods=['POST'])
 def update_services():
     data = request.json
-    db = get_db()
-    cursor = db.cursor()
     for item in data.get('services', []):
-        cursor.execute("UPDATE services SET icon = ?, title = ?, description = ? WHERE id = ?", 
-                       (item['icon'], item['title'], item['description'], item['id']))
-    db.commit()
+        db.services.update_one({"_id": ObjectId(item['id'])}, {"$set": {
+            "icon": item['icon'],
+            "title": item['title'],
+            "description": item['description']
+        }})
     return jsonify({"status": "success"})
 
 @app.route('/api/cms/story', methods=['POST'])
 def update_story():
     data = request.json
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("UPDATE our_story SET headline = ?, paragraph = ?, stats = ? WHERE id = 1", 
-                   (data['headline'], data['paragraph'], data['stats']))
-    db.commit()
+    story = db.our_story.find_one()
+    if story:
+        db.our_story.update_one({"_id": story["_id"]}, {"$set": {
+            "headline": data['headline'],
+            "paragraph": data['paragraph'],
+            "stats": data['stats']
+        }})
     return jsonify({"status": "success"})
 
 @app.route('/api/cms/portfolio', methods=['POST'])
@@ -555,40 +367,34 @@ def add_portfolio():
             image_url = '/static/uploads/' + filename
             
     if image_url:
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute("INSERT INTO portfolio (project_name, category, image_url, work_process) VALUES (?, ?, ?, ?)", (project_name, category, image_url, work_process))
-        db.commit()
+        db.portfolio.insert_one({
+            "project_name": project_name,
+            "category": category,
+            "image_url": image_url,
+            "work_process": work_process
+        })
         return jsonify({"status": "success"})
     return jsonify({"status": "error", "message": "No image uploaded"})
 
-@app.route('/api/cms/portfolio/<int:item_id>', methods=['DELETE'])
+@app.route('/api/cms/portfolio/<item_id>', methods=['DELETE'])
 def delete_portfolio(item_id):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM portfolio WHERE id = ?", (item_id,))
-    db.commit()
+    db.portfolio.delete_one({"_id": ObjectId(item_id)})
     return jsonify({"status": "success"})
 
 @app.route('/api/invoices', methods=['POST'])
 def save_invoice():
     data = request.json
-    client_name = data.get('client_name')
-    po_num = data.get('po_num')
-    total = data.get('total')
-    
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO invoices (client_name, po_num, total) VALUES (?, ?, ?)", (client_name, po_num, total))
-    db.commit()
+    db.invoices.insert_one({
+        "client_name": data.get('client_name'),
+        "po_num": data.get('po_num'),
+        "total": data.get('total'),
+        "timestamp": datetime.now()
+    })
     return jsonify({"status": "success"})
 
 @app.route('/pay/<po_num>')
 def pay_invoice(po_num):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM invoices WHERE po_num = ? ORDER BY timestamp DESC LIMIT 1", (po_num,))
-    invoice = cursor.fetchone()
+    invoice = convert_id(db.invoices.find_one({"po_num": po_num}, sort=[("timestamp", -1)]))
     if not invoice:
         if po_num == '#CD-1001':
             invoice = {'po_num': '#CD-1001', 'client_name': 'Mock Client', 'total': 4999.00, 'timestamp': '2026-06-15'}
@@ -598,18 +404,13 @@ def pay_invoice(po_num):
 
 @app.route('/print/<po_num>')
 def print_invoice(po_num):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM invoices WHERE po_num = ? ORDER BY timestamp DESC LIMIT 1", (po_num,))
-    invoice = cursor.fetchone()
+    invoice = convert_id(db.invoices.find_one({"po_num": po_num}, sort=[("timestamp", -1)]))
     if not invoice:
         if po_num == '#CD-1001':
             invoice = {'po_num': '#CD-1001', 'client_name': 'Mock Client', 'total': 4999.00, 'timestamp': '2026-06-15'}
         else:
             return "Invoice not found.", 404
     
-    # We will just render a simple string with HTML that triggers print, 
-    # since we don't have a complex itemized invoice table.
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -630,7 +431,7 @@ def print_invoice(po_num):
             </div>
             <div style="text-align: right;">
                 <div><strong>Invoice #:</strong> {invoice['po_num']}</div>
-                <div><strong>Date:</strong> {invoice['timestamp'].split(' ')[0]}</div>
+                <div><strong>Date:</strong> {str(invoice['timestamp']).split(' ')[0]}</div>
             </div>
         </div>
         
@@ -657,12 +458,9 @@ def print_invoice(po_num):
     """
     return html
 
-@app.route('/api/invoices/<int:invoice_id>', methods=['DELETE'])
+@app.route('/api/invoices/<invoice_id>', methods=['DELETE'])
 def delete_invoice(invoice_id):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM invoices WHERE id = ?", (invoice_id,))
-    db.commit()
+    db.invoices.delete_one({"_id": ObjectId(invoice_id)})
     return jsonify({"status": "success"})
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -673,16 +471,9 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM invoices ORDER BY id DESC")
-    invoices = [dict(row) for row in cursor.fetchall()]
-    
-    cursor.execute("SELECT * FROM client_tickets ORDER BY id DESC")
-    tickets = [dict(row) for row in cursor.fetchall()]
-    
-    cursor.execute("SELECT * FROM inquiries ORDER BY timestamp DESC")
-    inquiries = [dict(row) for row in cursor.fetchall()]
+    invoices = convert_ids(db.invoices.find().sort("_id", -1))
+    tickets = convert_ids(db.client_tickets.find().sort("_id", -1))
+    inquiries = convert_ids(db.inquiries.find().sort("timestamp", -1))
     
     return render_template('dashboard.html', invoices=invoices, tickets=tickets, inquiries=inquiries)
 
@@ -690,19 +481,18 @@ def dashboard():
 def add_client_ticket():
     subject = request.form.get('subject')
     message = request.form.get('message')
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO client_tickets (subject, message) VALUES (?, ?)", (subject, message))
-    cursor.execute("INSERT INTO notifications (type, message) VALUES (?, ?)", ("SUPPORT TICKET", f"New ticket: {subject}"))
-    db.commit()
+    db.client_tickets.insert_one({
+        "subject": subject,
+        "message": message,
+        "status": "Open",
+        "timestamp": datetime.now()
+    })
+    db.notifications.insert_one({"type": "SUPPORT TICKET", "message": f"New ticket: {subject}", "timestamp": datetime.now(), "is_read": 0})
     return jsonify({"status": "success"})
 
-@app.route('/api/admin/tickets/<int:ticket_id>/resolve', methods=['POST'])
+@app.route('/api/admin/tickets/<ticket_id>/resolve', methods=['POST'])
 def resolve_client_ticket(ticket_id):
-    db = get_db()
-    cursor = db.cursor()
-    cursor.execute("UPDATE client_tickets SET status = 'Resolved' WHERE id = ?", (ticket_id,))
-    db.commit()
+    db.client_tickets.update_one({"_id": ObjectId(ticket_id)}, {"$set": {"status": "Resolved"}})
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
