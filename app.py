@@ -14,7 +14,10 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+except Exception:
+    pass
 
 # Initialize MongoDB
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://kalmeshwargurav1028_db_user:OzKo1PYkMjTN5xOR@cluster0.ipegkdw.mongodb.net/chhatrapati_digital?retryWrites=true&w=majority&appName=Cluster0")
@@ -56,7 +59,7 @@ def init_db():
     if db.our_story.count_documents({}) == 0:
         db.our_story.insert_one({"headline": 'Who We Are', "paragraph": 'Founded in the heart of the city, Chhatrapati Digital started with a simple mission: to help local businesses shine brighter. From crafting a simple logo to installing massive 3D glowing storefronts, we combine artistry with technology to deliver results that wow your customers.', "stats": '150+|Projects Delivered,15+|Years Combined Exp,50+|5-Star Reviews'})
 
-init_db()
+# init_db()  # Disabled on Vercel to prevent cold start timeouts
 
 def convert_id(doc):
     if doc and '_id' in doc:
