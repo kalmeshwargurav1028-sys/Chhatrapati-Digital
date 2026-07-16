@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave a Review - Chhatrapati Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ef4444; /* Brand Red */
+            --bg-color: #f1f3f6; /* Soft Grey Abstract Background */
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --border: #e2e8f0;
+            --gold: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 10% 20%, rgba(239, 68, 68, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(30, 41, 59, 0.05) 0%, transparent 40%);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .form-container {
+            background: var(--white);
+            max-width: 600px;
+            width: 100%;
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .form-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-dark);
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* Star Rating Widget */
+        .rating-widget {
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        
+        .rating-widget input {
+            display: none;
+        }
+        
+        .rating-widget label {
+            cursor: pointer;
+            font-size: 2rem;
+            color: #d1d5db;
+            margin: 0;
+            transition: color 0.2s;
+        }
+        
+        .rating-widget label:hover,
+        .rating-widget label:hover ~ label,
+        .rating-widget input:checked ~ label {
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        /* Drag and Drop Zone */
+        .file-upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .file-upload-zone:hover {
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .file-upload-zone i {
+            font-size: 2rem;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-upload-zone input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: var(--white);
+            width: 100%;
+            padding: 1.2rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(239, 68, 68, 0.3);
+        }
+
+        .success-msg {
+            text-align: center;
+            color: #22c55e;
+            background: #f0fdf4;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <div class="form-header">
+            <h1>'Share Your Experience with Chhatrapati Digital'</h1>
+        </div>
+
+        {% if success %}
+        <div class="success-msg">
+            <i class="fas fa-check-circle" style="font-size: 1.5rem; margin-bottom:0.5rem; display:block;"></i>
+            Thank you! Your review has been submitted successfully and is pending approval.
+        </div>
+        {% endif %}
+
+        <form action="/leave-review" method="POST" enctype="multipart/form-data">
+            
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text" name="client_name" placeholder="Enter full name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Overall Rating</label>
+                <div class="rating-widget">
+                    <input type="radio" id="star5" name="rating" value="5" required />
+                    <label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4" />
+                    <label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3" />
+                    <label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2" />
+                    <label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1" />
+                    <label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Write Your Review</label>
+                <textarea name="review_text" rows="5" placeholder="Share details about your project, team collaboration, quality of work..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <div class="file-upload-zone" id="dropZone">
+                    <i class="fas fa-video"></i>
+                    <div style="font-weight: 600; font-size: 1.1rem; margin-bottom: 0.2rem; color: var(--text-dark);">Upload Video Clip (Optional)</div>
+                    <div style="font-size: 0.85rem; color: var(--text-gray);">Drag & drop file or click to browse. Max size: 250MB. (MP4, MOV)</div>
+                    <input type="file" name="video_file" accept="video/mp4,video/quicktime" onchange="updateFileName(this)">
+                </div>
+                <div id="fileNameDisplay" style="text-align:center; margin-top:0.5rem; font-size:0.9rem; color:var(--primary); font-weight:600;"></div>
+            </div>
+
+            <button type="submit" class="btn-submit">Submit Review</button>
+        </form>
+    </div>
+
+    <script>
+        function updateFileName(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('fileNameDisplay').textContent = "Selected: " + input.files[0].name;
+            }
+        }
+    </script>
+</body>
+</html>

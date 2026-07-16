@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chhatrapati Digital | Premium Digital Services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FAQ Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [{
+        "@type": "Question",
+        "name": "What is your typical turnaround time?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Turnaround times vary depending on the service. Graphic design projects typically take 3-5 days, while event photography/video editing can take 2-3 weeks. We always provide a clear timeline before starting."
+        }
+      }, {
+        "@type": "Question",
+        "name": "Do you offer revisions on designs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, all our design packages include up to 3 rounds of free revisions to ensure you are 100% satisfied with the final product."
+        }
+      }, {
+        "@type": "Question",
+        "name": "What payment methods do you accept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "We accept UPI, Net Banking, and major Credit/Debit cards. A 50% advance is required to begin work on most projects."
+        }
+      }]
+    }
+    </script>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo-container">
+            <a href="/" style="text-decoration:none; font-family:'Outfit', sans-serif; font-size:1.6rem; font-weight:800; letter-spacing:-0.5px; display:flex; align-items:center;">
+                <span style="color:#1a202c; text-transform:uppercase;">Chhatrapati</span><span style="color:#ef4444; margin-left:4px;">Digital</span>
+            </a>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#services">Services</a></li>
+            <li><a href="#portfolio">Gallery</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="/login" class="client-login-link" style="color:var(--text-dark); display:flex; align-items:center; gap:6px; font-weight:600;"><i class="fas fa-lock" style="color:var(--text-dark);"></i> Login</a></li>
+            <li><a href="#order" class="cta-button nav-btn">Get Quote</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content full-width">
+            <div class="hero-text-block">
+                <h1 class="hero-title">Elevate Your Vision to <span class="text-accent">Digital Reality</span></h1>
+                <p class="hero-subtitle">Premium Design, Photography, and Signage Solutions crafted for bold brands.</p>
+                <div class="hero-buttons">
+                    <a href="#portfolio" class="cta-button primary">View Portfolio Gallery</a>
+                    <button id="openPlannerBtn" class="cta-button secondary-btn">Start New Project <i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Us Section -->
+    <section id="about" class="about-section">
+        <div class="about-content">
+            <div class="about-text">
+                <h2>{{ story.headline if story else 'Our Story' }}</h2>
+                <p>{{ story.paragraph if story else 'Chhatrapati Digital was founded on a simple principle: bold brands deserve bold representation.' }}</p>
+                <div class="about-stats">
+                    {% if story and story.stats_list %}
+                        {% for st in story.stats_list %}
+                        <div class="stat"><span class="stat-num">{{ st.val }}</span><br>{{ st.label }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="stat"><span class="stat-num">500+</span><br>Projects</div>
+                        <div class="stat"><span class="stat-num">100%</span><br>Satisfaction</div>
+                        <div class="stat"><span class="stat-num">24/7</span><br>Support</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop" alt="Our Workspace">
+            </div>
+        </div>
+        <!-- Trust Boost: Notable Client Logos -->
+        <div class="trust-boost">
+            <h3>Trusted by Innovative Brands</h3>
+            <div class="client-logos">
+                <i class="fab fa-apple"></i>
+                <i class="fab fa-amazon"></i>
+                <i class="fab fa-google"></i>
+                <i class="fab fa-microsoft"></i>
+                <i class="fab fa-spotify"></i>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services-section">
+        <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Professional Services</h2>
+        <div class="services-grid">
+            {% if services %}
+                {% for srv in services %}
+                <div class="service-card">
+                    <div class="card-icon" style="color:#004de6;"><i class="fas {{ srv.icon }}"></i></div>
+                    <h3 style="color:#004de6; font-size:1.2rem; font-weight:700;">{{ srv.title }}</h3>
+                    <ul style="list-style:none; padding:0; margin-top:1.5rem; text-align:left; border-top:1px solid #edf2f7; padding-top:1rem;">
+                        {% for item in srv.description.split(',') %}
+                        <li style="margin-bottom:0.8rem; font-size:0.9rem; color:#4a5568; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fas fa-check" style="color:#004de6; font-size:0.8rem;"></i> {{ item.replace('and ', '').strip()|title }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No services found.</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Portfolio Gallery Section -->
+    <section id="portfolio" class="portfolio-section">
+        <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Gallery</h2>
+        
+        <!-- Portfolio Filters -->
+        <div class="portfolio-filters" style="flex-wrap: wrap; display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem;">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="wedding-photography">Wedding</button>
+            <button class="filter-btn" data-filter="logo-design">Logos</button>
+            <button class="filter-btn" data-filter="branding">Branding</button>
+            <button class="filter-btn" data-filter="photography">Photography</button>
+            <button class="filter-btn" data-filter="video-editing">Video</button>
+            <button class="filter-btn" data-filter="signage">Signage</button>
+            <button class="filter-btn" data-filter="web-development">Web Dev</button>
+        </div>
+
+        <div class="gallery-grid">
+            {% if portfolio %}
+                {% for port in portfolio %}
+                <div class="gallery-item" data-category="{{ port.category }}" data-title="{{ port.project_name }}" data-image="{{ port.image_url }}" data-process="{{ port.work_process|default('Detailed work process coming soon for this project. Stay tuned!', true) }}" onclick="openGalleryModal(this)">
+                    <img src="{{ port.image_url }}" alt="{{ port.project_name }}">
+                    <div class="gallery-overlay"><span>{{ port.project_name }}<br><small style="font-size:0.7rem; color:#cbd5e1; margin-top:5px; display:inline-block;">View Work Process</small></span></div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>No portfolio items found.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Gallery Project Workflow Modal -->
+        <div id="galleryModal" class="gallery-modal">
+            <div class="gallery-modal-content">
+                <span class="close-modal" onclick="closeGalleryModal()">&times;</span>
+                <div style="display:flex; flex-direction:column; md:flex-direction:row; gap:2rem;">
+                    <img id="modalImage" src="" alt="Project Image" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+                    <div style="padding:1rem 0;">
+                        <h3 id="modalTitle" style="color:#004de6; font-size:1.8rem; font-weight:800; margin-bottom:0.5rem;">Project Title</h3>
+                        <div id="modalCategory" style="display:inline-block; background:rgba(0,77,230,0.1); color:#004de6; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; text-transform:uppercase; margin-bottom:1.5rem;">Category</div>
+                        <h4 style="font-size:1.1rem; color:#1a202c; font-weight:700; margin-bottom:0.8rem; border-bottom:2px solid #edf2f7; padding-bottom:5px;">Our Work Process</h4>
+                        <p id="modalProcess" style="color:#4a5568; font-size:1rem; line-height:1.7; white-space:pre-wrap;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Before/After Slider -->
+        <div class="portfolio-slider-container">
+            <h3 class="slider-title">Deep Case Study: Store Transformation</h3>
+            <div class="before-after-slider">
+                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop" class="after-img" alt="After Transformation">
+                <div class="before-wrapper" id="beforeWrapper">
+                    <img src="https://images.unsplash.com/photo-1555529771-835f59bfc50c?q=80&w=2070&auto=format&fit=crop" class="before-img" alt="Before Transformation">
+                </div>
+                <input type="range" min="1" max="100" value="50" class="slider-control" id="sliderControl">
+                <div class="slider-line" id="sliderLine"></div>
+                <div class="slider-button" id="sliderButton"><i class="fas fa-arrows-alt-h"></i></div>
+            </div>
+            <div class="case-study-content">
+                <div class="cs-col">
+                    <h4>The Challenge</h4>
+                    <p>An old retail front needed a modern facelift without tearing down the structure. The client wanted a bold new look using 3D LED letters and fresh branding.</p>
+                </div>
+                <div class="cs-col">
+                    <h4>The Solution</h4>
+                    <p>We designed and installed a premium neon and 3D acrylic signage system, paired with custom vinyl graphics. The result is a vibrant, eye-catching storefront that increased foot traffic by 40%.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <h2 class="section-title">Pricing Packages</h2>
+        <div class="pricing-grid">
+            {% if pricing %}
+                {% for pkg in pricing %}
+                <div class="pricing-card {% if pkg.is_popular %}popular{% endif %}">
+                    {% if pkg.is_popular %}
+                    <div class="popular-badge">Most Popular</div>
+                    {% endif %}
+                    <h3>{{ pkg.name }}</h3>
+                    <div class="price">{{ pkg.price }}</div>
+                    <ul>
+                        {% for feature in pkg.features_list %}
+                        <li><i class="fas fa-check"></i> {{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="#order" class="cta-button {% if not pkg.is_popular %}outline{% endif %}">Choose Plan</a>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>Pricing packages loading...</p>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials-section">
+        <h2 class="section-title">What Our Clients Say</h2>
+        <div class="testimonials-grid">
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="testimonial-card {% if review.video_path %}video-testimonial{% endif %}">
+                    {% if review.video_path %}
+                    <div class="video-placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                        <video controls style="width:100%; max-height:200px;">
+                            <source src="{{ review.video_path }}" type="video/mp4">
+                        </video>
+                    </div>
+                    {% endif %}
+                    <div class="stars">
+                        {% for i in range(review.rating) %}<i class="fas fa-star" style="color:var(--gold);"></i>{% endfor %}
+                    </div>
+                    <p>"{{ review.review_text }}"</p>
+                    <div class="client-name">- {{ review.client_name }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="testimonial-card">
+                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                <p>"No reviews published yet. Be the first to leave a review!"</p>
+                <div class="client-name">- Admin</div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <button class="faq-question">What is your typical turnaround time? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer"><p>Turnaround times vary depending on the service. Graphic design projects typically take 3-5 days, while event photography/video editing can take 2-3 weeks. We always provide a clear timeline before starting.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Do you offer revisions on designs? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer"><p>Yes, all our design packages include up to 3 rounds of free revisions to ensure you are 100% satisfied with the final product.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">What payment methods do you accept? <i class="fas fa-chevron-down"></i></button>
+                <div class="faq-answer"><p>We accept UPI, Net Banking, and major Credit/Debit cards. A 50% advance is required to begin work on most projects.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order & Pricing Calculator Section -->
+    <section id="order" class="order-section">
+        <h2 class="section-title">Request a Quotation</h2>
+        
+        <!-- Pricing Calculator -->
+        <div class="calculator-container">
+            <h3>Interactive Pricing Calculator</h3>
+            <div class="calc-grid">
+                <div class="calc-options">
+                    <div class="calc-group">
+                        <label>Base Budget Range</label>
+                        <input type="range" id="budgetRange" min="1000" max="50000" step="1000" value="5000">
+                        <div class="range-labels">
+                            <span>₹1,000</span>
+                            <span id="budgetDisplay">₹5,000</span>
+                            <span>₹50,000+</span>
+                        </div>
+                    </div>
+                    <div class="calc-toggles">
+                        <label class="toggle-label">
+                            <input type="checkbox" id="srvLogo" value="4999"> Logo Design (₹4,999)
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="srvPhoto" value="14999"> Pro Photography (₹14,999)
+                        </label>
+                        <label class="toggle-label">
+                            <input type="checkbox" id="srvSignage" value="25000"> Premium Signage (₹25,000)
+                        </label>
+                    </div>
+                </div>
+                <div class="calc-result">
+                    <h4>Estimated Total</h4>
+                    <div class="estimate-amount" id="estimateTotal">₹0</div>
+                    <p>This is a rough estimate. Submit the form below for an exact quote.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-container">
+            <p style="text-align:center; margin-bottom: 2rem;">Tell us about your project requirements and we will get back to you.</p>
+            <div class="order-box">
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="serviceType">Service Needed</label>
+                        <select id="serviceType" required>
+                            <option value="">Select a service...</option>
+                            <option value="Photography">Video & Photography</option>
+                            <option value="Design">Graphic Design</option>
+                            <option value="Print">Flex & Vinyl</option>
+                            <option value="Signage">Signage & Boards</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="orderDetails">Project Details & Custom Size</label>
+                        <textarea id="orderDetails" rows="4" placeholder="Describe your requirements..." required></textarea>
+                    </div>
+                    <button type="submit" class="cta-button primary">Submit Inquiry</button>
+                    <p id="formStatus" class="form-status"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/917483006958" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <footer class="fat-footer">
+        <div class="footer-grid">
+            <div class="footer-col footer-brand">
+                <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Logo" class="footer-logo">
+                <p>Premium Design, Photography, and Signage Solutions crafted for bold brands.</p>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+            <div class="footer-col footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#portfolio">Portfolio</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-col footer-map">
+                <h3>Find Us</h3>
+                <p><i class="fas fa-phone-alt"></i> +91 74830 06958</p>
+                <p><i class="fas fa-envelope"></i> raochethan604@gmail.com</p>
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.712170362595!2d77.59357491482218!3d12.990264090843232!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae16719b48b945%3A0xb35fa4ce469614c!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1689255845012!5m2!1sen!2sin" width="100%" height="150" style="border:0; border-radius: 8px; margin-top: 1rem;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Chhatrapati Digital. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Project Planner Modal -->
+    <div id="plannerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Project Planner Form</h3>
+                <button id="closePlannerBtn" class="close-btn">&times;</button>
+            </div>
+            <form id="plannerForm">
+                <div class="form-group">
+                    <label for="modalProjectType">Project Type</label>
+                    <select id="modalProjectType" required>
+                        <option value="">Select an option...</option>
+                        <option value="Branding">Branding & Logo</option>
+                        <option value="Photography">Photography/Video</option>
+                        <option value="Signage">Signage & Printing</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalDetails">Details</label>
+                    <textarea id="modalDetails" rows="4" placeholder="Describe your vision..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="modalTimeline">Timeline</label>
+                    <input type="text" id="modalTimeline" placeholder="e.g. 2 weeks, ASAP" required>
+                </div>
+                <button type="submit" class="cta-button primary modal-submit">Request Estimate</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lightbox Gallery Modal -->
+    <div id="lightbox" class="lightbox-overlay">
+        <span class="lightbox-close">&times;</span>
+        <button class="lightbox-nav lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+        <img class="lightbox-image" src="" alt="Gallery Image">
+        <button class="lightbox-nav lightbox-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

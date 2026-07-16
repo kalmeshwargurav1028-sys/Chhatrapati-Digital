@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Login | Chhatrapati Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-page {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #111 0%, #333 100%);
+        }
+        .login-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .login-container img {
+            max-width: 150px;
+            margin-bottom: 2rem;
+        }
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .login-btn:hover {
+            background: #b71c1c;
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Logo">
+        <h2 style="margin-bottom: 1rem;">Client Portal</h2>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" required placeholder="client@example.com">
+            </div>
+            <div class="form-group">
+                <label>Access Code</label>
+                <input type="password" required placeholder="Enter code">
+            </div>
+            <button type="submit" class="login-btn">Secure Login <i class="fas fa-lock"></i></button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/login', {
+                method: 'POST'
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    window.location.href = data.redirect;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

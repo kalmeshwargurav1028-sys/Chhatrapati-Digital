@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Invoice - Chhatrapati Digital</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body { background: #f8fafc; color: #333; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+        .payment-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 500px; overflow: hidden; }
+        .payment-header { background: #1a202c; color: white; padding: 2rem; text-align: center; }
+        .payment-body { padding: 2rem; }
+        .amount-display { font-size: 2.5rem; font-weight: 800; color: #1a202c; margin: 1rem 0; text-align: center; }
+        .invoice-details { background: #f1f5f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .detail-label { color: #64748b; font-weight: 600; }
+        .detail-value { color: #1e293b; font-weight: 700; }
+        .btn-pay { display: block; width: 100%; padding: 1rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; text-decoration: none; }
+        .btn-pay:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37,99,235,0.3); }
+        .secure-badge { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: #94a3b8; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; padding: 3rem; border-radius: 12px; text-align: center; max-width: 400px; width: 90%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .success-icon { font-size: 4rem; color: #10b981; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+    <div class="payment-card">
+        <div class="payment-header">
+            <h2 style="font-weight: 800; letter-spacing: -0.5px;">Chhatrapati<span style="color: #ef4444;">Digital</span></h2>
+            <p style="color: #94a3b8; margin-top: 0.5rem;">Secure Invoice Payment</p>
+        </div>
+        
+        <div class="payment-body">
+            <div style="text-align: center; color: #64748b; font-weight: 600;">Total Amount Due</div>
+            <div class="amount-display">₹{{ "%.2f"|format(invoice.total) }}</div>
+            
+            <div class="invoice-details">
+                <div class="detail-row">
+                    <span class="detail-label">Invoice To</span>
+                    <span class="detail-value">{{ invoice.client_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">PO Number</span>
+                    <span class="detail-value">{{ invoice.po_num }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date Issued</span>
+                    <span class="detail-value">{{ invoice.timestamp.split(' ')[0] }}</span>
+                </div>
+            </div>
+            
+            <a href="upi://pay?pa=7483006958@upi&pn=Chhatrapati%20Digital&am={{ '%.2f'|format(invoice.total) }}&cu=INR&tn=Payment%20for%20{{ invoice.po_num }}" class="btn-pay" style="background: #10b981; margin-bottom: 1rem;">
+                <i class="fab fa-google-pay" style="font-size: 1.2rem; margin-right: 5px;"></i> Pay with GPay / UPI
+            </a>
+            
+            <button class="btn-pay" onclick="processPayment()" style="background: #1e293b; color: white;">
+                <i class="fas fa-credit-card"></i> Pay with Card (Demo)
+            </button>
+            
+            <div class="secure-badge">
+                <i class="fas fa-shield-alt"></i> Payments are securely processed via 256-bit SSL encryption.
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content">
+            <i class="fas fa-check-circle success-icon"></i>
+            <h3 style="font-size: 1.5rem; color: #1f2937; margin-bottom: 0.5rem;">Payment Successful!</h3>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Thank you, {{ invoice.client_name }}. Your payment of ₹{{ "%.2f"|format(invoice.total) }} has been received.</p>
+            <button class="btn-pay" style="background: #10b981;" onclick="window.close()">Close Window</button>
+        </div>
+    </div>
+
+    <script>
+        function processPayment() {
+            // Simulate processing delay
+            const btn = document.querySelector('.btn-pay');
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing...';
+            btn.style.opacity = '0.7';
+            btn.style.pointerEvents = 'none';
+            
+            setTimeout(() => {
+                document.getElementById('successModal').classList.add('active');
+                btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely Now';
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
