@@ -34,6 +34,7 @@ coverage.xml
 # Database
 *.db
 *.sqlite3
+*.db.backup
 
 # Uploads
 static/uploads/
