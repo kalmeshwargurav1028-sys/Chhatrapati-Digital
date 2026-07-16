@@ -1849,7 +1849,7 @@
         const rawInquiries = [
             {% for inq in inquiries %}
             {
-                id: {{ inq.id }},
+                id: '{{ inq.id }}',
                 service: '{{ inq.service }}',
                 status: '{{ inq.status }}',
                 timestamp: '{{ inq.timestamp }}'
