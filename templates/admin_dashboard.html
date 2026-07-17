@@ -824,8 +824,8 @@
                         </td>
                         <td>
                             {% if review.status == 'Pending' %}
-                            <button class="btn-primary" style="background:#10b981; margin-right:0.5rem; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="updateReviewStatus({{ review.id }}, 'Approved')">Approve & Publish</button>
-                            <button class="btn-primary" style="background:#ef4444; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="updateReviewStatus({{ review.id }}, 'Rejected')">Reject</button>
+                            <button class="btn-primary" style="background:#10b981; margin-right:0.5rem; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="updateReviewStatus('{{ review.id }}', 'Approved')">Approve & Publish</button>
+                            <button class="btn-primary" style="background:#ef4444; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="updateReviewStatus('{{ review.id }}', 'Rejected')">Reject</button>
                             {% else %}
                             <span style="font-weight:600; font-size:0.85rem; color:{% if review.status == 'Approved' %}#10b981{% else %}#ef4444{% endif %};">{{ review.status }}</span>
                             {% endif %}
@@ -1126,7 +1126,7 @@
                     {% for p in cms.portfolio %}
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem; border-bottom:1px solid var(--border);">
                         <div style="font-size:0.85rem;"><strong>{{ p.project_name }}</strong> ({{ p.category }})</div>
-                        <button style="color:var(--primary); background:none; border:none; cursor:pointer;" onclick="deletePortfolio({{ p.id }})"><i class="fas fa-trash"></i></button>
+                        <button style="color:var(--primary); background:none; border:none; cursor:pointer;" onclick="deletePortfolio('{{ p.id }}')"><i class="fas fa-trash"></i></button>
                     </div>
                     {% endfor %}
                 </div>
@@ -1296,7 +1296,7 @@
                     </div>
                     <div>
                         {% if ticket.status != 'Resolved' %}
-                        <button class="btn-primary" style="background:var(--success);" onclick="resolveTicket({{ ticket.id }})">
+                        <button class="btn-primary" style="background:var(--success);" onclick="resolveTicket('{{ ticket.id }}')">
                             <i class="fas fa-check"></i> Mark Resolved
                         </button>
                         {% else %}
