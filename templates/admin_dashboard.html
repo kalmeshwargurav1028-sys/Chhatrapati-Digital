@@ -597,9 +597,10 @@
                     </div>
                 </div>
             </div>
-            <div class="profile-menu" onclick="switchPageView('profile')">
-                <img src="{{ profile.avatar if profile and profile.avatar else 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop' }}" alt="Profile">
-                <span style="font-weight: 600; font-size: 0.9rem;"><span id="profileNameDisplay">{{ profile.name if profile else 'Profile' }}</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span>
+            <div class="profile-menu">
+                <img src="{{ profile.avatar if profile and profile.avatar and profile.avatar != 'None' and profile.avatar != 'null' else 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop' }}" alt="Profile" onclick="switchPageView('profile')">
+                <span style="font-weight: 600; font-size: 0.9rem;" onclick="switchPageView('profile')"><span id="profileNameDisplay">{{ profile.name if profile else 'Profile' }}</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span>
+                <a href="/admin/login" style="margin-left:10px; color:var(--text-gray); text-decoration:none;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
             </div>
         </div>
     </nav>
@@ -933,9 +934,9 @@
         <!-- Left Column: Update Profile -->
         <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
             <div style="text-align:center; margin-bottom:2rem;">
-                <img src="{{ profile.avatar if profile.avatar else 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop' }}" id="profPreview" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:1rem; border:4px solid var(--border);">
+                <img src="{{ profile.avatar if profile and profile.avatar and profile.avatar != 'None' and profile.avatar != 'null' else 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop' }}" id="profPreview" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:1rem; border:4px solid var(--border);">
                 <h2 style="font-size:1.5rem; color:var(--text-dark);">{{ profile.name if profile else 'Admin Name' }}</h2>
-                <div style="color:var(--text-gray); font-size:0.9rem;">{{ profile.role if profile.role else 'Super Admin' }}</div>
+                <div style="color:var(--text-gray); font-size:0.9rem;">{{ profile.role if profile and profile.get('role') else 'Super Admin' }}</div>
                 <div style="color:var(--text-gray); font-size:0.8rem; margin-top:0.2rem;">{{ profile.email if profile else 'email@example.com' }}</div>
             </div>
             
