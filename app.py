@@ -212,24 +212,24 @@ def handle_profile():
         phone = request.form.get('phone')
         bio = request.form.get('bio')
         
-        avatar_path = None
+        avatar_data_uri = None
         if 'avatar_file' in request.files:
             file = request.files['avatar_file']
             if file and file.filename != '':
-                filename = secure_filename(file.filename)
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                avatar_path = '/static/uploads/' + filename
+                import base64
+                mimetype = file.mimetype
+                base64_str = base64.b64encode(file.read()).decode('utf-8')
+                avatar_data_uri = f"data:{mimetype};base64,{base64_str}"
                 
         update_data = {"name": name, "email": email, "phone": phone, "bio": bio}
-        if avatar_path:
-            update_data["avatar"] = avatar_path
+        if avatar_data_uri:
+            update_data["avatar"] = avatar_data_uri
             
         profile = db.admin_profile.find_one()
         if profile:
             db.admin_profile.update_one({"_id": profile["_id"]}, {"$set": update_data})
             
-        return jsonify({"status": "success", "avatar": avatar_path})
+        return jsonify({"status": "success", "avatar": avatar_data_uri})
         
     profile = convert_id(db.admin_profile.find_one())
     return jsonify({"status": "success", "profile": profile})
