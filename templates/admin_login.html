@@ -170,8 +170,22 @@
                     <button type="submit" class="submit-btn">LOGIN <i class="fas fa-arrow-right"></i></button>
                     
                     <div class="form-links">
-                        <a href="#" class="link-forgot"><i class="fas fa-key"></i> Forgot Password</a>
-                        <a href="#" class="link-help"><i class="far fa-question-circle"></i> Need help?</a>
+                        <a href="#" class="link-forgot" onclick="toggleForm('forgot')"><i class="fas fa-key"></i> Forgot Password</a>
+                        <a href="mailto:support@chhatrapatidigital.com" class="link-help"><i class="far fa-question-circle"></i> Need help?</a>
+                    </div>
+                </form>
+
+                <!-- Forgot Password Form (hidden by default) -->
+                <form id="forgotForm" style="display:none;">
+                    <h2 style="margin-bottom:1rem; color:#3b4256; text-align:center;">Reset Password</h2>
+                    <p style="margin-bottom:1.5rem; color:#718096; font-size:0.9rem; text-align:center;">Enter your email to receive a password reset link.</p>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required placeholder="admin@chhatrapati.com">
+                    </div>
+                    <button type="submit" class="submit-btn">SEND RESET LINK <i class="fas fa-paper-plane"></i></button>
+                    <div class="form-links">
+                        <a href="#" onclick="toggleForm('login')" class="link-create"><i class="fas fa-arrow-left"></i> Back to Login</a>
                     </div>
                 </form>
             </div>
@@ -193,6 +207,17 @@
             }
         }
 
+        function toggleForm(formType) {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('forgotForm').style.display = 'none';
+            
+            if(formType === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+            } else if(formType === 'forgot') {
+                document.getElementById('forgotForm').style.display = 'block';
+            }
+        }
+
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             fetch('/admin/login', { method: 'POST' })
@@ -202,6 +227,12 @@
                     window.location.href = data.redirect;
                 }
             });
+        });
+
+        document.getElementById('forgotForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Password reset link has been sent to your email.');
+            toggleForm('login');
         });
     </script>
 </body>
