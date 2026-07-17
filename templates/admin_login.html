@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | Chhatrapati Digital</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Outfit', sans-serif; overflow: hidden; }
+        .split-layout { display: flex; height: 100vh; }
+        
+        .left-panel {
+            flex: 1;
+            background: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .left-panel-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(17,17,17,0.8) 0%, rgba(204,43,43,0.7) 100%);
+        }
+        .left-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: white;
+            padding: 2rem;
+        }
+        .left-content h1 { font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800; letter-spacing: -1px; }
+        .left-content p { font-size: 1.2rem; font-weight: 400; max-width: 450px; margin: 0 auto; line-height: 1.6; }
+        
+        .right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fdfdfd;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 3.5rem 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        }
+        
+        .brand-logo { max-width: 180px; margin-bottom: 2.5rem; display: block; margin-left: auto; margin-right: auto; }
+        
+        .form-group { margin-bottom: 1.5rem; text-align: left; position: relative; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #3b4256; font-size: 1rem; }
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            background-color: #f9fbfd;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1.05rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            color: #333;
+        }
+        .form-group input::placeholder { color: #a0aec0; }
+        .form-group input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            color: #a0aec0;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1.1rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2rem;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .submit-btn:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3); }
+        
+        .form-links {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .form-links a {
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.05rem;
+            transition: opacity 0.3s;
+        }
+        .form-links a:hover { opacity: 0.8; }
+        
+        .link-forgot { color: #2563eb; font-weight: 600; }
+        .link-help { color: #dc2626; }
+        .link-create { 
+            color: #718096; 
+            margin-top: 1rem; 
+            text-decoration: underline; 
+            font-size: 0.95rem;
+        }
+        
+        @media (max-width: 900px) {
+            .split-layout { flex-direction: column; overflow: auto; height: auto; }
+            .left-panel { flex: none; min-height: 400px; }
+            .right-panel { flex: none; min-height: 600px; padding: 2rem 1rem; }
+            .form-container { padding: 2.5rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="split-layout">
+        <!-- Left Panel: Branding & Image -->
+        <div class="left-panel">
+            <div class="left-panel-overlay"></div>
+            <div class="left-content">
+                <h1>Admin Login</h1>
+                <p>Access your administrative dashboard to manage inquiries, tickets, and content.</p>
+            </div>
+        </div>
+        
+        <!-- Right Panel: Forms -->
+        <div class="right-panel">
+            <div class="form-container">
+                <!-- Login Form -->
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" required placeholder="admin@chhatrapati.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="passwordInput" required placeholder="Enter your password">
+                        <i class="far fa-eye password-toggle" onclick="togglePassword()"></i>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">LOGIN <i class="fas fa-arrow-right"></i></button>
+                    
+                    <div class="form-links">
+                        <a href="#" class="link-forgot"><i class="fas fa-key"></i> Forgot Password</a>
+                        <a href="#" class="link-help"><i class="far fa-question-circle"></i> Need help?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById('passwordInput');
+            const icon = document.querySelector('.password-toggle');
+            if(pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                pwd.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetch('/admin/login', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    window.location.href = data.redirect;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

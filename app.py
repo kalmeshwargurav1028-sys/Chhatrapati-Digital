@@ -472,6 +472,12 @@ def login():
         return jsonify({"status": "success", "redirect": "/dashboard"})
     return render_template('login.html')
 
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        return jsonify({"status": "success", "redirect": "/admin/inquiries"})
+    return render_template('admin_login.html')
+
 @app.route('/dashboard')
 def dashboard():
     invoices = convert_ids(db.invoices.find().sort("_id", -1))
