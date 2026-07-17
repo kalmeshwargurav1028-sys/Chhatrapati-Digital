@@ -102,72 +102,94 @@ h1, h2, h3 {
     height: 100vh;
     display: flex;
     align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fdfdfd 0%, #f4f5f8 100%);
     position: relative;
-    background-image: url('../assets/hero_bg_black_red.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    padding-top: 80px; /* Offset for fixed navbar */
 }
-.hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
-}
-.hero-content.full-width {
-    position: relative;
-    z-index: 10;
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
     max-width: 1400px;
-    margin: 0 auto;
     padding: 0 4rem;
-    display: flex;
-    justify-content: flex-start;
+    gap: 4rem;
+    margin: 0 auto;
 }
 .hero-text-block {
-    max-width: 650px;
-    background: transparent;
-    box-shadow: none;
-    backdrop-filter: none;
+    flex: 1;
+    max-width: 600px;
 }
 .hero-title {
-    font-size: 4.5rem;
+    font-size: 4rem;
     line-height: 1.1;
     margin-bottom: 1.5rem;
     color: #111;
+    font-weight: 500;
 }
 .text-accent {
     color: var(--accent-color);
+    font-weight: 700;
 }
 .hero-subtitle {
-    font-size: 1.3rem;
-    color: #444;
+    font-size: 1.2rem;
+    color: #555;
     margin-bottom: 2.5rem;
-    font-weight: 500;
+    font-weight: 400;
+    line-height: 1.6;
 }
 .hero-buttons {
     display: flex;
     gap: 1.5rem;
 }
+.hero-image-block {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+.hero-image-container {
+    background-color: #d8d8d8;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 550px;
+    aspect-ratio: 1 / 1;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    position: relative;
+}
+.hero-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero-gold-plaque {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #e6c875 0%, #c59b27 100%);
+    padding: 15px 25px;
+    border-radius: 4px;
+    color: #111;
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border: 1px solid #f9e596;
+}
 .cta-button.primary {
-    background: var(--accent-color);
+    background: #cc2b2b;
     color: white;
+    padding: 1rem 2.5rem;
+    border-radius: 8px;
+    font-weight: 500;
     box-shadow: 0 8px 15px rgba(211, 47, 47, 0.3);
     border: none;
+    font-size: 1.1rem;
 }
 .cta-button.primary:hover {
-    background: #b71c1c;
+    background: #a91e1e;
     box-shadow: 0 10px 20px rgba(211, 47, 47, 0.4);
-    transform: translateY(-2px);
-}
-.cta-button.secondary-btn {
-    background: #444;
-    color: white;
-    border: none;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-}
-.cta-button.secondary-btn:hover {
-    background: #222;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     transform: translateY(-2px);
 }
 
