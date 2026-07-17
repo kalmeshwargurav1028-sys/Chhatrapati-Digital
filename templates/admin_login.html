@@ -165,7 +165,7 @@
                     <div class="form-group">
                         <label>Password</label>
                         <input type="password" id="passwordInput" required placeholder="Enter your password">
-                        <i class="far fa-eye password-toggle" onclick="togglePassword(this)"></i>
+                        <span class="password-toggle" onclick="togglePassword(this)" style="user-select:none;">🙈</span>
                     </div>
                     
                     <button type="submit" class="submit-btn">LOGIN <i class="fas fa-arrow-right"></i></button>
@@ -198,12 +198,10 @@
             const pwd = icon.previousElementSibling;
             if(pwd.type === 'password') {
                 pwd.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+                icon.textContent = '🐵';
             } else {
                 pwd.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                icon.textContent = '🙈';
             }
         }
 
