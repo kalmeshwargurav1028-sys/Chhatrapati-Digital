@@ -260,7 +260,7 @@
                                         <span class="badge" style="background:{% if inquiry.status == 'Active Project' %}var(--success){% elif inquiry.status == 'Completed' %}#cbd5e1{% else %}var(--warning){% endif %}; color:white;">{{ inquiry.status }}</span>
                                     </div>
                                     <p style="color:var(--text-gray); font-size:0.9rem; margin-bottom:0.5rem;">{{ inquiry.details }}</p>
-                                    <small style="color:#94a3b8;"><i class="far fa-clock"></i> Requested on: {{ inquiry.timestamp.split(' ')[0] }}</small>
+                                    <small style="color:#94a3b8;"><i class="far fa-clock"></i> Requested on: {{ (inquiry.timestamp|string).split(' ')[0] }}</small>
                                 </li>
                                 {% endfor %}
                             </ul>
@@ -316,7 +316,7 @@
                             {% for inv in invoices %}
                             <tr>
                                 <td style="font-weight:600;">{{ inv.po_num }}</td>
-                                <td>{{ inv.timestamp.split(' ')[0] }}</td>
+                                <td>{{ (inv.timestamp|string).split(' ')[0] if inv.timestamp else '' }}</td>
                                 <td>₹{{ inv.total }}</td>
                                 <td><span class="badge badge-warning">Pending</span></td>
                                 <td>
@@ -406,7 +406,7 @@
                                     <span class="badge" style="background:{% if ticket.status == 'Resolved' %}var(--success){% else %}var(--warning){% endif %}; color:white;">{{ ticket.status }}</span>
                                 </div>
                                 <p style="color:var(--text-muted); font-size:0.9rem;">{{ ticket.message }}</p>
-                                <small style="color:#94a3b8; display:block; margin-top:10px;">{{ ticket.timestamp.split('.')[0] }}</small>
+                                <small style="color:#94a3b8; display:block; margin-top:10px;">{{ (ticket.timestamp|string).split('.')[0] }}</small>
                             </div>
                             {% else %}
                             <p style="color:var(--text-muted);">No tickets found.</p>
