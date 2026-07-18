@@ -217,11 +217,11 @@ def submit_vendor_inquiry():
     
     return jsonify({"status": "success", "message": "Details submitted successfully!"})
 
-def send_vendor_email_smtp(receiver_email, message_body):
+def send_email_smtp(receiver_email, message_body, subject="Chhatrapati Digital"):
     sender_email = "agent4@indusschool.com"
     sender_password = "Agent@2026"
     
-    subject = "Chhatrapati Digital - Vendor Inquiry Reply"
+
     
     msg = MIMEMultipart()
     msg['From'] = sender_email
@@ -259,7 +259,7 @@ def send_vendor_email(vendor_id):
         receiver_email = vendor.get('email')
         
         # Send real email
-        success = send_vendor_email_smtp(receiver_email, message)
+        success = send_email_smtp(receiver_email, message, subject="Chhatrapati Digital - Vendor Inquiry Reply")
         
         # Also log to outbox as a backup/record (wrapped in try/except for Vercel read-only FS)
         try:
@@ -416,7 +416,7 @@ def execute_inquiry_action(inquiry_id):
         desc = details.get('desc', 'Standard service')
         email_message = f"Hello {inquiry.get('client_name', 'Client')},\n\nWe have reviewed your request for {inquiry.get('service')}. Based on your details, here is our quotation:\n\nEstimated Cost: ₹{cost}\nEstimated Timeline: {time} days\nDeliverables: {desc}\n\nPlease let us know if you would like to proceed.\n\nBest,\nChhatrapati Digital"
         
-        success = send_vendor_email_smtp(receiver_email, email_message)
+        success = send_email_smtp(receiver_email, email_message, subject=f"Chhatrapati Digital - Quotation for {inquiry.get('service')}")
         
         db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
             "$set": {"status": 'Quoted'},
@@ -426,7 +426,7 @@ def execute_inquiry_action(inquiry_id):
         
     elif action_type == 'email':
         email_message = details.get('message', '')
-        success = send_vendor_email_smtp(receiver_email, email_message)
+        success = send_email_smtp(receiver_email, email_message, subject=f"Chhatrapati Digital - Re: {inquiry.get('service')} Project")
         
         db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
             "$set": {"status": 'Contacted'},
@@ -436,7 +436,7 @@ def execute_inquiry_action(inquiry_id):
         
     elif action_type == 'consultation':
         email_message = f"Hello {inquiry.get('client_name', 'Client')},\n\nWe would love to schedule a consultation call to discuss your {inquiry.get('service')} project in detail. Please reply to this email with a few times that work for you.\n\nBest,\nChhatrapati Digital"
-        success = send_vendor_email_smtp(receiver_email, email_message)
+        success = send_email_smtp(receiver_email, email_message, subject=f"Chhatrapati Digital - Consultation for {inquiry.get('service')}")
         
         db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
             "$set": {"status": 'Contacted'},
