@@ -906,13 +906,26 @@
                         <td class="details-cell" title="{{ review.review_text }}">{{ review.review_text }}</td>
                         <td>
                             {% if review.video_path %}
-                            <button class="btn-outline" onclick="openReviewModal('{{ review.client_name }}', '{{ review.rating }}', '{{ review.review_text }}', '{{ review.status }}', '{{ review.video_path }}')">View Video</button>
+                            <button class="btn-outline" 
+                                data-name="{{ review.client_name }}" 
+                                data-rating="{{ review.rating }}" 
+                                data-text="{{ review.review_text }}" 
+                                data-status="{{ review.status }}" 
+                                data-video="{{ review.video_path }}" 
+                                onclick="openReviewModal(this.getAttribute('data-name'), this.getAttribute('data-rating'), this.getAttribute('data-text'), this.getAttribute('data-status'), this.getAttribute('data-video'))">View Media</button>
                             {% else %}
                             <span style="color:var(--text-gray); font-size:0.85rem;"><i class="fas fa-times-circle" style="color:#ef4444;"></i> No Video</span>
                             {% endif %}
                         </td>
                         <td>
-                            <button class="btn-primary" style="background:#3b82f6; margin-right:0.5rem; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="openManageReviewModal('{{ review.id }}', '{{ review.client_name }}', '{{ review.rating }}', '{{ review.review_text | replace("'", "\\'") | replace('\n', '\\n') }}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-primary" style="background:#3b82f6; margin-right:0.5rem; padding:0.4rem 0.8rem; font-size:0.85rem;" 
+                                data-id="{{ review.id }}" 
+                                data-name="{{ review.client_name }}" 
+                                data-rating="{{ review.rating }}" 
+                                data-text="{{ review.review_text }}" 
+                                onclick="openManageReviewModal(this.getAttribute('data-id'), this.getAttribute('data-name'), this.getAttribute('data-rating'), this.getAttribute('data-text'))">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
                             <button class="btn-primary" style="background:#ef4444; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="deleteReview('{{ review.id }}')"><i class="fas fa-trash"></i> Delete</button>
                         </td>
                     </tr>
