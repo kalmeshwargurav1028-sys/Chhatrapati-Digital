@@ -1452,36 +1452,71 @@
             </div>
         </div>
         
+        <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:1rem; margin-top:2rem;">Active Tickets</h2>
         <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); overflow:hidden;">
-            {% if tickets and tickets|length > 0 %}
-                {% for ticket in tickets %}
-                <div style="padding:1.5rem; border-bottom:1px solid var(--border); display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:start; background:{% if ticket.status != 'Resolved' %}#fffbea{% else %}var(--white){% endif %};">
+            {% set active_tickets = tickets | selectattr('status', '!=', 'Resolved') | list %}
+            {% if active_tickets and active_tickets|length > 0 %}
+                {% for ticket in active_tickets %}
+                <div style="padding:1.5rem; border-bottom:1px solid var(--border); display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:start; background:#fffbea;">
                     <div>
                         <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
                             <h3 style="font-size:1.1rem; color:var(--text-dark); margin:0;">{{ ticket.subject }}</h3>
-                            <span class="badge" style="background:{% if ticket.status == 'Resolved' %}var(--success){% else %}var(--warning){% endif %}; color:white;">{{ ticket.status }}</span>
+                            <span class="badge" style="background:var(--warning); color:white;">{{ ticket.status }}</span>
                             <span style="font-size:0.8rem; color:var(--text-gray);"><i class="far fa-clock"></i> {{ (ticket.timestamp|string).split('.')[0] }}</span>
                         </div>
                         <p style="color:var(--text-gray); line-height:1.5; margin:0;">{{ ticket.message }}</p>
+                        {% if ticket.email %}
+                        <small style="color:var(--primary); margin-top:0.5rem; display:block;"><i class="fas fa-envelope"></i> {{ ticket.email }}</small>
+                        {% endif %}
                     </div>
                     <div>
-                        {% if ticket.status != 'Resolved' %}
                         <button class="btn-primary" style="background:var(--success);" onclick="resolveTicket('{{ ticket.id }}')">
                             <i class="fas fa-check"></i> Mark Resolved
                         </button>
-                        {% else %}
-                        <button class="btn-primary" style="background:var(--bg-light); color:var(--text-gray); border:1px solid var(--border);" disabled>
-                            Resolved
-                        </button>
-                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <div style="padding:4rem 2rem; text-align:center; color:var(--text-gray);">
-                    <i class="far fa-envelope-open" style="font-size:3rem; margin-bottom:1rem; color:#cbd5e1;"></i>
-                    <h3>No messages yet</h3>
-                    <p>When clients submit tickets from their portal, they will appear here.</p>
+                <div style="padding:3rem 2rem; text-align:center; color:var(--text-gray);">
+                    <i class="far fa-check-circle" style="font-size:3rem; margin-bottom:1rem; color:var(--success);"></i>
+                    <h3>All Caught Up!</h3>
+                    <p>There are no active support tickets at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:1rem; margin-top:2rem;">Resolved History</h2>
+        <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); overflow:hidden;">
+            {% set resolved_tickets = tickets | selectattr('status', '==', 'Resolved') | list %}
+            {% if resolved_tickets and resolved_tickets|length > 0 %}
+                {% for ticket in resolved_tickets %}
+                <div style="padding:1.5rem; border-bottom:1px solid var(--border); display:grid; grid-template-columns:1fr auto; gap:2rem; align-items:start; background:var(--white);">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <h3 style="font-size:1.1rem; color:var(--text-dark); margin:0;">{{ ticket.subject }}</h3>
+                            <span class="badge" style="background:var(--success); color:white;">Resolved</span>
+                            <span style="font-size:0.8rem; color:var(--text-gray);"><i class="far fa-clock"></i> Opened: {{ (ticket.timestamp|string).split('.')[0] }}</span>
+                        </div>
+                        <p style="color:var(--text-gray); line-height:1.5; margin:0;">{{ ticket.message }}</p>
+                        {% if ticket.email %}
+                        <small style="color:var(--text-gray); margin-top:0.5rem; display:block;"><i class="fas fa-envelope"></i> {{ ticket.email }}</small>
+                        {% endif %}
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.85rem; color:var(--text-gray); display:block; margin-bottom:0.5rem;">
+                            {% if ticket.resolved_at %}
+                            Resolved on:<br>{{ (ticket.resolved_at|string).split('.')[0] }}
+                            {% endif %}
+                        </span>
+                        <button class="btn-primary" style="background:var(--bg-light); color:var(--text-gray); border:1px solid var(--border);" disabled>
+                            Resolved
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="padding:2rem; text-align:center; color:var(--text-gray);">
+                    <p>No resolved tickets yet.</p>
                 </div>
             {% endif %}
         </div>

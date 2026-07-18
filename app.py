@@ -681,9 +681,11 @@ def dashboard():
 
 @app.route('/api/client/tickets', methods=['POST'])
 def add_client_ticket():
+    email = request.form.get('email')
     subject = request.form.get('subject')
     message = request.form.get('message')
     db.client_tickets.insert_one({
+        "email": email,
         "subject": subject,
         "message": message,
         "status": "Open",
@@ -694,7 +696,17 @@ def add_client_ticket():
 
 @app.route('/api/admin/tickets/<ticket_id>/resolve', methods=['POST'])
 def resolve_client_ticket(ticket_id):
-    db.client_tickets.update_one({"_id": ObjectId(ticket_id)}, {"$set": {"status": "Resolved"}})
+    ticket = db.client_tickets.find_one({"_id": ObjectId(ticket_id)})
+    if ticket:
+        db.client_tickets.update_one(
+            {"_id": ObjectId(ticket_id)}, 
+            {"$set": {"status": "Resolved", "resolved_at": datetime.now()}}
+        )
+        client_email = ticket.get('email')
+        if client_email:
+            subject_text = ticket.get('subject', 'Your Support Ticket')
+            email_message = f"Hello,\n\nWe are writing to let you know that your support ticket regarding '{subject_text}' has been marked as Resolved.\n\nThank you for reaching out to us.\n\nBest,\nChhatrapati Digital Support"
+            send_email_smtp(client_email, email_message, subject=f"Resolved: {subject_text}")
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
