@@ -55,6 +55,44 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Vendor Form Submission Handling
+    const vendorForm = document.getElementById('vendorForm');
+    if (vendorForm) {
+        vendorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const mobile = document.getElementById('vendorMobile').value;
+            const city = document.getElementById('vendorCity').value;
+            const category = document.getElementById('vendorCategory').value;
+            const submitBtn = vendorForm.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch('/api/vendor-inquiry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile, city, category })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || 'Details submitted successfully!');
+                    vendorForm.reset();
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                alert('Error submitting details. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+    }
+
     // Intersection Observer for scroll animations
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

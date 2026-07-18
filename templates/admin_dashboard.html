@@ -611,6 +611,7 @@
             <a class="nav-link" onclick="switchPageView('reports')"><i class="fas fa-chart-line"></i> REPORTS</a>
             <a class="nav-link" onclick="switchPageView('messages')" style="color:var(--warning);"><i class="fas fa-envelope"></i> MESSAGES <span class="badge" style="background:#e53e3e; color:white; font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:10px; margin-left:auto;">{{ metrics.unresolved_tickets }}</span></a>
             <a class="nav-link" onclick="switchPageView('website')" style="color:var(--primary);"><i class="fas fa-edit"></i> WEBSITE MANAGER</a>
+            <a class="nav-link" onclick="switchPageView('vendors')" style="color:#ec4899;"><i class="fas fa-users"></i> VENDOR INQUIRIES</a>
             <a class="nav-link" onclick="switchPageView('billing')" style="color:#1d4ed8;"><i class="fas fa-file-invoice-dollar"></i> BILLING</a>
         </div>
     </aside>
@@ -938,6 +939,46 @@
                 </div>
             </div>
         </div>
+
+        <!-- Vendor Inquiries View -->
+        <div class="main-container page-view" id="view-vendors" style="display:none; flex-direction:column; gap:2rem;">
+            <div class="page-header">
+                <h1>Vendor Inquiries</h1>
+            </div>
+            
+            <div class="matrix-container" style="width: 100%;">
+                <div class="matrix-header">
+                    <h3>Recent Vendor Submissions</h3>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mobile Number</th>
+                            <th>City</th>
+                            <th>Category</th>
+                            <th>Date Submitted</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in vendor_inquiries %}
+                        <tr>
+                            <td class="id-cell">{{ v.mobile }}</td>
+                            <td>{{ v.city }}</td>
+                            <td style="font-weight: 600;">{{ v.category }}</td>
+                            <td class="date-cell">{{ (v.timestamp|string).split('.')[0] if v.timestamp else '' }}</td>
+                            <td><span class="s-badge sb-pending">{{ v.status }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 3rem; color: #777;">No vendor inquiries found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <!-- Global Quote Modal -->

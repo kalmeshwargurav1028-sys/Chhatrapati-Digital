@@ -157,9 +157,32 @@ def submit_order():
     
     return jsonify({"status": "success", "message": "Order submitted successfully! We will contact you soon."})
 
+@app.route('/api/vendor-inquiry', methods=['POST'])
+def submit_vendor_inquiry():
+    data = request.json
+    mobile = data.get('mobile')
+    city = data.get('city')
+    category = data.get('category')
+    
+    if not mobile or not city or not category:
+        return jsonify({"status": "error", "message": "Missing required fields"}), 400
+        
+    db.vendor_inquiries.insert_one({
+        "mobile": mobile, 
+        "city": city, 
+        "category": category, 
+        "timestamp": datetime.now(), 
+        "status": "New"
+    })
+    
+    db.notifications.insert_one({"type": "NEW VENDOR", "message": f"{category} in {city}", "timestamp": datetime.now(), "is_read": 0})
+    
+    return jsonify({"status": "success", "message": "Details submitted successfully!"})
+
 @app.route('/admin/inquiries')
 def admin_inquiries():
     inquiries = convert_ids(db.inquiries.find().sort("timestamp", -1))
+    vendor_inquiries = convert_ids(db.vendor_inquiries.find().sort("timestamp", -1))
     profile = convert_id(db.admin_profile.find_one())
     reviews = convert_ids(db.reviews.find().sort("timestamp", -1))
     
@@ -202,7 +225,7 @@ def admin_inquiries():
         "unresolved_tickets": sum(1 for t in tickets if t.get('status') != 'Resolved')
     }
     
-    return render_template('admin_dashboard.html', inquiries=inquiries, reviews=reviews, metrics=metrics, profile=profile, cms=cms_data, invoices=invoices, tickets=tickets)
+    return render_template('admin_dashboard.html', inquiries=inquiries, vendor_inquiries=vendor_inquiries, reviews=reviews, metrics=metrics, profile=profile, cms=cms_data, invoices=invoices, tickets=tickets)
 
 @app.route('/api/profile', methods=['GET', 'POST'])
 def handle_profile():

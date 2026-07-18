@@ -290,6 +290,42 @@
         </div>
     </section>
 
+    <!-- Vendor Details Section -->
+    <section id="vendor-details" class="vendor-details-section">
+        <div class="vendor-details-container">
+            <h2 class="vendor-title">Help us with your details</h2>
+            <p class="vendor-subtitle">Our executives will call you to understand your requirements to find suitable vendors</p>
+            
+            <form id="vendorForm" class="vendor-form">
+                <div class="form-group vendor-form-group">
+                    <input type="tel" id="vendorMobile" placeholder="Enter mobile number" required pattern="[0-9]{10}">
+                </div>
+                <div class="form-group vendor-form-group">
+                    <select id="vendorCity" required>
+                        <option value="" disabled selected>Select city</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Bangalore">Bangalore</option>
+                        <option value="Pune">Pune</option>
+                        <option value="Indore">Indore</option>
+                        <option value="Chennai">Chennai</option>
+                    </select>
+                </div>
+                <div class="form-group vendor-form-group">
+                    <select id="vendorCategory" required>
+                        <option value="" disabled selected>Select vendor category</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Videography">Videography</option>
+                        <option value="Graphic Design">Graphic Design</option>
+                        <option value="Signage">Signage & Printing</option>
+                        <option value="Makeover">Makeover Artist</option>
+                    </select>
+                </div>
+                <button type="submit" class="vendor-submit-btn">Submit</button>
+            </form>
+        </div>
+    </section>
+
     <!-- Order & Pricing Calculator Section -->
     <section id="order" class="order-section">
         <h2 class="section-title">Request a Quotation</h2>
