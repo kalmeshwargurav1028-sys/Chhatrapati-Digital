@@ -954,24 +954,30 @@
                     <thead>
                         <tr>
                             <th>Mobile Number</th>
+                            <th>Email</th>
                             <th>City</th>
                             <th>Category</th>
                             <th>Date Submitted</th>
                             <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for v in vendor_inquiries %}
                         <tr>
                             <td class="id-cell">{{ v.mobile }}</td>
+                            <td>{{ v.email }}</td>
                             <td>{{ v.city }}</td>
                             <td style="font-weight: 600;">{{ v.category }}</td>
                             <td class="date-cell">{{ (v.timestamp|string).split('.')[0] if v.timestamp else '' }}</td>
-                            <td><span class="s-badge sb-pending">{{ v.status }}</span></td>
+                            <td><span class="s-badge {{ 'sb-contacted' if v.status == 'Contacted' else 'sb-pending' }}">{{ v.status }}</span></td>
+                            <td>
+                                <button class="btn-outline" onclick="promptVendorEmail('{{ v.id }}', '{{ v.email }}')"><i class="fas fa-reply"></i> Reply</button>
+                            </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 3rem; color: #777;">No vendor inquiries found.</td>
+                            <td colspan="7" style="text-align: center; padding: 3rem; color: #777;">No vendor inquiries found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -1501,6 +1507,27 @@
 
     <script>
         let currentInquiryId = null;
+
+        // Vendor Email Prompt
+        function promptVendorEmail(vendorId, email) {
+            const message = prompt(`Draft an email reply to ${email}:`);
+            if (message && message.trim() !== '') {
+                fetch(`/api/vendor-inquiry/${vendorId}/email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Email sent successfully!');
+                        location.reload();
+                    } else {
+                        alert('Failed to send email.');
+                    }
+                });
+            }
+        }
 
         // --- Search Functionality ---
         const searchInput = document.getElementById('tableSearch');

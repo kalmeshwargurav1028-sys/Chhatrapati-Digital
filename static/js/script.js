@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const mobile = document.getElementById('vendorMobile').value;
+            const email = document.getElementById('vendorEmail').value;
             const city = document.getElementById('vendorCity').value;
             const category = document.getElementById('vendorCategory').value;
             const submitBtn = vendorForm.querySelector('button[type="submit"]');
@@ -73,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('/api/vendor-inquiry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mobile, city, category })
+                    body: JSON.stringify({ mobile, email, city, category })
                 });
 
                 const result = await response.json();

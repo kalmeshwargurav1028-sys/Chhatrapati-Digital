@@ -161,14 +161,16 @@ def submit_order():
 def submit_vendor_inquiry():
     data = request.json
     mobile = data.get('mobile')
+    email = data.get('email')
     city = data.get('city')
     category = data.get('category')
     
-    if not mobile or not city or not category:
+    if not mobile or not email or not city or not category:
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
         
     db.vendor_inquiries.insert_one({
         "mobile": mobile, 
+        "email": email,
         "city": city, 
         "category": category, 
         "timestamp": datetime.now(), 
@@ -178,6 +180,28 @@ def submit_vendor_inquiry():
     db.notifications.insert_one({"type": "NEW VENDOR", "message": f"{category} in {city}", "timestamp": datetime.now(), "is_read": 0})
     
     return jsonify({"status": "success", "message": "Details submitted successfully!"})
+
+@app.route('/api/vendor-inquiry/<vendor_id>/email', methods=['POST'])
+def send_vendor_email(vendor_id):
+    data = request.json
+    message = data.get('message')
+    
+    if not message:
+        return jsonify({"status": "error", "message": "Message is required"}), 400
+        
+    vendor = db.vendor_inquiries.find_one({"_id": ObjectId(vendor_id)})
+    if vendor:
+        with open('email_outbox.txt', 'a') as f:
+            f.write(f"--- EMAIL TO VENDOR ---\n")
+            f.write(f"To: {vendor.get('email')}\n")
+            f.write(f"Subject: Chhatrapati Digital - Vendor Inquiry Reply\n")
+            f.write(f"Message: {message}\n")
+            f.write("-------------------------------\n\n")
+            
+        db.vendor_inquiries.update_one({"_id": ObjectId(vendor_id)}, {"$set": {"status": "Contacted"}})
+        db.notifications.insert_one({"type": "EMAIL SENT", "message": f"To vendor: {vendor.get('email')}", "timestamp": datetime.now(), "is_read": 0})
+        
+    return jsonify({"status": "success"})
 
 @app.route('/admin/inquiries')
 def admin_inquiries():
