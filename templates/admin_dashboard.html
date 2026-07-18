@@ -1001,6 +1001,27 @@
             </div>
         </div>
     </div>
+    
+    <!-- Vendor Email Modal -->
+    <div class="modal-overlay" id="vendorEmailModal">
+        <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+                <h2>Send Email Reply</h2>
+                <button class="modal-close" onclick="closeVendorEmailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:var(--text-gray); font-weight:600;">To Vendor Email</label>
+                    <input type="text" id="vendorEmailTarget" disabled style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px; background:#f5f5f5;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:var(--text-gray); font-weight:600;">Message</label>
+                    <textarea id="vendorEmailMessage" rows="5" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px; font-family:inherit; resize:vertical;" placeholder="Write your message here..."></textarea>
+                </div>
+                <button class="btn-primary" id="sendVendorEmailBtn" style="width:100%; padding:1rem; border-radius:6px; font-size:1rem; font-weight:600;" onclick="sendVendorEmail()">Send Email</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Global Quote Modal -->
     <div class="modal-overlay" id="globalQuoteModal">
@@ -1569,25 +1590,54 @@
             document.getElementById('vendorHistoryModal').style.display = 'none';
         }
 
-        // Vendor Email Prompt
+        let currentVendorEmailId = null;
+        let currentVendorEmailAddr = null;
+
         function promptVendorEmail(vendorId, email) {
-            const message = prompt(`Draft an email reply to ${email}:`);
-            if (message && message.trim() !== '') {
-                fetch(`/api/vendor-inquiry/${vendorId}/email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        alert('Email sent successfully!');
-                        location.reload();
-                    } else {
-                        alert('Failed to send email.');
-                    }
-                });
+            currentVendorEmailId = vendorId;
+            currentVendorEmailAddr = email;
+            document.getElementById('vendorEmailTarget').value = email;
+            document.getElementById('vendorEmailMessage').value = '';
+            document.getElementById('vendorEmailModal').style.display = 'flex';
+        }
+
+        function closeVendorEmailModal() {
+            document.getElementById('vendorEmailModal').style.display = 'none';
+        }
+
+        function sendVendorEmail() {
+            const message = document.getElementById('vendorEmailMessage').value;
+            const btn = document.getElementById('sendVendorEmailBtn');
+            
+            if (!message || message.trim() === '') {
+                alert('Please enter a message to send.');
+                return;
             }
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            btn.disabled = true;
+
+            fetch(`/api/vendor-inquiry/${currentVendorEmailId}/email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(r => r.json())
+            .then(data => {
+                btn.innerHTML = 'Send Email';
+                btn.disabled = false;
+                if (data.status === 'success') {
+                    alert('Email sent successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to send email: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(() => {
+                btn.innerHTML = 'Send Email';
+                btn.disabled = false;
+                alert('An error occurred while sending the email.');
+            });
         }
 
         // --- Search Functionality ---
