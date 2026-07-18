@@ -520,25 +520,30 @@ h1, h2, h3 {
 /* Testimonials Section */
 .testimonials-section {
     padding: 6rem 2rem;
-    background: var(--secondary-bg);
+    background: var(--primary-bg);
 }
 .testimonials-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
 }
 .testimonial-card {
-    background: var(--primary-bg);
+    background: #ffffff;
     padding: 2.5rem;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
-.stars {
-    color: #ffc107;
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
+.quote-icon {
+    margin-bottom: 1.5rem;
+}
+.quote-icon i {
+    font-size: 2.5rem;
+    color: #ef4444; /* Match the red quote icon */
 }
 .video-placeholder {
     position: relative;
@@ -574,13 +579,19 @@ h1, h2, h3 {
     transform: translate(-50%, -50%) scale(1.1);
 }
 .testimonial-card p {
-    font-style: italic;
-    color: var(--text-muted);
-    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+    color: #374151; /* Dark gray for text */
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    flex-grow: 1;
+}
+.client-info {
+    margin-top: auto;
 }
 .client-name {
-    font-weight: 600;
-    color: var(--accent-color);
+    font-weight: 700;
+    color: #111;
+    font-size: 1.1rem;
 }
 
 /* FAQ Section */

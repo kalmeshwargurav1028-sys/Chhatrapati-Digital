@@ -237,33 +237,37 @@
     </section>
 
     <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials-section">
-        <h2 class="section-title">What Our Clients Say</h2>
-        <div class="testimonials-grid">
-            {% if reviews %}
-                {% for review in reviews %}
-                <div class="testimonial-card {% if review.video_path %}video-testimonial{% endif %}">
-                    {% if review.video_path %}
-                    <div class="video-placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                        <video controls style="width:100%; max-height:200px;">
-                            <source src="{{ review.video_path }}" type="video/mp4">
-                        </video>
+    <section id="testimonials" class="testimonials-section" style="background: #ffffff; padding: 6rem 5%;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="font-size: 2.5rem; font-weight: 700; color: #111; margin-bottom: 3rem; text-align: left;">What our customers say</h2>
+            <div class="testimonials-grid">
+                {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="testimonial-card {% if review.video_path %}video-testimonial{% endif %}">
+                        <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                        {% if review.video_path %}
+                        <div class="video-placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <video controls style="width:100%; max-height:200px;">
+                                <source src="{{ review.video_path }}" type="video/mp4">
+                            </video>
+                        </div>
+                        {% endif %}
+                        <p>{{ review.review_text }}</p>
+                        <div class="client-info">
+                            <div class="client-name">{{ review.client_name }}</div>
+                        </div>
                     </div>
-                    {% endif %}
-                    <div class="stars">
-                        {% for i in range(review.rating) %}<i class="fas fa-star" style="color:var(--gold);"></i>{% endfor %}
+                    {% endfor %}
+                {% else %}
+                <div class="testimonial-card">
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>No reviews published yet. Be the first to leave a review!</p>
+                    <div class="client-info">
+                        <div class="client-name">Admin</div>
                     </div>
-                    <p>"{{ review.review_text }}"</p>
-                    <div class="client-name">- {{ review.client_name }}</div>
                 </div>
-                {% endfor %}
-            {% else %}
-            <div class="testimonial-card">
-                <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
-                <p>"No reviews published yet. Be the first to leave a review!"</p>
-                <div class="client-name">- Admin</div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </section>
 
