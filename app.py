@@ -709,5 +709,58 @@ def resolve_client_ticket(ticket_id):
             send_email_smtp(client_email, email_message, subject=f"Resolved: {subject_text}")
     return jsonify({"status": "success"})
 
+@app.route('/api/admin/reviews', methods=['POST'])
+def add_review():
+    client_name = request.form.get('client_name')
+    rating = int(request.form.get('rating', 5))
+    review_text = request.form.get('review_text')
+    
+    video_path = None
+    if 'file' in request.files:
+        file = request.files['file']
+        if file and file.filename != '':
+            import base64
+            mimetype = file.mimetype
+            base64_str = base64.b64encode(file.read()).decode('utf-8')
+            video_path = f"data:{mimetype};base64,{base64_str}"
+            
+    db.reviews.insert_one({
+        "client_name": client_name,
+        "rating": rating,
+        "review_text": review_text,
+        "video_path": video_path,
+        "status": "Approved",
+        "timestamp": datetime.now()
+    })
+    return jsonify({"status": "success"})
+
+@app.route('/api/admin/reviews/<review_id>', methods=['PUT'])
+def edit_review(review_id):
+    client_name = request.form.get('client_name')
+    rating = int(request.form.get('rating', 5))
+    review_text = request.form.get('review_text')
+    
+    update_data = {
+        "client_name": client_name,
+        "rating": rating,
+        "review_text": review_text
+    }
+    
+    if 'file' in request.files:
+        file = request.files['file']
+        if file and file.filename != '':
+            import base64
+            mimetype = file.mimetype
+            base64_str = base64.b64encode(file.read()).decode('utf-8')
+            update_data["video_path"] = f"data:{mimetype};base64,{base64_str}"
+            
+    db.reviews.update_one({"_id": ObjectId(review_id)}, {"$set": update_data})
+    return jsonify({"status": "success"})
+
+@app.route('/api/admin/reviews/<review_id>', methods=['DELETE'])
+def delete_review_endpoint(review_id):
+    db.reviews.delete_one({"_id": ObjectId(review_id)})
+    return jsonify({"status": "success"})
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

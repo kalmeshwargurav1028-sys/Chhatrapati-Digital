@@ -883,6 +883,7 @@
         <div class="matrix-container">
             <div class="matrix-header">
                 <h3>Action Table</h3>
+                <button class="btn-primary" onclick="openManageReviewModal()">+ Add New Review</button>
             </div>
             <table>
                 <thead>
@@ -911,12 +912,8 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if review.status == 'Pending' %}
-                            <button class="btn-primary" style="background:#10b981; margin-right:0.5rem; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="updateReviewStatus('{{ review.id }}', 'Approved')">Approve & Publish</button>
-                            <button class="btn-primary" style="background:#ef4444; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="updateReviewStatus('{{ review.id }}', 'Rejected')">Reject</button>
-                            {% else %}
-                            <span style="font-weight:600; font-size:0.85rem; color:{% if review.status == 'Approved' %}#10b981{% else %}#ef4444{% endif %};">{{ review.status }}</span>
-                            {% endif %}
+                            <button class="btn-primary" style="background:#3b82f6; margin-right:0.5rem; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="openManageReviewModal('{{ review.id }}', '{{ review.client_name }}', '{{ review.rating }}', '{{ review.review_text | replace("'", "\\'") | replace('\n', '\\n') }}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-primary" style="background:#ef4444; padding:0.4rem 0.8rem; font-size:0.85rem;" onclick="deleteReview('{{ review.id }}')"><i class="fas fa-trash"></i> Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -1000,10 +997,8 @@
     <div class="modal-overlay" id="reviewModal">
         <div class="modal-content" style="width: 800px; display:grid; grid-template-columns: 1fr 300px; padding:0; overflow:hidden;">
             <div style="background:#000; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center;">
-                <video id="revModalVideo" controls style="width:100%; max-height:500px;">
-                    <source src="" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
+            <div id="revModalMediaContainer" style="background:#000; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center;">
+                <!-- Media injected via JS -->
             </div>
             <div style="padding: 2rem; position:relative;">
                 <button class="modal-close" style="position:absolute; top:1rem; right:1rem;" onclick="closeReviewModal()">&times;</button>
@@ -1034,6 +1029,37 @@
     </div>
     
     <!-- Vendor History Modal -->
+    <div class="modal-overlay" id="manageReviewModal">
+        <div class="modal-content" style="width: 600px; padding:2rem; position:relative;">
+            <button class="modal-close" style="position:absolute; top:1.5rem; right:1.5rem;" onclick="closeManageReviewModal()">&times;</button>
+            <h2 id="manageReviewTitle" style="font-size:1.5rem; margin-bottom:1.5rem;">Add New Review</h2>
+            
+            <form id="manageReviewForm" onsubmit="submitReview(event)">
+                <input type="hidden" id="revId">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name</label>
+                    <input type="text" id="revClientName" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px;">
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Star Rating (1-5)</label>
+                    <input type="number" id="revRating" min="1" max="5" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px;">
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Written Review Text</label>
+                    <textarea id="revText" rows="4" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; font-family:inherit;"></textarea>
+                </div>
+                <div style="margin-bottom:2rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Attach Video or Image (Optional, max 5MB)</label>
+                    <input type="file" id="revFile" accept="video/*,image/*" style="width:100%; padding:0.5rem;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:1rem;">
+                    <button type="button" class="btn-action" onclick="closeManageReviewModal()">Cancel</button>
+                    <button type="submit" class="btn-action dark">Save Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="vendorHistoryModal">
         <div class="modal-content" style="width: 600px;">
             <div class="modal-header">
@@ -2089,22 +2115,93 @@
         
         function openReviewModal(name, rating, text, status, videoPath) {
             document.getElementById('revModalName').textContent = name;
+            let stars = '';
+            for(let i=0; i<parseInt(rating); i++) stars += '<i class="fas fa-star"></i>';
+            document.getElementById('revModalStars').innerHTML = stars;
             document.getElementById('revModalStatus').textContent = status;
-            document.getElementById('revModalText').textContent = '"' + text + '"';
+            document.getElementById('revModalText').textContent = text;
             
-            let starsHtml = '';
-            for(let i=0; i<parseInt(rating); i++) starsHtml += '<i class="fas fa-star"></i>';
-            document.getElementById('revModalStars').innerHTML = starsHtml;
-            
-            const video = document.getElementById('revModalVideo');
-            video.src = videoPath;
+            const mediaContainer = document.getElementById('revModalMediaContainer');
+            if(videoPath) {
+                if (videoPath.startsWith('data:image/')) {
+                    mediaContainer.innerHTML = `<img src="${videoPath}" style="width:100%; max-height:500px; object-fit:contain;">`;
+                } else {
+                    mediaContainer.innerHTML = `<video controls style="width:100%; max-height:500px;"><source src="${videoPath}" type="video/mp4">Your browser does not support the video tag.</video>`;
+                }
+            } else {
+                mediaContainer.innerHTML = `<div style="color:var(--text-gray);"><i class="fas fa-video-slash" style="font-size:3rem; margin-bottom:1rem;"></i><br>No Media Attached</div>`;
+            }
             
             document.getElementById('reviewModal').classList.add('active');
         }
-        
+
         function closeReviewModal() {
+            const mediaContainer = document.getElementById('revModalMediaContainer');
+            mediaContainer.innerHTML = '';
             document.getElementById('reviewModal').classList.remove('active');
-            document.getElementById('revModalVideo').pause();
+        }
+
+        function openManageReviewModal(id='', name='', rating='', text='') {
+            document.getElementById('revId').value = id;
+            document.getElementById('revClientName').value = name;
+            document.getElementById('revRating').value = rating || 5;
+            document.getElementById('revText').value = text;
+            document.getElementById('revFile').value = '';
+            
+            document.getElementById('manageReviewTitle').textContent = id ? 'Edit Review' : 'Add New Review';
+            document.getElementById('manageReviewModal').classList.add('active');
+        }
+
+        function closeManageReviewModal() {
+            document.getElementById('manageReviewModal').classList.remove('active');
+        }
+
+        function submitReview(e) {
+            e.preventDefault();
+            const id = document.getElementById('revId').value;
+            const fileInput = document.getElementById('revFile');
+            
+            if(fileInput.files.length > 0 && fileInput.files[0].size > 5 * 1024 * 1024) {
+                alert("File size must be less than 5MB.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('client_name', document.getElementById('revClientName').value);
+            formData.append('rating', document.getElementById('revRating').value);
+            formData.append('review_text', document.getElementById('revText').value);
+            if(fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            const url = id ? `/api/admin/reviews/${id}` : '/api/admin/reviews';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    window.location.hash = "reviews";
+                    window.location.reload();
+                } else {
+                    showToast(data.message || 'Failed to save review');
+                }
+            });
+        }
+
+        function deleteReview(id) {
+            if(confirm('Are you sure you want to delete this review?')) {
+                fetch(`/api/admin/reviews/${id}`, { method: 'DELETE' })
+                .then(r => r.json()).then(data => {
+                    if(data.status === 'success') {
+                        window.location.hash = "reviews";
+                        window.location.reload();
+                    } else {
+                        showToast(data.message || 'Failed to delete review');
+                    }
+                });
+            }
         }
 
         // --- Website Manager (CMS) Logic ---
