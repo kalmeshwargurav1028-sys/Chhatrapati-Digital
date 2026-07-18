@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const service = document.getElementById('serviceType').value;
+            const name = document.getElementById('orderName').value;
             const contact = document.getElementById('orderContact').value;
             const details = document.getElementById('orderDetails').value;
             const submitBtn = orderForm.querySelector('button[type="submit"]');
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         service: service, 
                         details: details,
                         client_email: contact,
-                        client_name: "Website Visitor"
+                        client_name: name
                     })
                 });
 
