@@ -657,13 +657,28 @@ h1, h2, h3 {
     border-radius: 50px;
     text-align: center;
     font-size: 35px;
-    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+    box-shadow: 2px 2px 3px #999;
     z-index: 100;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-decoration: none;
-    transition: transform 0.3s ease, background-color 0.3s ease;
+    transition: all 0.3s ease;
+}
+.whatsapp-status-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    animation: pulse-green 2s infinite;
+}
+@keyframes pulse-green {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
 }
 .whatsapp-float:hover {
     background-color: #1ebe57;
