@@ -145,16 +145,36 @@ def index():
 
 @app.route('/api/order', methods=['POST'])
 def submit_order():
-    data = request.json
-    client_name = data.get('client_name', 'Unknown')
-    client_email = data.get('client_email', 'unknown@example.com')
-    service = data.get('service')
-    details = data.get('details')
+    if request.content_type and request.content_type.startswith('multipart/form-data'):
+        client_name = request.form.get('client_name', 'Unknown')
+        client_email = request.form.get('client_email', 'unknown@example.com')
+        service = request.form.get('service')
+        details = request.form.get('details')
+        
+        file_data = None
+        file_name = None
+        if 'attachment' in request.files:
+            file = request.files['attachment']
+            if file and file.filename != '':
+                import base64
+                mimetype = file.mimetype
+                base64_str = base64.b64encode(file.read()).decode('utf-8')
+                file_data = f"data:{mimetype};base64,{base64_str}"
+                file_name = secure_filename(file.filename)
+    else:
+        # Fallback for old json requests if any
+        data = request.json or {}
+        client_name = data.get('client_name', 'Unknown')
+        client_email = data.get('client_email', 'unknown@example.com')
+        service = data.get('service')
+        details = data.get('details')
+        file_data = None
+        file_name = None
     
     if not service or not details:
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
         
-    result = db.inquiries.insert_one({
+    inquiry_doc = {
         "client_name": client_name,
         "client_email": client_email,
         "service": service, 
@@ -162,7 +182,13 @@ def submit_order():
         "timestamp": datetime.now(), 
         "status": "New",
         "history": []
-    })
+    }
+    
+    if file_data and file_name:
+        inquiry_doc['file_data'] = file_data
+        inquiry_doc['file_name'] = file_name
+        
+    result = db.inquiries.insert_one(inquiry_doc)
     inquiry_id = str(result.inserted_id)
     
     db.notifications.insert_one({"type": "NEW INQUIRY", "message": f"#{inquiry_id} - {service}", "timestamp": datetime.now(), "is_read": 0})

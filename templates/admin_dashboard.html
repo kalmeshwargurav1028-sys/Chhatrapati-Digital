@@ -1912,6 +1912,22 @@
                             <button class="btn-action" onclick="actionFollowUp('email')">Send Message</button>`;
                             
                         document.getElementById('tab-comm').innerHTML = commHtml;
+                            
+                        // Populate File Data
+                        let fileHtml = `<div class="modal-desc"><i class="fas fa-folder-open"></i> No files uploaded yet.</div>`;
+                        if (i.file_data && i.file_name) {
+                            fileHtml = `
+                                <div class="modal-desc">
+                                    <div style="font-weight:600; margin-bottom: 0.5rem;">Attached File: ${i.file_name}</div>
+                                    <a href="${i.file_data}" download="${i.file_name}" class="btn-action dark" style="text-decoration:none; display:inline-block;"><i class="fas fa-download"></i> Download File</a>
+                                    <br><br>
+                                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; text-align: center;">
+                                        ${i.file_data.startsWith('data:image/') ? `<img src="${i.file_data}" style="max-width:100%; border-radius:4px;">` : `<i class="fas fa-file-alt" style="font-size: 3rem; color: var(--text-gray);"></i><br><br>Preview not available for this file type.`}
+                                    </div>
+                                </div>`;
+                        }
+                        document.getElementById('tab-file').innerHTML = fileHtml;
+                        
                     } else {
                         showToast("Failed to load inquiry details");
                         closeModal();

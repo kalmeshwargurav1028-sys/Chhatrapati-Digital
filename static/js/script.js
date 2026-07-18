@@ -29,18 +29,30 @@ document.addEventListener('DOMContentLoaded', () => {
             formStatus.textContent = '';
             formStatus.className = 'form-status';
 
+            const fileInput = document.getElementById('orderFile');
+            const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+            if (file && file.size > 5 * 1024 * 1024) {
+                formStatus.textContent = 'File is too large. Maximum size is 5MB.';
+                formStatus.classList.add('error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Inquiry';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('service', service);
+            formData.append('client_name', name);
+            formData.append('client_email', contact);
+            formData.append('details', details);
+            if (file) {
+                formData.append('attachment', file);
+            }
+
             try {
                 const response = await fetch('/api/order', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        service: service, 
-                        details: details,
-                        client_email: contact,
-                        client_name: name
-                    })
+                    body: formData
                 });
 
                 const result = await response.json();
@@ -258,17 +270,28 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const fullDetails = details + " | Timeline: " + timeline;
             
+            const fileInput = document.getElementById('modalFile');
+            const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+            if (file && file.size > 5 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 5MB.');
+                submitBtn.textContent = 'Request Estimate';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('client_name', clientName);
+            formData.append('client_email', clientEmail);
+            formData.append('service', projectType);
+            formData.append('details', fullDetails);
+            if (file) {
+                formData.append('attachment', file);
+            }
+
             fetch('/api/order', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    client_name: clientName,
-                    client_email: clientEmail,
-                    service: projectType,
-                    details: fullDetails
-                })
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
