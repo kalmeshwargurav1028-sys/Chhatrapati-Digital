@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const service = document.getElementById('serviceType').value;
+            const contact = document.getElementById('orderContact').value;
             const details = document.getElementById('orderDetails').value;
             const submitBtn = orderForm.querySelector('button[type="submit"]');
 
@@ -33,7 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ service, details })
+                    body: JSON.stringify({ 
+                        service: service, 
+                        details: details,
+                        client_email: contact,
+                        client_name: "Website Visitor"
+                    })
                 });
 
                 const result = await response.json();
