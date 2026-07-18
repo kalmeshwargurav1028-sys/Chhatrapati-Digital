@@ -157,6 +157,18 @@ def submit_order():
     
     return jsonify({"status": "success", "message": "Order submitted successfully! We will contact you soon."})
 
+@app.route('/api/inquiry/<inquiry_id>', methods=['DELETE'])
+def delete_inquiry(inquiry_id):
+    try:
+        obj_id = ObjectId(inquiry_id)
+    except:
+        return jsonify({"status": "error", "message": "Invalid inquiry ID"}), 400
+        
+    result = db.inquiries.delete_one({"_id": obj_id})
+    if result.deleted_count > 0:
+        return jsonify({"status": "success"})
+    return jsonify({"status": "error", "message": "Inquiry not found"}), 404
+
 @app.route('/api/vendor-inquiry', methods=['POST'])
 def submit_vendor_inquiry():
     data = request.json

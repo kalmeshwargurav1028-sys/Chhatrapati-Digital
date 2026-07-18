@@ -688,15 +688,15 @@
                         <tr>
                             <td><input type="checkbox"></td>
                             <td>
-                                <div class="id-cell">#{{ inquiry.id }}</div>
+                                <div class="id-cell" title="{{ inquiry.id }}">#{{ inquiry.id[-6:] | upper }}</div>
                                 <div class="date-cell">{{ (inquiry.timestamp|string).split(' ')[0] if inquiry.timestamp else '' }}</div>
                             </td>
                             <td style="font-weight: 600;">{{ inquiry.service }}</td>
                             <td class="details-cell" title="{{ inquiry.details }}">{{ inquiry.details }}</td>
                             <td style="font-size: 0.85rem; color: var(--text-gray);">client@example.com</td>
-                            <td>
+                            <td style="display:flex; gap:0.5rem; align-items:center;">
                                 <button class="btn-outline" onclick="openModal('{{ inquiry.id }}', '{{ inquiry.service }}', '{{ inquiry.details }}', '{{ inquiry.timestamp }}', '{{ inquiry.status }}')">Review Details</button>
-                                <i class="fas fa-ellipsis-v" style="margin-left: 1rem; color: var(--text-gray); cursor: pointer;"></i>
+                                <button class="btn-outline" style="padding:0.4rem 0.6rem; font-size:0.85rem; color:#ef4444; border-color:#ef4444;" onclick="deleteInquiry('{{ inquiry.id }}')" title="Delete Inquiry"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                         {% else %}
@@ -1552,6 +1552,22 @@
         }
 
         let currentInquiryId = null;
+
+        function deleteInquiry(inquiryId) {
+            if (confirm("Are you sure you want to delete this inquiry?")) {
+                fetch(`/api/inquiry/${inquiryId}`, {
+                    method: 'DELETE'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        showToast('Failed to delete inquiry.');
+                    }
+                });
+            }
+        }
 
         function deleteVendorInquiry(vendorId) {
             if (confirm("Are you sure you want to delete this vendor inquiry?")) {
