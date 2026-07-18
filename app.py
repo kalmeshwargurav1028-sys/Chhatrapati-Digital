@@ -89,28 +89,33 @@ def send_email_notification(inquiry_id, service, details):
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, msg.as_string())
         server.quit()
-        print(f"Email sent successfully for Inquiry #{inquiry_id}")
     except Exception as e:
         print(f"Failed to send email: {e}")
-        # fallback to outbox
-        with open('email_outbox.txt', 'a') as f:
-            f.write(f"FAILED TO SEND EMAIL. Error: {e}\n")
-            f.write(body + "\n\n")
+        # Vercel fallback - ignore if filesystem is read-only
+        try:
+            with open('email_outbox.txt', 'a') as f:
+                f.write(f"FAILED TO SEND EMAIL. Error: {e}\n")
+                f.write(body + "\n\n")
+        except Exception:
+            pass
 
 def sync_to_spreadsheet(inquiry_id, service, details):
-    file_exists = os.path.isfile('inquiries_sync.csv')
-    with open('inquiries_sync.csv', 'a', newline='') as csvfile:
-        fieldnames = ['ID', 'Timestamp', 'Service', 'Details', 'Status']
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow({
-            'ID': inquiry_id,
-            'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'Service': service,
-            'Details': details,
-            'Status': 'New'
-        })
+    try:
+        file_exists = os.path.isfile('inquiries_sync.csv')
+        with open('inquiries_sync.csv', 'a', newline='') as csvfile:
+            fieldnames = ['ID', 'Timestamp', 'Service', 'Details', 'Status']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            if not file_exists:
+                writer.writeheader()
+            writer.writerow({
+                'ID': inquiry_id,
+                'Timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'Service': service,
+                'Details': details,
+                'Status': 'New'
+            })
+    except Exception as e:
+        print(f"Failed to sync to spreadsheet (likely Vercel read-only FS): {e}")
 
 @app.route('/')
 def index():
