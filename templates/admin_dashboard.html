@@ -1341,7 +1341,7 @@
             </div>
             
             <div style="display:flex; gap:1rem; margin-bottom:1rem;">
-                <button class="btn-action" style="flex:1; padding:0.8rem; font-size:1rem; font-weight:700; color:#4a5568; border:1px solid #cbd5e0; background:#ffffff; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="alert('Draft saved!')"><i class="fas fa-save"></i> Save as Draft</button>
+                <button class="btn-action" style="flex:1; padding:0.8rem; font-size:1rem; font-weight:700; color:#4a5568; border:1px solid #cbd5e0; background:#ffffff; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="showToast('Draft saved!')"><i class="fas fa-save"></i> Save as Draft</button>
                 <button class="btn-action" style="flex:1; padding:0.8rem; font-size:1rem; font-weight:700; background:#ebf8ff; color:#3182ce; border:1px solid #3182ce; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="generateInvoicePreview()"><i class="fas fa-file-pdf"></i> Preview PDF</button>
             </div>
             <button class="btn-primary" style="width:100%; padding:1rem; font-size:1.1rem; border-radius:6px;" onclick="generateInvoicePreview()">Generate Bill</button>
@@ -1374,7 +1374,7 @@
                             </div>
                             <div style="text-align:right; display:flex; gap:0.5rem; justify-content:flex-end;">
                                 <a href="/pay/{{ inv.po_num }}" target="_blank" class="btn-action" style="padding:0.4rem; font-size:0.85rem; color:#4a5568; border:none; background:transparent; cursor:pointer;" title="View Invoice"><i class="fas fa-eye"></i></a>
-                                <button class="btn-action" style="padding:0.4rem; font-size:0.85rem; color:#4a5568; border:none; background:transparent; cursor:pointer;" onclick="navigator.clipboard.writeText(window.location.origin + '/pay/{{ inv.po_num }}'); alert('Payment link copied to clipboard!');" title="Copy Link"><i class="fas fa-link"></i></button>
+                                <button class="btn-action" style="padding:0.4rem; font-size:0.85rem; color:#4a5568; border:none; background:transparent; cursor:pointer;" onclick="navigator.clipboard.writeText(window.location.origin + '/pay/{{ inv.po_num }}'); showToast('Payment link copied to clipboard!');" title="Copy Link"><i class="fas fa-link"></i></button>
                                 <button class="btn-action" style="padding:0.4rem; font-size:0.85rem; color:#3182ce; border:none; background:transparent; cursor:pointer;" onclick="editInvoice('{{ inv.client_name }}', '{{ inv.po_num }}')" title="Edit"><i class="fas fa-edit"></i></button>
                                 <button class="btn-action" style="padding:0.4rem; font-size:0.85rem; color:#e53e3e; border:none; background:transparent; cursor:pointer;" onclick="deleteInvoice('{{ inv.id }}')" title="Delete"><i class="fas fa-trash"></i></button>
                             </div>
@@ -1542,6 +1542,15 @@
     </div>
 
     <script>
+
+        function showToast(message) {
+            const toast = document.getElementById('toastMsg');
+            document.getElementById('toastText').innerText = message;
+            toast.classList.remove('show');
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
         let currentInquiryId = null;
 
         function deleteVendorInquiry(vendorId) {
@@ -1554,7 +1563,7 @@
                     if (data.status === 'success') {
                         location.reload();
                     } else {
-                        alert('Failed to delete vendor inquiry.');
+                        showToast('Failed to delete vendor inquiry.');
                     }
                 });
             }
@@ -1610,7 +1619,7 @@
             const btn = document.getElementById('sendVendorEmailBtn');
             
             if (!message || message.trim() === '') {
-                alert('Please enter a message to send.');
+                showToast('Please enter a message to send.');
                 return;
             }
             
@@ -1627,16 +1636,16 @@
                 btn.innerHTML = 'Send Email';
                 btn.disabled = false;
                 if (data.status === 'success') {
-                    alert('Email sent successfully!');
+                    showToast('Email sent successfully!');
                     location.reload();
                 } else {
-                    alert('Failed to send email: ' + (data.message || 'Unknown error'));
+                    showToast('Failed to send email: ' + (data.message || 'Unknown error'));
                 }
             })
             .catch(() => {
                 btn.innerHTML = 'Send Email';
                 btn.disabled = false;
-                alert('An error occurred while sending the email.');
+                showToast('An error occurred while sending the email.');
             });
         }
 
@@ -1678,7 +1687,7 @@
                         if(profImg) profImg.src = data.avatar;
                         if(prevImg) prevImg.src = data.avatar;
                     }
-                    alert("Profile updated successfully!");
+                    showToast("Profile updated successfully!");
                 }
             });
         }
@@ -1726,7 +1735,7 @@
         function openGlobalQuoteModal() { document.getElementById('globalQuoteModal').classList.add('active'); }
         function closeGlobalQuoteModal() { document.getElementById('globalQuoteModal').classList.remove('active'); }
         function submitGlobalQuote() {
-            alert('Quotation Sent Successfully to ' + document.getElementById('gQuoteEmail').value);
+            showToast('Quotation Sent Successfully to ' + document.getElementById('gQuoteEmail').value);
             closeGlobalQuoteModal();
         }
 
@@ -1878,10 +1887,10 @@
                     time: document.getElementById('quoteTime').value,
                     desc: document.getElementById('quoteDesc').value
                 };
-                if(!details.cost) { alert("Please enter a cost."); return; }
+                if(!details.cost) { showToast("Please enter a cost."); return; }
             } else if (actionType === 'email') {
                 details = document.getElementById('emailBody').value;
-                if(!details) { alert("Please enter an email message."); return; }
+                if(!details) { showToast("Please enter an email message."); return; }
             }
             
             fetch(`/api/inquiries/${currentInquiryId}/action`, {
@@ -1892,7 +1901,7 @@
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    alert(`${actionType.toUpperCase()} action triggered successfully for Inquiry #${currentInquiryId}`);
+                    showToast(`${actionType.toUpperCase()} action triggered successfully for Inquiry #${currentInquiryId}`);
                     // Refresh data
                     fetchNotifications();
                     if (actionType === 'consultation') {
@@ -1957,7 +1966,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ packages })
             }).then(r => r.json()).then(data => {
-                if(data.status === 'success') alert('Pricing saved!');
+                if(data.status === 'success') showToast('Pricing saved!');
             });
         }
         
@@ -1976,7 +1985,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ services })
             }).then(r => r.json()).then(data => {
-                if(data.status === 'success') alert('Services saved!');
+                if(data.status === 'success') showToast('Services saved!');
             });
         }
         
@@ -1989,7 +1998,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ headline, paragraph, stats })
             }).then(r => r.json()).then(data => {
-                if(data.status === 'success') alert('Story saved!');
+                if(data.status === 'success') showToast('Story saved!');
             });
         }
         
@@ -1999,7 +2008,7 @@
             formData.append('category', document.getElementById('portCat').value);
             formData.append('work_process', document.getElementById('portProcess').value);
             const imageFile = document.getElementById('portImage').files[0];
-            if(!imageFile) return alert("Please select an image");
+            if(!imageFile) return showToast("Please select an image");
             formData.append('image_file', imageFile);
             
             fetch('/api/cms/portfolio', {
@@ -2063,7 +2072,7 @@
                 body: JSON.stringify({ status: newStatus })
             }).then(r => r.json()).then(data => {
                 if(data.email_dispatched) {
-                    alert(`Welcome Email automatically dispatched to client for Inquiry #${id}!`);
+                    showToast(`Welcome Email automatically dispatched to client for Inquiry #${id}!`);
                     fetchNotifications();
                 }
             });
@@ -2293,9 +2302,17 @@
         function editInvoice(clientName, poNum) {
             document.getElementById('billClientName').value = clientName;
             document.getElementById('billPoNum').value = poNum;
-            alert("Invoice loaded into the generator. You can now edit and re-generate the bill.");
+            showToast("Invoice loaded into the generator. You can now edit and re-generate the bill.");
         }
 
     </script>
+
+    <!-- Toast Message -->
+    <div class="toast-msg" id="toastMsg">
+        <i class="far fa-check-circle toast-icon"></i>
+        <span id="toastText">Action completed successfully!</span>
+        <i class="fas fa-times toast-close" onclick="document.getElementById('toastMsg').classList.remove('show')"></i>
+    </div>
+
 </body>
 </html>

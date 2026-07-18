@@ -420,6 +420,15 @@
     </main>
 
     <script>
+
+        function showToast(message) {
+            const toast = document.getElementById('toastMsg');
+            document.getElementById('toastText').innerText = message;
+            toast.classList.remove('show');
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
         // Tab switching logic
         function switchView(viewId, el) {
             document.querySelectorAll('.page-view').forEach(v => v.classList.remove('active'));
@@ -441,11 +450,19 @@
                 body: formData
             }).then(r => r.json()).then(data => {
                 if(data.status === 'success') {
-                    alert('Ticket submitted successfully! We will get back to you shortly.');
+                    showToast('Ticket submitted successfully! We will get back to you shortly.');
                     window.location.reload();
                 }
             });
         }
     </script>
+
+    <!-- Toast Message -->
+    <div class="toast-msg" id="toastMsg">
+        <i class="far fa-check-circle toast-icon"></i>
+        <span id="toastText">Action completed successfully!</span>
+        <i class="fas fa-times toast-close" onclick="document.getElementById('toastMsg').classList.remove('show')"></i>
+    </div>
+
 </body>
 </html>
