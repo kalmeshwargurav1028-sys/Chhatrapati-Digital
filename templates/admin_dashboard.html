@@ -2141,11 +2141,12 @@
             document.getElementById('reviewModal').classList.remove('active');
         }
 
-        function openManageReviewModal(id='', name='', rating='', text='') {
+        function openManageReviewModal(id, name, rating, text) {
+            if (typeof id === 'object' || !id) id = '';
             document.getElementById('revId').value = id;
-            document.getElementById('revClientName').value = name;
+            document.getElementById('revClientName').value = name || '';
             document.getElementById('revRating').value = rating || 5;
-            document.getElementById('revText').value = text;
+            document.getElementById('revText').value = text || '';
             document.getElementById('revFile').value = '';
             
             document.getElementById('manageReviewTitle').textContent = id ? 'Edit Review' : 'Add New Review';
