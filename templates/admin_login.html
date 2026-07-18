@@ -229,10 +229,35 @@
 
         document.getElementById('forgotForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('Password reset link has been sent to your email.');
+            showToast('OTP sent successfully');
             toggleForm('login');
         });
+
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            
+            toast.innerHTML = `
+                <i class="far fa-check-circle toast-icon"></i>
+                <span>${message}</span>
+                <i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
+    
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    
     <!-- Help Modal -->
     <div class="help-modal-overlay" id="helpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div class="help-modal" style="background: white; border-radius: 12px; width: 90%; max-width: 500px; padding: 2rem; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
