@@ -244,12 +244,26 @@
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+            
             fetch('/login', { method: 'POST' })
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    window.location.href = data.redirect;
+                    showToast('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = data.redirect;
+                    }, 1500);
+                } else {
+                    btn.innerHTML = originalText;
+                    showToast('Login failed. Please try again.');
                 }
+            })
+            .catch(() => {
+                btn.innerHTML = originalText;
+                showToast('An error occurred.');
             });
         });
 
