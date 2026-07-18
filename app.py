@@ -72,7 +72,7 @@ def convert_ids(cursor):
 def send_email_notification(inquiry_id, service, details):
     sender_email = "agent4@indusschool.com"
     sender_password = "Agent@2026"
-    receiver_email = "agent4@indusschool.com"
+    receiver_email = "raochethan604@gmail.com"
 
     subject = f"NEW INQUIRY: {service}"
     body = f"--- NEW INQUIRY [{service}]\nID: #{inquiry_id}\nTime: {datetime.now().isoformat()}\nDetails: {details}\n-------------------------------\n"
@@ -221,6 +221,7 @@ def send_vendor_email_smtp(receiver_email, message_body):
     msg = MIMEMultipart()
     msg['From'] = sender_email
     msg['To'] = receiver_email
+    msg['Reply-To'] = "raochethan604@gmail.com"
     msg['Subject'] = subject
     msg.attach(MIMEText(message_body, 'plain'))
     
