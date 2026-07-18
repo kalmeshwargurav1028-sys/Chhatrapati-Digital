@@ -228,12 +228,25 @@ def send_vendor_email(vendor_id):
             f.write("-------------------------------\n\n")
             
         if success:
-            db.vendor_inquiries.update_one({"_id": ObjectId(vendor_id)}, {"$set": {"status": "Contacted"}})
+            db.vendor_inquiries.update_one(
+                {"_id": ObjectId(vendor_id)}, 
+                {
+                    "$set": {"status": "Contacted"},
+                    "$push": {"history": {"message": message, "timestamp": datetime.now()}}
+                }
+            )
             db.notifications.insert_one({"type": "EMAIL SENT", "message": f"To vendor: {receiver_email}", "timestamp": datetime.now(), "is_read": 0})
             return jsonify({"status": "success"})
         else:
             return jsonify({"status": "error", "message": "SMTP failed to send email. Check server logs."}), 500
             
+    return jsonify({"status": "error", "message": "Vendor not found"}), 404
+
+@app.route('/api/vendor-inquiry/<vendor_id>', methods=['DELETE'])
+def delete_vendor_inquiry(vendor_id):
+    result = db.vendor_inquiries.delete_one({"_id": ObjectId(vendor_id)})
+    if result.deleted_count > 0:
+        return jsonify({"status": "success"})
     return jsonify({"status": "error", "message": "Vendor not found"}), 404
 
 @app.route('/admin/inquiries')
