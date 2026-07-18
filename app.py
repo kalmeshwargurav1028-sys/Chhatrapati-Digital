@@ -181,6 +181,29 @@ def submit_vendor_inquiry():
     
     return jsonify({"status": "success", "message": "Details submitted successfully!"})
 
+def send_vendor_email_smtp(receiver_email, message_body):
+    sender_email = "agent4@indusschool.com"
+    sender_password = "Agent@2026"
+    
+    subject = "Chhatrapati Digital - Vendor Inquiry Reply"
+    
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(message_body, 'plain'))
+    
+    try:
+        server = smtplib.SMTP('smtp.office365.com', 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Failed to send vendor email: {e}")
+        return False
+
 @app.route('/api/vendor-inquiry/<vendor_id>/email', methods=['POST'])
 def send_vendor_email(vendor_id):
     data = request.json
@@ -191,17 +214,27 @@ def send_vendor_email(vendor_id):
         
     vendor = db.vendor_inquiries.find_one({"_id": ObjectId(vendor_id)})
     if vendor:
+        receiver_email = vendor.get('email')
+        
+        # Send real email
+        success = send_vendor_email_smtp(receiver_email, message)
+        
+        # Also log to outbox as a backup/record
         with open('email_outbox.txt', 'a') as f:
-            f.write(f"--- EMAIL TO VENDOR ---\n")
-            f.write(f"To: {vendor.get('email')}\n")
+            f.write(f"--- EMAIL TO VENDOR {'[SENT]' if success else '[FAILED]'} ---\n")
+            f.write(f"To: {receiver_email}\n")
             f.write(f"Subject: Chhatrapati Digital - Vendor Inquiry Reply\n")
             f.write(f"Message: {message}\n")
             f.write("-------------------------------\n\n")
             
-        db.vendor_inquiries.update_one({"_id": ObjectId(vendor_id)}, {"$set": {"status": "Contacted"}})
-        db.notifications.insert_one({"type": "EMAIL SENT", "message": f"To vendor: {vendor.get('email')}", "timestamp": datetime.now(), "is_read": 0})
-        
-    return jsonify({"status": "success"})
+        if success:
+            db.vendor_inquiries.update_one({"_id": ObjectId(vendor_id)}, {"$set": {"status": "Contacted"}})
+            db.notifications.insert_one({"type": "EMAIL SENT", "message": f"To vendor: {receiver_email}", "timestamp": datetime.now(), "is_read": 0})
+            return jsonify({"status": "success"})
+        else:
+            return jsonify({"status": "error", "message": "SMTP failed to send email. Check server logs."}), 500
+            
+    return jsonify({"status": "error", "message": "Vendor not found"}), 404
 
 @app.route('/admin/inquiries')
 def admin_inquiries():
