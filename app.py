@@ -141,13 +141,23 @@ def index():
 @app.route('/api/order', methods=['POST'])
 def submit_order():
     data = request.json
+    client_name = data.get('client_name', 'Unknown')
+    client_email = data.get('client_email', 'unknown@example.com')
     service = data.get('service')
     details = data.get('details')
     
     if not service or not details:
         return jsonify({"status": "error", "message": "Missing required fields"}), 400
         
-    result = db.inquiries.insert_one({"service": service, "details": details, "timestamp": datetime.now(), "status": "New"})
+    result = db.inquiries.insert_one({
+        "client_name": client_name,
+        "client_email": client_email,
+        "service": service, 
+        "details": details, 
+        "timestamp": datetime.now(), 
+        "status": "New",
+        "history": []
+    })
     inquiry_id = str(result.inserted_id)
     
     db.notifications.insert_one({"type": "NEW INQUIRY", "message": f"#{inquiry_id} - {service}", "timestamp": datetime.now(), "is_read": 0})
@@ -157,16 +167,25 @@ def submit_order():
     
     return jsonify({"status": "success", "message": "Order submitted successfully! We will contact you soon."})
 
-@app.route('/api/inquiry/<inquiry_id>', methods=['DELETE'])
-def delete_inquiry(inquiry_id):
+@app.route('/api/inquiry/<inquiry_id>', methods=['GET', 'DELETE'])
+def handle_inquiry(inquiry_id):
     try:
         obj_id = ObjectId(inquiry_id)
     except:
         return jsonify({"status": "error", "message": "Invalid inquiry ID"}), 400
         
-    result = db.inquiries.delete_one({"_id": obj_id})
-    if result.deleted_count > 0:
-        return jsonify({"status": "success"})
+    if request.method == 'DELETE':
+        result = db.inquiries.delete_one({"_id": obj_id})
+        if result.deleted_count > 0:
+            return jsonify({"status": "success"})
+        return jsonify({"status": "error", "message": "Inquiry not found"}), 404
+        
+    # GET method
+    inquiry = db.inquiries.find_one({"_id": obj_id})
+    if inquiry:
+        inquiry['_id'] = str(inquiry['_id'])
+        inquiry['history'] = inquiry.get('history', [])
+        return jsonify({"status": "success", "inquiry": inquiry})
     return jsonify({"status": "error", "message": "Inquiry not found"}), 404
 
 @app.route('/api/vendor-inquiry', methods=['POST'])
@@ -379,19 +398,48 @@ def execute_inquiry_action(inquiry_id):
     action_type = data.get('action_type')
     details = data.get('details')
     
-    if action_type == 'quote':
-        db.notifications.insert_one({"type": "QUOTE SENT", "message": f"#{inquiry_id} - ₹{details.get('cost')}", "timestamp": datetime.now(), "is_read": 0})
-    elif action_type == 'email':
-        db.notifications.insert_one({"type": "EMAIL SENT", "message": f"#{inquiry_id}", "timestamp": datetime.now(), "is_read": 0})
-    elif action_type == 'consultation':
-        db.notifications.insert_one({"type": "CONSULTATION", "message": f"#{inquiry_id}", "timestamp": datetime.now(), "is_read": 0})
-        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {"$set": {"status": 'Contacted'}})
+    inquiry = db.inquiries.find_one({"_id": ObjectId(inquiry_id)})
+    if not inquiry:
+        return jsonify({"status": "error", "message": "Inquiry not found"}), 404
         
-    with open('email_outbox.txt', 'a') as f:
-        f.write(f"--- ACTION PERFORMED ON #{inquiry_id} ---\n")
-        f.write(f"Type: {action_type}\n")
-        f.write(f"Details: {details}\n")
-        f.write("-------------------------------\n\n")
+    receiver_email = inquiry.get('client_email', 'unknown@example.com')
+    
+    if action_type == 'quote':
+        cost = details.get('cost', '0')
+        time = details.get('time', 'TBD')
+        desc = details.get('desc', 'Standard service')
+        email_message = f"Hello {inquiry.get('client_name', 'Client')},\n\nWe have reviewed your request for {inquiry.get('service')}. Based on your details, here is our quotation:\n\nEstimated Cost: ₹{cost}\nEstimated Timeline: {time} days\nDeliverables: {desc}\n\nPlease let us know if you would like to proceed.\n\nBest,\nChhatrapati Digital"
+        
+        success = send_vendor_email_smtp(receiver_email, email_message)
+        
+        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
+            "$set": {"status": 'Quoted'},
+            "$push": {"history": {"message": f"Quotation Sent (₹{cost}, {time} days):\n{desc}", "timestamp": datetime.now()}}
+        })
+        db.notifications.insert_one({"type": "QUOTE SENT", "message": f"#{inquiry_id} - ₹{cost}", "timestamp": datetime.now(), "is_read": 0})
+        
+    elif action_type == 'email':
+        email_message = details.get('message', '')
+        success = send_vendor_email_smtp(receiver_email, email_message)
+        
+        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
+            "$set": {"status": 'Contacted'},
+            "$push": {"history": {"message": email_message, "timestamp": datetime.now()}}
+        })
+        db.notifications.insert_one({"type": "EMAIL SENT", "message": f"#{inquiry_id} to {receiver_email}", "timestamp": datetime.now(), "is_read": 0})
+        
+    elif action_type == 'consultation':
+        email_message = f"Hello {inquiry.get('client_name', 'Client')},\n\nWe would love to schedule a consultation call to discuss your {inquiry.get('service')} project in detail. Please reply to this email with a few times that work for you.\n\nBest,\nChhatrapati Digital"
+        success = send_vendor_email_smtp(receiver_email, email_message)
+        
+        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
+            "$set": {"status": 'Contacted'},
+            "$push": {"history": {"message": "Consultation request sent.", "timestamp": datetime.now()}}
+        })
+        db.notifications.insert_one({"type": "CONSULTATION", "message": f"#{inquiry_id} to {receiver_email}", "timestamp": datetime.now(), "is_read": 0})
+        
+    if not success:
+        return jsonify({"status": "error", "message": "Failed to dispatch email via SMTP."}), 500
         
     return jsonify({"status": "success"})
 

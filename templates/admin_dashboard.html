@@ -736,9 +736,9 @@
                             </td>
                             <td style="font-weight: 600;">{{ inquiry.service }}</td>
                             <td class="details-cell" title="{{ inquiry.details }}">{{ inquiry.details }}</td>
-                            <td style="font-size: 0.85rem; color: var(--text-gray);">client@example.com</td>
+                            <td style="font-size: 0.85rem; color: var(--text-gray);">{{ inquiry.client_email if inquiry.client_email else 'client@example.com' }}</td>
                             <td style="display:flex; gap:0.5rem; align-items:center;">
-                                <button class="btn-outline" onclick="openModal('{{ inquiry.id }}', '{{ inquiry.service }}', '{{ inquiry.details }}', '{{ inquiry.timestamp }}', '{{ inquiry.status }}')">Review Details</button>
+                                <button class="btn-outline" onclick="openModal('{{ inquiry.id }}')">Review Details</button>
                                 <button class="btn-outline" style="padding:0.4rem 0.6rem; font-size:0.85rem; color:#ef4444; border-color:#ef4444;" onclick="deleteInquiry('{{ inquiry.id }}')" title="Delete Inquiry"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
@@ -1860,25 +1860,67 @@
         setInterval(fetchNotifications, 10000);
 
         // --- Modal & Tabs Functionality ---
-        function openModal(id, service, details, timestamp, status) {
+        function openModal(id) {
             currentInquiryId = id;
             document.getElementById('inquiryModal').classList.add('active');
             
-            document.getElementById('modalHeaderTitle').textContent = `INQUIRY DETAIL: #${id} - ${service.toUpperCase()}`;
-            document.getElementById('modalDesc').textContent = `#${id} / ${timestamp} / Client / ${details}`;
-            document.getElementById('modalStatusDate').textContent = `Last Updated: ${timestamp.split(' ')[0]}`;
-            document.getElementById('modalStatusTime').textContent = `Status Tracking : #${id}`;
+            // Show loading state
+            document.getElementById('modalHeaderTitle').textContent = `INQUIRY DETAIL: #${id} - LOADING...`;
+            document.getElementById('tab-submission').innerHTML = `<div class="modal-desc">Loading data...</div>`;
+            document.getElementById('tab-comm').innerHTML = `<div class="modal-desc">Loading data...</div>`;
             
-            renderStatusBadges(status);
-            
-            // Populate mock data for other tabs
-            document.getElementById('tab-submission').innerHTML = `
-                <div class="modal-desc">
-                    <strong>Service:</strong> ${service}<br><br>
-                    <strong>Details provided:</strong><br>
-                    ${details}<br><br>
-                    <strong>Submitted on:</strong> ${timestamp}
-                </div>`;
+            fetch(`/api/inquiry/${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        const i = data.inquiry;
+                        
+                        document.getElementById('modalHeaderTitle').textContent = `INQUIRY DETAIL: #${id} - ${i.service.toUpperCase()}`;
+                        document.getElementById('modalStatusDate').textContent = `Last Updated: ${i.timestamp.split(' ')[0]}`;
+                        document.getElementById('modalStatusTime').textContent = `Status Tracking : #${id}`;
+                        
+                        renderStatusBadges(i.status);
+                        
+                        // Populate Submission Data
+                        document.getElementById('tab-submission').innerHTML = `
+                            <div class="modal-desc">
+                                <strong>Client Name:</strong> ${i.client_name || 'Unknown'}<br><br>
+                                <strong>Client Email:</strong> ${i.client_email || 'unknown@example.com'}<br><br>
+                                <strong>Service:</strong> ${i.service}<br><br>
+                                <strong>Details provided:</strong><br>
+                                ${i.details}<br><br>
+                                <strong>Submitted on:</strong> ${i.timestamp}
+                            </div>`;
+                            
+                        // Populate Communication Log
+                        let commHtml = `<div class="modal-desc" style="max-height:250px; overflow-y:auto; margin-bottom:1rem; padding-right:0.5rem;">`;
+                        if (i.history && i.history.length > 0) {
+                            i.history.reverse().forEach(entry => {
+                                commHtml += `
+                                <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                                    <div style="font-size: 0.8rem; color: var(--text-gray); margin-bottom: 0.2rem;">${entry.timestamp}</div>
+                                    <div style="font-size: 0.95rem; color: var(--text-dark); white-space: pre-wrap;">${entry.message}</div>
+                                </div>`;
+                            });
+                        } else {
+                            commHtml += `<div style="color:var(--text-gray);">No communication history yet.</div>`;
+                        }
+                        commHtml += `</div>
+                            <div class="modal-desc" style="margin-bottom: 1rem;">
+                                <textarea id="emailBody" rows="4" style="width:100%; padding:1rem; border:1px solid var(--border); border-radius:4px; font-family:inherit;" placeholder="Draft an email message..."></textarea>
+                            </div>
+                            <button class="btn-action" onclick="actionFollowUp('email')">Send Message</button>`;
+                            
+                        document.getElementById('tab-comm').innerHTML = commHtml;
+                    } else {
+                        showToast("Failed to load inquiry details");
+                        closeModal();
+                    }
+                })
+                .catch(err => {
+                    showToast("Error loading inquiry data");
+                    closeModal();
+                });
                 
             // Reset to default tab (Submission Data)
             switchTab('submission');
@@ -1948,9 +1990,11 @@
                 };
                 if(!details.cost) { showToast("Please enter a cost."); return; }
             } else if (actionType === 'email') {
-                details = document.getElementById('emailBody').value;
-                if(!details) { showToast("Please enter an email message."); return; }
+                details = { message: document.getElementById('emailBody').value };
+                if(!details.message) { showToast("Please enter an email message."); return; }
             }
+            
+            showToast("Processing action... Please wait.");
             
             fetch(`/api/inquiries/${currentInquiryId}/action`, {
                 method: 'POST',
@@ -1960,19 +2004,23 @@
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    showToast(`${actionType.toUpperCase()} action triggered successfully for Inquiry #${currentInquiryId}`);
-                    // Refresh data
-                    fetchNotifications();
-                    if (actionType === 'consultation') {
-                        updateStatus(currentInquiryId, 'Contacted');
-                    } else if (actionType === 'quote') {
+                    showToast(`${actionType.toUpperCase()} action triggered successfully!`);
+                    
+                    if (actionType === 'quote') {
                         document.getElementById('quoteCost').value = '';
                         document.getElementById('quoteTime').value = '';
                         document.getElementById('quoteDesc').value = '';
                     } else if (actionType === 'email') {
                         document.getElementById('emailBody').value = '';
                     }
+                    
+                    openModal(currentInquiryId); // Reload data
+                } else {
+                    showToast("Error: " + data.message);
                 }
+            })
+            .catch(err => {
+                showToast("Network error.");
             });
         }
         // --- Review Management Logic ---

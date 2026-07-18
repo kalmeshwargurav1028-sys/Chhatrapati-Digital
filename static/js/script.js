@@ -243,6 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.textContent = 'Estimating...';
             submitBtn.disabled = true;
             
+            const clientName = document.getElementById('modalName').value;
+            const clientEmail = document.getElementById('modalEmail').value;
             const projectType = document.getElementById('modalProjectType').value;
             const details = document.getElementById('modalDetails').value;
             const timeline = document.getElementById('modalTimeline').value;
@@ -255,6 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
+                    client_name: clientName,
+                    client_email: clientEmail,
                     service: projectType,
                     details: fullDetails
                 })
