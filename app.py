@@ -212,24 +212,32 @@ def send_vendor_email(vendor_id):
     if not message:
         return jsonify({"status": "error", "message": "Message is required"}), 400
         
-    vendor = db.vendor_inquiries.find_one({"_id": ObjectId(vendor_id)})
+    try:
+        vendor_obj_id = ObjectId(vendor_id)
+    except:
+        return jsonify({"status": "error", "message": "Invalid vendor ID"}), 400
+        
+    vendor = db.vendor_inquiries.find_one({"_id": vendor_obj_id})
     if vendor:
         receiver_email = vendor.get('email')
         
         # Send real email
         success = send_vendor_email_smtp(receiver_email, message)
         
-        # Also log to outbox as a backup/record
-        with open('email_outbox.txt', 'a') as f:
-            f.write(f"--- EMAIL TO VENDOR {'[SENT]' if success else '[FAILED]'} ---\n")
-            f.write(f"To: {receiver_email}\n")
-            f.write(f"Subject: Chhatrapati Digital - Vendor Inquiry Reply\n")
-            f.write(f"Message: {message}\n")
-            f.write("-------------------------------\n\n")
+        # Also log to outbox as a backup/record (wrapped in try/except for Vercel read-only FS)
+        try:
+            with open('email_outbox.txt', 'a') as f:
+                f.write(f"--- EMAIL TO VENDOR {'[SENT]' if success else '[FAILED]'} ---\n")
+                f.write(f"To: {receiver_email}\n")
+                f.write(f"Subject: Chhatrapati Digital - Vendor Inquiry Reply\n")
+                f.write(f"Message: {message}\n")
+                f.write("-------------------------------\n\n")
+        except Exception as fs_err:
+            print("Could not write to email_outbox.txt (likely Vercel read-only filesystem):", fs_err)
             
         if success:
             db.vendor_inquiries.update_one(
-                {"_id": ObjectId(vendor_id)}, 
+                {"_id": vendor_obj_id}, 
                 {
                     "$set": {"status": "Contacted"},
                     "$push": {"history": {"message": message, "timestamp": datetime.now()}}
