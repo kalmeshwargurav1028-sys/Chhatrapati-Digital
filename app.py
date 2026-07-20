@@ -116,6 +116,17 @@ def convert_id(doc):
 def convert_ids(cursor):
     return [convert_id(doc) for doc in cursor]
 
+def safe_object_id(id_val):
+    if not id_val:
+        return id_val
+    try:
+        # Check if it's a valid 24-character hex string
+        if isinstance(id_val, str) and len(id_val) == 24:
+            return ObjectId(id_val)
+    except:
+        pass
+    return id_val
+
 def send_email_notification(inquiry_id, service, details):
     sender_email = "agent4@indusschool.com"
     sender_password = "Agent@2026"
@@ -261,10 +272,7 @@ def submit_order():
 
 @app.route('/api/inquiry/<inquiry_id>', methods=['GET', 'DELETE'])
 def handle_inquiry(inquiry_id):
-    try:
-        obj_id = ObjectId(inquiry_id)
-    except:
-        return jsonify({"status": "error", "message": "Invalid inquiry ID"}), 400
+    obj_id = safe_object_id(inquiry_id)
         
     if request.method == 'DELETE':
         result = db.inquiries.delete_one({"_id": obj_id})
@@ -336,10 +344,7 @@ def send_vendor_email(vendor_id):
     if not message:
         return jsonify({"status": "error", "message": "Message is required"}), 400
         
-    try:
-        vendor_obj_id = ObjectId(vendor_id)
-    except:
-        return jsonify({"status": "error", "message": "Invalid vendor ID"}), 400
+    vendor_obj_id = safe_object_id(vendor_id)
         
     vendor = db.vendor_inquiries.find_one({"_id": vendor_obj_id})
     if vendor:
@@ -376,7 +381,7 @@ def send_vendor_email(vendor_id):
 
 @app.route('/api/vendor-inquiry/<vendor_id>', methods=['DELETE'])
 def delete_vendor_inquiry(vendor_id):
-    result = db.vendor_inquiries.delete_one({"_id": ObjectId(vendor_id)})
+    result = db.vendor_inquiries.delete_one({"_id": safe_object_id(vendor_id)})
     if result.deleted_count > 0:
         return jsonify({"status": "success"})
     return jsonify({"status": "error", "message": "Vendor not found"}), 404
@@ -482,7 +487,7 @@ def update_inquiry_status(inquiry_id):
     data = request.json
     new_status = data.get('status')
     
-    db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {"$set": {"status": new_status}})
+    db.inquiries.update_one({"_id": safe_object_id(inquiry_id)}, {"$set": {"status": new_status}})
     
     email_dispatched = False
     if new_status == 'Active Project':
@@ -504,7 +509,7 @@ def execute_inquiry_action(inquiry_id):
     action_type = data.get('action_type')
     details = data.get('details')
     
-    inquiry = db.inquiries.find_one({"_id": ObjectId(inquiry_id)})
+    inquiry = db.inquiries.find_one({"_id": safe_object_id(inquiry_id)})
     if not inquiry:
         return jsonify({"status": "error", "message": "Inquiry not found"}), 404
         
@@ -518,7 +523,7 @@ def execute_inquiry_action(inquiry_id):
         
         success = send_email_smtp(receiver_email, email_message, subject=f"Chhatrapati Digital - Quotation for {inquiry.get('service')}")
         
-        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
+        db.inquiries.update_one({"_id": safe_object_id(inquiry_id)}, {
             "$set": {"status": 'Quoted'},
             "$push": {"history": {"message": f"Quotation Sent (₹{cost}, {time} days):\n{desc}", "timestamp": datetime.now()}}
         })
@@ -528,7 +533,7 @@ def execute_inquiry_action(inquiry_id):
         email_message = details.get('message', '')
         success = send_email_smtp(receiver_email, email_message, subject=f"Chhatrapati Digital - Re: {inquiry.get('service')} Project")
         
-        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
+        db.inquiries.update_one({"_id": safe_object_id(inquiry_id)}, {
             "$set": {"status": 'Contacted'},
             "$push": {"history": {"message": email_message, "timestamp": datetime.now()}}
         })
@@ -538,7 +543,7 @@ def execute_inquiry_action(inquiry_id):
         email_message = f"Hello {inquiry.get('client_name', 'Client')},\n\nWe would love to schedule a consultation call to discuss your {inquiry.get('service')} project in detail. Please reply to this email with a few times that work for you.\n\nBest,\nChhatrapati Digital"
         success = send_email_smtp(receiver_email, email_message, subject=f"Chhatrapati Digital - Consultation for {inquiry.get('service')}")
         
-        db.inquiries.update_one({"_id": ObjectId(inquiry_id)}, {
+        db.inquiries.update_one({"_id": safe_object_id(inquiry_id)}, {
             "$set": {"status": 'Contacted'},
             "$push": {"history": {"message": "Consultation request sent.", "timestamp": datetime.now()}}
         })
@@ -583,7 +588,7 @@ def leave_review():
 def update_review_status(review_id):
     data = request.json
     new_status = data.get('status')
-    db.reviews.update_one({"_id": ObjectId(review_id)}, {"$set": {"status": new_status}})
+    db.reviews.update_one({"_id": safe_object_id(review_id)}, {"$set": {"status": new_status}})
     return jsonify({"status": "success"})
 
 @app.route('/api/cms/config', methods=['POST'])
@@ -609,7 +614,7 @@ def update_config():
 def update_pricing():
     data = request.json
     for item in data.get('packages', []):
-        db.pricing_packages.update_one({"_id": ObjectId(item['id'])}, {"$set": {
+        db.pricing_packages.update_one({"_id": safe_object_id(item['id'])}, {"$set": {
             "name": item['name'],
             "price": item['price'],
             "features": item['features'],
@@ -621,7 +626,7 @@ def update_pricing():
 def update_services():
     data = request.json
     for item in data.get('services', []):
-        db.services.update_one({"_id": ObjectId(item['id'])}, {"$set": {
+        db.services.update_one({"_id": safe_object_id(item['id'])}, {"$set": {
             "icon": item['icon'],
             "title": item['title'],
             "description": item['description']
@@ -667,7 +672,7 @@ def add_portfolio():
 
 @app.route('/api/cms/portfolio/<item_id>', methods=['DELETE'])
 def delete_portfolio(item_id):
-    db.portfolio.delete_one({"_id": ObjectId(item_id)})
+    db.portfolio.delete_one({"_id": safe_object_id(item_id)})
     return jsonify({"status": "success"})
 
 @app.route('/api/invoices', methods=['POST'])
@@ -749,7 +754,7 @@ def print_invoice(po_num):
 
 @app.route('/api/invoices/<invoice_id>', methods=['DELETE'])
 def delete_invoice(invoice_id):
-    db.invoices.delete_one({"_id": ObjectId(invoice_id)})
+    db.invoices.delete_one({"_id": safe_object_id(invoice_id)})
     return jsonify({"status": "success"})
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -789,10 +794,10 @@ def add_client_ticket():
 
 @app.route('/api/admin/tickets/<ticket_id>/resolve', methods=['POST'])
 def resolve_client_ticket(ticket_id):
-    ticket = db.client_tickets.find_one({"_id": ObjectId(ticket_id)})
+    ticket = db.client_tickets.find_one({"_id": safe_object_id(ticket_id)})
     if ticket:
         db.client_tickets.update_one(
-            {"_id": ObjectId(ticket_id)}, 
+            {"_id": safe_object_id(ticket_id)}, 
             {"$set": {"status": "Resolved", "resolved_at": datetime.now()}}
         )
         client_email = ticket.get('email')
@@ -847,12 +852,12 @@ def edit_review(review_id):
             base64_str = base64.b64encode(file.read()).decode('utf-8')
             update_data["video_path"] = f"data:{mimetype};base64,{base64_str}"
             
-    db.reviews.update_one({"_id": ObjectId(review_id)}, {"$set": update_data})
+    db.reviews.update_one({"_id": safe_object_id(review_id)}, {"$set": update_data})
     return jsonify({"status": "success"})
 
 @app.route('/api/admin/reviews/<review_id>', methods=['DELETE'])
 def delete_review_endpoint(review_id):
-    db.reviews.delete_one({"_id": ObjectId(review_id)})
+    db.reviews.delete_one({"_id": safe_object_id(review_id)})
     return jsonify({"status": "success"})
 
 if __name__ == '__main__':
