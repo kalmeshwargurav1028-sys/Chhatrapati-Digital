@@ -936,49 +936,139 @@
     </div>
 
         <!-- Vendor Inquiries View -->
-        <div class="main-container page-view" id="view-vendors" style="display:none; flex-direction:column; gap:2rem;">
-            <div class="page-header">
-                <h1>Vendor Inquiries</h1>
-            </div>
-            
-            <div class="matrix-container" style="width: 100%;">
-                <div class="matrix-header">
-                    <h3>Recent Vendor Submissions</h3>
+        <div class="main-container page-view" id="view-vendors" style="display:none;">
+            <!-- Left Column: Matrix -->
+            <div>
+                <div class="page-header" style="margin-bottom:1.5rem;">
+                    <h1 style="font-size: 1.6rem; text-transform: uppercase;">Vendor Partners & Resource Inventory</h1>
+                    <button class="btn-primary" style="background:#5da3ad; box-shadow:none;">New Partner</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mobile Number</th>
-                            <th>Email</th>
-                            <th>City</th>
-                            <th>Category</th>
-                            <th>Date Submitted</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for v in vendor_inquiries %}
-                        <tr>
-                            <td class="id-cell">{{ v.mobile }}</td>
-                            <td>{{ v.email }}</td>
-                            <td>{{ v.city }}</td>
-                            <td style="font-weight: 600;">{{ v.category }}</td>
-                            <td class="date-cell">{{ (v.timestamp|string).split('.')[0] if v.timestamp else '' }}</td>
-                            <td><span class="s-badge {{ 'sb-contacted' if v.status == 'Contacted' else 'sb-pending' }}">{{ v.status }}</span></td>
-                            <td style="display:flex; gap:0.5rem; align-items:center;">
-                                <button class="btn-outline" style="padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="promptVendorEmail('{{ v.id }}', '{{ v.email }}')"><i class="fas fa-reply"></i></button>
-                                <button class="btn-outline" style="padding:0.4rem 0.6rem; font-size:0.85rem; color:#10b981; border-color:#10b981;" onclick='viewVendorHistory({{ v.get("history", []) | tojson | safe }})' title="View History"><i class="fas fa-history"></i></button>
-                                <button class="btn-outline" style="padding:0.4rem 0.6rem; font-size:0.85rem; color:#ef4444; border-color:#ef4444;" onclick="deleteVendorInquiry('{{ v.id }}')" title="Delete"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7" style="text-align: center; padding: 3rem; color: #777;">No vendor inquiries found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                
+                <div class="matrix-container" style="width: 100%;">
+                    <div class="matrix-header">
+                        <h3>Key Partner & Vendor Matrix</h3>
+                        <div class="matrix-controls">
+                            <span style="font-size: 0.85rem; color: var(--text-gray);">Filter by:</span>
+                            <div class="search-bar" style="border: 1px solid var(--border); padding: 0.3rem 0.8rem; background: var(--white); border-radius: 4px;">
+                                <i class="fas fa-search" style="font-size: 0.8rem;"></i>
+                                <input type="text" placeholder="Search..." style="width: 100px; font-size: 0.85rem;">
+                            </div>
+                            <i class="fas fa-filter" style="color: var(--text-gray); cursor: pointer;"></i>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:40px;"><input type="checkbox"></th>
+                                <th>Partner ID</th>
+                                <th>Partner Name</th>
+                                <th>Vendor Type</th>
+                                <th>Resource Count</th>
+                                <th>Contract Status</th>
+                                <th>Performance Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in vendor_inquiries %}
+                            <tr>
+                                <td><input type="checkbox"></td>
+                                <td>
+                                    <div class="id-cell">{{ loop.index|string|rjust(2, '0') }}</div>
+                                    <div class="date-cell">{{ (v.timestamp|string).split(' ')[0] if v.timestamp else '2026-07-18' }}</div>
+                                </td>
+                                <td style="font-weight: 600;">{{ v.name if v.name else 'City Floral Co.' }}</td>
+                                <td>{{ v.category }}</td>
+                                <td style="font-size: 0.85rem;">{{ [2, 3, 4, 6, 22]|random }} resources/<br>staff assigned</td>
+                                <td>
+                                    {% if v.status == 'Pending' or v.status == 'New' %}
+                                        <span style="background: #fff7ed; color: #f97316; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Pending</span>
+                                    {% elif v.status == 'Contacted' or v.status == 'Active' %}
+                                        <span style="background: #f0fdf4; color: #22c55e; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Active</span>
+                                    {% else %}
+                                        <span style="background: #fef2f2; color: #ef4444; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Terminated</span>
+                                    {% endif %}
+                                </td>
+                                <td style="color: #facc15; font-size: 0.85rem;">
+                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
+                                </td>
+                                <td style="display:flex; gap:0.5rem; align-items:center;">
+                                    <button class="btn-outline" style="background:#e0f2fe; color:#0369a1; border:none; padding:0.4rem 0.6rem; font-size:0.75rem;">Edit Profile</button>
+                                    <button class="btn-outline" style="background:#fef3c7; color:#b45309; border:none; padding:0.4rem 0.6rem; font-size:0.75rem;">Book Resource</button>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 3rem; color: #777;">No vendor partners found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column: Analytics -->
+            <div>
+                <h3 class="analytics-title">Dashboard Metrics & Analytics</h3>
+                
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <h4>Total Registered Vendors</h4>
+                        <div class="metric-value">85</div>
+                        <div class="metric-sub positive">Last 30 days: +5</div>
+                    </div>
+                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><path d="M0 25 L10 20 L20 22 L30 10 L40 15 L50 5 L60 0"/></svg>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <h4>Resource Fulfillment Rate</h4>
+                        <div class="metric-value">94%</div>
+                        <div class="metric-sub positive">Last 30 days: +4%</div>
+                    </div>
+                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><path d="M0 25 L10 20 L20 15 L30 18 L40 5 L50 8 L60 0"/></svg>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <h4>Pending Inquiries</h4>
+                        <div class="metric-value">12</div>
+                        <div class="metric-sub urgent">Urgent</div>
+                    </div>
+                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M0 10 L10 12 L20 8 L30 15 L40 10 L50 20 L60 15"/></svg>
+                </div>
+                
+                <div class="metric-card" style="display:flex; flex-direction:column; align-items:flex-start; gap:1rem;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <div class="metric-info">
+                            <h4>Vendor Diversity Score</h4>
+                            <div class="metric-value">78%</div>
+                            <div class="metric-sub">Signage: 78%</div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; align-items:flex-end;">
+                            <div style="width:6px; height:20px; background:#ef4444;"></div>
+                            <div style="width:6px; height:30px; background:#3b82f6;"></div>
+                            <div style="width:6px; height:15px; background:#22c55e;"></div>
+                            <div style="width:6px; height:40px; background:#f59e0b;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="analytics-title" style="margin-top: 2rem;">Urgent Notifications Feed</h3>
+                <div class="notifications-feed">
+                    <div class="notification-item">
+                        <div class="notif-desc" style="font-weight:600;">The Oberoi contract is pending review</div>
+                        <div class="notif-type" style="color:var(--text-gray); font-weight:400;">23 minutes ago</div>
+                    </div>
+                    <div class="notification-item blue">
+                        <div class="notif-desc" style="font-weight:600;">Floral delivery delayed for TechCorp event</div>
+                        <div class="notif-type" style="color:var(--text-gray); font-weight:400;">25 minutes ago</div>
+                    </div>
+                    <div class="notification-item yellow">
+                        <div class="notif-desc" style="font-weight:600;">Catering resource gap identified for Patel wedding</div>
+                        <div class="notif-type" style="color:var(--text-gray); font-weight:400;">28 minutes ago</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1871,7 +1961,7 @@
             const targetView = document.getElementById(`view-${viewId}`);
             if(targetView) {
                 // Determine appropriate display mode
-                if (viewId === 'dashboard' || viewId === 'profile') {
+                if (viewId === 'dashboard' || viewId === 'profile' || viewId === 'vendors') {
                     targetView.style.display = 'grid';
                 } else if (viewId === 'projects' || viewId === 'reviews' || viewId === 'reports') {
                     targetView.style.display = 'flex';
