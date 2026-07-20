@@ -820,7 +820,7 @@
                 <div class="kanban-card" id="card-{{ inq.id }}" draggable="true" ondragstart="drag(event)">
                     <div class="kanban-card-title">#{{ inq.id }} - {{ inq.service }}</div>
                     <div class="kanban-card-meta"><i class="far fa-clock"></i> {{ (inq.timestamp|string).split(' ')[0] if inq.timestamp else 'Today' }}</div>
-                    <div style="font-size:0.85rem; color:var(--text-dark);">{{ inq.details[:50] }}...</div>
+                    <div style="font-size:0.85rem; color:var(--text-dark);">{{ (inq.details|string)[:50] + '...' if inq.details else 'No details provided' }}</div>
                 </div>
                 {% endfor %}
             </div>
