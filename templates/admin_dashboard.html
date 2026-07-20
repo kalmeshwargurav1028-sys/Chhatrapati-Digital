@@ -974,7 +974,7 @@
                             <tr>
                                 <td><input type="checkbox"></td>
                                 <td>
-                                    <div class="id-cell">{{ loop.index|string|rjust(2, '0') }}</div>
+                                    <div class="id-cell">{{ "%02d" | format(loop.index) }}</div>
                                     <div class="date-cell">{{ (v.timestamp|string).split(' ')[0] if v.timestamp else '2026-07-18' }}</div>
                                 </td>
                                 <td style="font-weight: 600;">{{ v.name if v.name else 'City Floral Co.' }}</td>
@@ -1765,6 +1765,8 @@
     </div>
     </div>
 
+    </div>
+    </div>
     <script>
 
         function showToast(message) {
