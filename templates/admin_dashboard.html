@@ -677,7 +677,10 @@
                 <div id="notifBadge" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--primary); width:8px; height:8px; border-radius:50%;"></div>
                 
                 <div id="notifDropdown" style="display:none; position:absolute; top:30px; right:0; width:300px; background:var(--white); box-shadow:0 10px 30px rgba(0,0,0,0.1); border-radius:8px; border:1px solid var(--border); z-index:1000; overflow:hidden;">
-                    <div style="padding:1rem; border-bottom:1px solid var(--border); font-weight:700;">Latest Notifications</div>
+                    <div style="padding:1rem; border-bottom:1px solid var(--border); font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+                        <span>Latest Notifications</span>
+                        <button onclick="clearNotifications()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; cursor:pointer; font-weight:600;">Clear All</button>
+                    </div>
                     <div id="notifDropdownList" style="max-height:300px; overflow-y:auto; padding:0.5rem;">
                         <!-- JS injected -->
                     </div>
@@ -2018,7 +2021,7 @@
                         data.notifications.forEach(n => {
                             const colorClass = n.type.includes('INQUIRY') ? 'blue' : 'yellow';
                             const html = `
-                                <div class="notification-item ${colorClass}" style="margin-bottom:0.5rem; padding:0.5rem; border-left:3px solid ${colorClass === 'blue' ? '#3b82f6' : '#f59e0b'}; background:${colorClass === 'blue' ? '#eff6ff' : '#fffbeb'};">
+                                <div class="notification-item ${colorClass}" style="margin-bottom:0.5rem; padding:0.5rem; border-left:3px solid ${colorClass === 'blue' ? '#3b82f6' : '#f59e0b'}; background:${colorClass === 'blue' ? '#eff6ff' : '#fffbeb'}; cursor:pointer; transition: background 0.2s;" onclick="handleNotificationClick('${n.message.replace(/'/g, "\\'")}')" onmouseover="this.style.filter='brightness(0.95)'" onmouseout="this.style.filter='none'">
                                     <div class="notif-type" style="font-size:0.7rem; font-weight:700;">${n.type}</div>
                                     <div class="notif-desc" style="font-size:0.85rem;">${n.message}</div>
                                 </div>
@@ -2032,6 +2035,31 @@
                         }
                     }
                 });
+        }
+
+        function clearNotifications() {
+            fetch('/api/notifications/clear', { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fetchNotifications();
+                        document.getElementById('notifBadge').style.display = 'none';
+                        document.getElementById('notifDropdown').style.display = 'none';
+                    }
+                });
+        }
+
+        function handleNotificationClick(msg) {
+            // Attempt to extract an inquiry ID from the message, e.g. "#6a5b8..." or "#test_inq_1"
+            const match = msg.match(/#([a-zA-Z0-9_]+)/);
+            if (match && match[1]) {
+                // The dashboard view must be active to show the modal properly if they are not already there
+                if (document.getElementById('view-dashboard').style.display === 'none' && 
+                    document.getElementById('view-projects').style.display === 'none') {
+                    switchPageView('dashboard');
+                }
+                openModal(match[1]);
+            }
         }
         
         // Initial fetch and poll every 10 seconds

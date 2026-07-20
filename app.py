@@ -482,6 +482,11 @@ def get_notifications():
     notifications = convert_ids(db.notifications.find().sort("timestamp", -1).limit(5))
     return jsonify({"status": "success", "notifications": notifications})
 
+@app.route('/api/notifications/clear', methods=['DELETE'])
+def clear_notifications():
+    db.notifications.delete_many({})
+    return jsonify({"status": "success"})
+
 @app.route('/api/inquiries/<inquiry_id>/status', methods=['POST'])
 def update_inquiry_status(inquiry_id):
     data = request.json
