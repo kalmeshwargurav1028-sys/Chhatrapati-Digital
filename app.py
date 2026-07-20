@@ -74,9 +74,38 @@ def init_db():
 # init_db()  # Disabled on Vercel to prevent cold start timeouts
 
 def convert_id(doc):
-    if doc and '_id' in doc:
-        doc['id'] = str(doc['_id'])
-    return doc
+    if not doc:
+        return doc
+    if not isinstance(doc, dict):
+        return doc
+    
+    doc_copy = {}
+    for k, v in doc.items():
+        if isinstance(v, ObjectId):
+            if k == '_id':
+                doc_copy['id'] = str(v)
+            else:
+                doc_copy[k] = str(v)
+        elif isinstance(v, datetime):
+            doc_copy[k] = v.strftime('%Y-%m-%d %H:%M:%S')
+        elif isinstance(v, list):
+            new_list = []
+            for item in v:
+                if isinstance(item, dict):
+                    new_list.append(convert_id(item))
+                elif isinstance(item, ObjectId):
+                    new_list.append(str(item))
+                elif isinstance(item, datetime):
+                    new_list.append(item.strftime('%Y-%m-%d %H:%M:%S'))
+                else:
+                    new_list.append(item)
+            doc_copy[k] = new_list
+        elif isinstance(v, dict):
+            doc_copy[k] = convert_id(v)
+        else:
+            doc_copy[k] = v
+            
+    return doc_copy
 
 def convert_ids(cursor):
     return [convert_id(doc) for doc in cursor]
@@ -240,7 +269,7 @@ def handle_inquiry(inquiry_id):
     # GET method
     inquiry = db.inquiries.find_one({"_id": obj_id})
     if inquiry:
-        inquiry['_id'] = str(inquiry['_id'])
+        inquiry = convert_id(inquiry)
         inquiry['history'] = inquiry.get('history', [])
         return jsonify({"status": "success", "inquiry": inquiry})
     return jsonify({"status": "error", "message": "Inquiry not found"}), 404
