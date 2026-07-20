@@ -1,12 +1,14 @@
 :root {
-    --primary-bg: #ffffff;
-    --secondary-bg: #f8f9fa;
-    --accent-color: #d32f2f; /* Bold Red to match the logo */
-    --accent-light: #ffebee;
-    --text-main: #333333;
-    --text-muted: #666666;
-    --glass-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(0, 86, 179, 0.1);
+    --primary-bg: #f8fafc;
+    --secondary-bg: #ffffff;
+    --accent-color: #ef4444; /* Modern vibrant red */
+    --accent-light: #fee2e2;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    --transition-smooth: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
 * {
@@ -178,19 +180,20 @@ h1, h2, h3 {
     border: 1px solid #f9e596;
 }
 .cta-button.primary {
-    background: #cc2b2b;
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
     color: white;
-    padding: 1rem 2.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    box-shadow: 0 8px 15px rgba(211, 47, 47, 0.3);
+    padding: 1.2rem 3rem;
+    border-radius: 50px;
+    font-weight: 600;
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
     border: none;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+    transition: var(--transition-smooth);
 }
 .cta-button.primary:hover {
-    background: #a91e1e;
-    box-shadow: 0 10px 20px rgba(211, 47, 47, 0.4);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+    box-shadow: 0 15px 35px rgba(239, 68, 68, 0.4);
+    transform: translateY(-3px) scale(1.02);
 }
 
 /* Buttons */
@@ -222,16 +225,18 @@ h1, h2, h3 {
 }
 .service-card {
     background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    padding: 2.5rem 2rem;
-    border-radius: 12px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+    padding: 3rem 2.5rem;
+    border-radius: 16px;
+    transition: var(--transition-smooth);
+    box-shadow: var(--glass-shadow);
 }
 .service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 77, 230, 0.1);
-    border-color: #004de6;
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
 }
 .card-icon {
     font-size: 3rem;
@@ -453,21 +458,24 @@ h1, h2, h3 {
 }
 .pricing-card {
     background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    padding: 3rem 2rem;
-    border-radius: 12px;
+    padding: 3.5rem 2.5rem;
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-    transition: transform 0.3s ease;
+    box-shadow: var(--glass-shadow);
+    transition: var(--transition-smooth);
     position: relative;
 }
 .pricing-card:hover {
     transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 .pricing-card.popular {
     border: 2px solid var(--accent-color);
     transform: scale(1.05);
-    box-shadow: 0 15px 30px rgba(0, 86, 179, 0.15);
+    box-shadow: 0 20px 40px rgba(239, 68, 68, 0.15);
 }
 .pricing-card.popular:hover {
     transform: scale(1.05) translateY(-10px);

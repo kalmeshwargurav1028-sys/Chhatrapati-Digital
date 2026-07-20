@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     
     <!-- FAQ Schema Markup -->
     <script type="application/ld+json">
@@ -82,7 +83,7 @@
     </header>
 
     <!-- About Us Section -->
-    <section id="about" class="about-section">
+    <section id="about" class="about-section" data-aos="fade-up">
         <div class="about-content">
             <div class="about-text">
                 <h2>{{ story.headline if story else 'Our Story' }}</h2>
@@ -117,7 +118,7 @@
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="services-section">
+    <section id="services" class="services-section" data-aos="fade-up">
         <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Professional Services</h2>
         <div class="services-grid">
             {% if services %}
@@ -141,7 +142,7 @@
     </section>
 
     <!-- Portfolio Gallery Section -->
-    <section id="portfolio" class="portfolio-section">
+    <section id="portfolio" class="portfolio-section" data-aos="fade-up">
         <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Gallery</h2>
         
         <!-- Portfolio Filters -->
@@ -211,7 +212,7 @@
     </section>
 
     <!-- Pricing Section -->
-    <section id="pricing" class="pricing-section">
+    <section id="pricing" class="pricing-section" data-aos="fade-up">
         <h2 class="section-title">Pricing Packages</h2>
         <div class="pricing-grid">
             {% if pricing %}
@@ -460,6 +461,14 @@
         <button class="lightbox-nav lightbox-next"><i class="fas fa-chevron-right"></i></button>
     </div>
 
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+    </script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
