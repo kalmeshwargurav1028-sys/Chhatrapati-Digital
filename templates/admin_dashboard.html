@@ -961,11 +961,10 @@
                             <tr>
                                 <th style="width:40px;"><input type="checkbox"></th>
                                 <th>Partner ID</th>
-                                <th>Partner Name</th>
-                                <th>Vendor Type</th>
-                                <th>Resource Count</th>
+                                <th>Contact Info</th>
+                                <th>Location</th>
+                                <th>Category</th>
                                 <th>Contract Status</th>
-                                <th>Performance Rating</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -977,24 +976,25 @@
                                     <div class="id-cell">{{ "%02d" | format(loop.index) }}</div>
                                     <div class="date-cell">{{ (v.timestamp|string).split(' ')[0] if v.timestamp else '2026-07-18' }}</div>
                                 </td>
-                                <td style="font-weight: 600;">{{ v.name if v.name else 'City Floral Co.' }}</td>
-                                <td>{{ v.category }}</td>
-                                <td style="font-size: 0.85rem;">{{ [2, 3, 4, 6, 22]|random }} resources/<br>staff assigned</td>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--text-dark);">{{ v.email }}</div>
+                                    <div style="font-size: 0.85rem; color: var(--text-gray);">{{ v.mobile }}</div>
+                                </td>
+                                <td>{{ v.city }}</td>
+                                <td style="font-weight: 600;">{{ v.category }}</td>
                                 <td>
                                     {% if v.status == 'Pending' or v.status == 'New' %}
                                         <span style="background: #fff7ed; color: #f97316; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Pending</span>
                                     {% elif v.status == 'Contacted' or v.status == 'Active' %}
-                                        <span style="background: #f0fdf4; color: #22c55e; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Active</span>
+                                        <span style="background: #f0fdf4; color: #22c55e; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Contacted</span>
                                     {% else %}
-                                        <span style="background: #fef2f2; color: #ef4444; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">Terminated</span>
+                                        <span style="background: #fef2f2; color: #ef4444; padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">{{ v.status }}</span>
                                     {% endif %}
                                 </td>
-                                <td style="color: #facc15; font-size: 0.85rem;">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>
-                                </td>
                                 <td style="display:flex; gap:0.5rem; align-items:center;">
-                                    <button class="btn-outline" style="background:#e0f2fe; color:#0369a1; border:none; padding:0.4rem 0.6rem; font-size:0.75rem;">Edit Profile</button>
-                                    <button class="btn-outline" style="background:#fef3c7; color:#b45309; border:none; padding:0.4rem 0.6rem; font-size:0.75rem;">Book Resource</button>
+                                    <button class="btn-outline" style="background:#e0f2fe; color:#0369a1; border:none; padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="promptVendorEmail('{{ v.id }}', '{{ v.email }}')" title="Reply"><i class="fas fa-reply"></i></button>
+                                    <button class="btn-outline" style="background:#f0fdf4; color:#15803d; border:none; padding:0.4rem 0.6rem; font-size:0.85rem;" onclick='viewVendorHistory({{ v.get("history", []) | tojson | safe }})' title="View History"><i class="fas fa-history"></i></button>
+                                    <button class="btn-outline" style="background:#fef2f2; color:#b91c1c; border:none; padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="deleteVendorInquiry('{{ v.id }}')" title="Delete"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
                             {% else %}
