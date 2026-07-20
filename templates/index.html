@@ -128,8 +128,8 @@
                     <h3 style="color:#004de6; font-size:1.2rem; font-weight:700;">{{ srv.title }}</h3>
                     <ul style="list-style:none; padding:0; margin-top:1.5rem; text-align:left; border-top:1px solid #edf2f7; padding-top:1rem;">
                         {% for item in srv.description.split(',') %}
-                        <li style="margin-bottom:0.8rem; font-size:0.9rem; color:#4a5568; display:flex; align-items:center; gap:0.5rem;">
-                            <i class="fas fa-check" style="color:#004de6; font-size:0.8rem;"></i> {{ item.replace('and ', '').strip()|title }}
+                        <li style="margin-bottom:0.8rem; font-size:1rem; color:#4a5568; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fas fa-check" style="color:#004de6; font-size:1rem;"></i> {{ item.replace('and ', '').strip()|title }}
                         </li>
                         {% endfor %}
                     </ul>
@@ -162,7 +162,7 @@
                 {% for port in portfolio %}
                 <div class="gallery-item" data-category="{{ port.category }}" data-title="{{ port.project_name }}" data-image="{{ port.image_url }}" data-process="{{ port.work_process|default('Detailed work process coming soon for this project. Stay tuned!', true) }}" onclick="openGalleryModal(this)">
                     <img src="{{ port.image_url }}" alt="{{ port.project_name }}">
-                    <div class="gallery-overlay"><span>{{ port.project_name }}<br><small style="font-size:0.7rem; color:#cbd5e1; margin-top:5px; display:inline-block;">View Work Process</small></span></div>
+                    <div class="gallery-overlay"><span>{{ port.project_name }}<br><small style="font-size:0.95rem; color:#cbd5e1; margin-top:5px; display:inline-block;">View Work Process</small></span></div>
                 </div>
                 {% endfor %}
             {% else %}
@@ -178,7 +178,7 @@
                     <img id="modalImage" src="" alt="Project Image" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
                     <div style="padding:1rem 0;">
                         <h3 id="modalTitle" style="color:#004de6; font-size:1.8rem; font-weight:800; margin-bottom:0.5rem;">Project Title</h3>
-                        <div id="modalCategory" style="display:inline-block; background:rgba(0,77,230,0.1); color:#004de6; padding:4px 12px; border-radius:20px; font-size:0.8rem; font-weight:700; text-transform:uppercase; margin-bottom:1.5rem;">Category</div>
+                        <div id="modalCategory" style="display:inline-block; background:rgba(0,77,230,0.1); color:#004de6; padding:6px 14px; border-radius:20px; font-size:1rem; font-weight:700; text-transform:uppercase; margin-bottom:1.5rem;">Category</div>
                         <h4 style="font-size:1.1rem; color:#1a202c; font-weight:700; margin-bottom:0.8rem; border-bottom:2px solid #edf2f7; padding-bottom:5px;">Our Work Process</h4>
                         <p id="modalProcess" style="color:#4a5568; font-size:1rem; line-height:1.7; white-space:pre-wrap;"></p>
                     </div>
