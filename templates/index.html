@@ -64,8 +64,8 @@
     <header class="hero">
         <div class="hero-content">
             <div class="hero-text-block">
-                <h1 class="hero-title" style="font-weight: 700; color: #1f2937;">Elevate Your Vision<br>to Digital Reality</h1>
-                <p class="hero-subtitle" style="color: #4b5563;">Premium Design, Photography, and Signage Solutions crafted for forward-thinking brands.</p>
+                <h1 class="hero-title" style="font-weight: 700; color: #1f2937;">Transform Your Brand with<br>High-End Digital Solutions</h1>
+                <p class="hero-subtitle" style="color: #4b5563;">We create stunning designs, professional photography, and premium signage that drive sales and build trust.</p>
                 <div class="hero-buttons">
                     <a href="#order" class="cta-button primary">Request a Quote</a>
                 </div>
@@ -250,7 +250,7 @@
                         {% if review.video_path %}
                         <div class="video-placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                             {% if review.video_path.startswith('data:image/') %}
-                            <img src="{{ review.video_path }}" style="width:100%; max-height:200px; object-fit:contain;">
+                            <img src="{{ review.video_path }}" alt="Customer Review Screenshot" style="width:100%; max-height:200px; object-fit:contain;">
                             {% else %}
                             <video controls style="width:100%; max-height:200px;">
                                 <source src="{{ review.video_path }}" type="video/mp4">
@@ -354,8 +354,8 @@
                 <p>Premium Design, Photography, and Signage Solutions crafted for bold brands.</p>
                 <div class="social-links">
                     <a href="https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                 </div>
             </div>
             <div class="footer-col footer-links">
@@ -425,9 +425,9 @@
     <!-- Lightbox Gallery Modal -->
     <div id="lightbox" class="lightbox-overlay">
         <span class="lightbox-close">&times;</span>
-        <button class="lightbox-nav lightbox-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-nav lightbox-prev" aria-label="Previous Image"><i class="fas fa-chevron-left"></i></button>
         <img class="lightbox-image" src="" alt="Gallery Image">
-        <button class="lightbox-nav lightbox-next"><i class="fas fa-chevron-right"></i></button>
+        <button class="lightbox-nav lightbox-next" aria-label="Next Image"><i class="fas fa-chevron-right"></i></button>
     </div>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
