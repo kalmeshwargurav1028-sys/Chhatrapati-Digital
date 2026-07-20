@@ -64,8 +64,8 @@
     <header class="hero">
         <div class="hero-content">
             <div class="hero-text-block">
-                <h1 class="hero-title" style="font-weight: 700; color: #1f2937;">Transform Your Brand with<br>High-End Digital Solutions</h1>
-                <p class="hero-subtitle" style="color: #4b5563;">We create stunning designs, professional photography, and premium signage that drive sales and build trust.</p>
+                <h1 class="hero-title" style="font-weight: 700; color: #1f2937;">{{ config.hero_title|safe if config else 'Transform Your Brand with<br>High-End Digital Solutions' }}</h1>
+                <p class="hero-subtitle" style="color: #4b5563;">{{ config.hero_subtitle if config else 'We create stunning designs, professional photography, and premium signage that drive sales and build trust.' }}</p>
                 <div class="hero-buttons">
                     <a href="#order" class="cta-button primary">Request a Quote</a>
                 </div>
@@ -342,7 +342,7 @@
     </section>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/917483006958" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
+    <a href="https://wa.me/{{ config.whatsapp_num if config else '917483006958' }}" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
         <i class="fab fa-whatsapp"></i>
         <span class="whatsapp-status-indicator"></span>
     </a>
@@ -353,9 +353,9 @@
                 <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Logo" class="footer-logo">
                 <p>Premium Design, Photography, and Signage Solutions crafted for bold brands.</p>
                 <div class="social-links">
-                    <a href="https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="{{ config.instagram_link if config else '#' }}" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="{{ config.linkedin_link if config else '#' }}" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="{{ config.facebook_link if config else '#' }}" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
                 </div>
             </div>
             <div class="footer-col footer-links">
@@ -370,8 +370,8 @@
             </div>
             <div class="footer-col footer-map">
                 <h3>Find Us</h3>
-                <p><i class="fas fa-phone-alt"></i> +91 74830 06958</p>
-                <p><i class="fas fa-envelope"></i> raochethan604@gmail.com</p>
+                <p><i class="fas fa-phone-alt"></i> {{ config.contact_phone if config else '+91 74830 06958' }}</p>
+                <p><i class="fas fa-envelope"></i> {{ config.contact_email if config else 'raochethan604@gmail.com' }}</p>
                 <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.712170362595!2d77.59357491482218!3d12.990264090843232!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae16719b48b945%3A0xb35fa4ce469614c!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1689255845012!5m2!1sen!2sin" width="100%" height="150" style="border:0; border-radius: 8px; margin-top: 1rem;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         </div>

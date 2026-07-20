@@ -59,6 +59,18 @@ def init_db():
     if db.our_story.count_documents({}) == 0:
         db.our_story.insert_one({"headline": 'Who We Are', "paragraph": 'Founded in the heart of the city, Chhatrapati Digital started with a simple mission: to help local businesses shine brighter. From crafting a simple logo to installing massive 3D glowing storefronts, we combine artistry with technology to deliver results that wow your customers.', "stats": '150+|Projects Delivered,15+|Years Combined Exp,50+|5-Star Reviews'})
 
+    if db.site_config.count_documents({}) == 0:
+        db.site_config.insert_one({
+            "hero_title": "Transform Your Brand with<br>High-End Digital Solutions",
+            "hero_subtitle": "We create stunning designs, professional photography, and premium signage that drive sales and build trust.",
+            "contact_email": "raochethan604@gmail.com",
+            "contact_phone": "+91 74830 06958",
+            "whatsapp_num": "917483006958",
+            "instagram_link": "https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi",
+            "facebook_link": "#",
+            "linkedin_link": "#"
+        })
+
 # init_db()  # Disabled on Vercel to prevent cold start timeouts
 
 def convert_id(doc):
@@ -140,8 +152,22 @@ def index():
             if '|' in s:
                 val, label = s.split('|')
                 story_processed['stats_list'].append({'val': val, 'label': label})
+                
+    config = convert_id(db.site_config.find_one())
+    if not config:
+        # Fallback default if not seeded
+        config = {
+            "hero_title": "Transform Your Brand with<br>High-End Digital Solutions",
+            "hero_subtitle": "We create stunning designs, professional photography, and premium signage that drive sales and build trust.",
+            "contact_email": "raochethan604@gmail.com",
+            "contact_phone": "+91 74830 06958",
+            "whatsapp_num": "917483006958",
+            "instagram_link": "https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi",
+            "facebook_link": "#",
+            "linkedin_link": "#"
+        }
     
-    return render_template('index.html', reviews=reviews, pricing=pricing_processed, services=services, portfolio=portfolio, story=story_processed)
+    return render_template('index.html', reviews=reviews, pricing=pricing_processed, services=services, portfolio=portfolio, story=story_processed, config=config)
 
 @app.route('/api/order', methods=['POST'])
 def submit_order():
@@ -331,6 +357,18 @@ def admin_inquiries():
     services = convert_ids(db.services.find())
     portfolio = convert_ids(db.portfolio.find())
     story = convert_id(db.our_story.find_one())
+    config = convert_id(db.site_config.find_one())
+    if not config:
+        config = {
+            "hero_title": "Transform Your Brand with<br>High-End Digital Solutions",
+            "hero_subtitle": "We create stunning designs, professional photography, and premium signage that drive sales and build trust.",
+            "contact_email": "raochethan604@gmail.com",
+            "contact_phone": "+91 74830 06958",
+            "whatsapp_num": "917483006958",
+            "instagram_link": "https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi",
+            "facebook_link": "#",
+            "linkedin_link": "#"
+        }
     
     if story:
         stats_raw = story['stats'].split(',')
@@ -341,7 +379,8 @@ def admin_inquiries():
         'pricing': pricing,
         'services': services,
         'portfolio': portfolio,
-        'story': story
+        'story': story,
+        'config': config
     }
     
     invoices = convert_ids(db.invoices.find().sort("timestamp", -1))
@@ -510,6 +549,25 @@ def update_review_status(review_id):
     data = request.json
     new_status = data.get('status')
     db.reviews.update_one({"_id": ObjectId(review_id)}, {"$set": {"status": new_status}})
+    return jsonify({"status": "success"})
+
+@app.route('/api/cms/config', methods=['POST'])
+def update_config():
+    data = request.json
+    config = db.site_config.find_one()
+    if config:
+        db.site_config.update_one({"_id": config["_id"]}, {"$set": {
+            "hero_title": data.get('hero_title'),
+            "hero_subtitle": data.get('hero_subtitle'),
+            "contact_email": data.get('contact_email'),
+            "contact_phone": data.get('contact_phone'),
+            "whatsapp_num": data.get('whatsapp_num'),
+            "instagram_link": data.get('instagram_link'),
+            "facebook_link": data.get('facebook_link'),
+            "linkedin_link": data.get('linkedin_link')
+        }})
+    else:
+        db.site_config.insert_one(data)
     return jsonify({"status": "success"})
 
 @app.route('/api/cms/pricing', methods=['POST'])

@@ -1266,6 +1266,46 @@
         
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
             
+            <!-- Site Configuration Editor -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem; grid-column: 1 / -1;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-cog"></i> General Site Configuration</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Hero Title</label>
+                        <input type="text" id="configHeroTitle" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.hero_title if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Hero Subtitle</label>
+                        <input type="text" id="configHeroSubtitle" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.hero_subtitle if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Contact Email</label>
+                        <input type="email" id="configEmail" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.contact_email if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Contact Phone</label>
+                        <input type="text" id="configPhone" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.contact_phone if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">WhatsApp Number</label>
+                        <input type="text" id="configWhatsapp" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.whatsapp_num if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Instagram Link</label>
+                        <input type="text" id="configInstagram" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.instagram_link if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Facebook Link</label>
+                        <input type="text" id="configFacebook" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.facebook_link if cms.config else '' }}">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">LinkedIn Link</label>
+                        <input type="text" id="configLinkedin" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="{{ cms.config.linkedin_link if cms.config else '' }}">
+                    </div>
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top:1.5rem;" onclick="saveSiteConfig()">Save Configuration</button>
+            </div>
+            
             <!-- Pricing Package Editor -->
             <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
                 <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-tag"></i> Pricing Packages</h3>
@@ -2246,6 +2286,26 @@
                 body: JSON.stringify({ headline, paragraph, stats })
             }).then(r => r.json()).then(data => {
                 if(data.status === 'success') showToast('Story saved!');
+            });
+        }
+        
+        function saveSiteConfig() {
+            const configData = {
+                hero_title: document.getElementById('configHeroTitle').value,
+                hero_subtitle: document.getElementById('configHeroSubtitle').value,
+                contact_email: document.getElementById('configEmail').value,
+                contact_phone: document.getElementById('configPhone').value,
+                whatsapp_num: document.getElementById('configWhatsapp').value,
+                instagram_link: document.getElementById('configInstagram').value,
+                facebook_link: document.getElementById('configFacebook').value,
+                linkedin_link: document.getElementById('configLinkedin').value
+            };
+            fetch('/api/cms/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(configData)
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') showToast('Site configuration saved!');
             });
         }
         
