@@ -731,7 +731,7 @@
                         <tr>
                             <td><input type="checkbox"></td>
                             <td>
-                                <div class="id-cell" title="{{ inquiry.id }}">#{{ inquiry.id[-6:] | upper }}</div>
+                                <div class="id-cell" title="{{ inquiry.id }}">#{{ (inquiry.id|string)[-6:] | upper if inquiry.id else 'N/A' }}</div>
                                 <div class="date-cell">{{ (inquiry.timestamp|string).split(' ')[0] if inquiry.timestamp else '' }}</div>
                             </td>
                             <td style="font-weight: 600;">{{ inquiry.service }}</td>
@@ -900,7 +900,7 @@
                     <tr>
                         <td style="font-weight:600;">{{ review.client_name }}</td>
                         <td style="color:var(--gold); font-size:1.1rem;">
-                            {% for i in range(review.rating) %}<i class="fas fa-star"></i>{% endfor %}
+                            {% for i in range(review.rating|int if review.rating else 5) %}<i class="fas fa-star"></i>{% endfor %}
                             <span style="color:var(--text-dark); font-weight:600; margin-left:0.5rem; font-size:0.9rem;">{{ review.rating }}</span>
                         </td>
                         <td class="details-cell" title="{{ review.review_text }}">{{ review.review_text }}</td>
@@ -2482,7 +2482,7 @@
         const rawInquiries = [
             {% for inq in inquiries %}
             {
-                id: {{ inq.id | tojson }},
+                id: {{ inq.id | default('') | tojson }},
                 service: {{ (inq.service | string) | tojson }},
                 status: {{ (inq.status | string) | tojson }},
                 timestamp: {{ (inq.timestamp | string) | tojson }}
