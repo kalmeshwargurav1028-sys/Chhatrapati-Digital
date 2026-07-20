@@ -1103,7 +1103,10 @@ h1, h2, h3 {
 }
 
 @media (max-width: 768px) {
+    body { font-size: 1.05rem; }
+    p, li { font-size: 1.05rem; }
     .hero-title { font-size: 2.5rem; }
+    .hero-subtitle { font-size: 1.2rem; }
     .section-title { font-size: 1.8rem; margin-bottom: 2rem; }
     .hero-content {
         flex-direction: column;
@@ -1114,7 +1117,28 @@ h1, h2, h3 {
     .hero-text-block { max-width: 100%; }
     .hero-image-block { justify-content: center; width: 100%; }
     .hero-image-container { max-width: 350px; margin: 0 auto; }
-    .hero-buttons { justify-content: center; }
+    .hero-buttons { justify-content: center; width: 100%; }
+    
+    /* Make buttons highly prominent on mobile */
+    .cta-button {
+        width: 100%;
+        text-align: center;
+        padding: 1.3rem;
+        font-size: 1.2rem !important;
+        display: flex;
+        justify-content: center;
+        box-shadow: 0 12px 35px rgba(239, 68, 68, 0.6) !important;
+    }
+    .service-card a[href="#order"] {
+        width: 100%;
+        text-align: center;
+        font-size: 1.15rem;
+        padding: 0.8rem;
+        background: rgba(239, 68, 68, 0.1);
+        border-radius: 8px;
+        border-bottom: none !important;
+    }
+
     .navbar { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
     .services-section, .portfolio-section, .pricing-section, .testimonials-section, .faq-section, .order-section, .about-section {
