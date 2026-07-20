@@ -731,7 +731,7 @@
                         <tr>
                             <td><input type="checkbox"></td>
                             <td>
-                                <div class="id-cell" title="{{ inquiry.id }}">#{{ (inquiry.id|string)[-6:] | upper if inquiry.id else 'N/A' }}</div>
+                                <div class="id-cell" title="{{ inquiry.id }}">{{ "%02d" | format(loop.index) }}</div>
                                 <div class="date-cell">{{ (inquiry.timestamp|string).split(' ')[0] if inquiry.timestamp else '' }}</div>
                             </td>
                             <td style="font-weight: 600;">{{ inquiry.service }}</td>
