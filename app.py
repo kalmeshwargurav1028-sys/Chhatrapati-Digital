@@ -80,12 +80,18 @@ def convert_id(doc):
         return doc
     
     doc_copy = {}
+    
+    # First, always ensure 'id' is set if '_id' exists
+    if '_id' in doc:
+        doc_copy['id'] = str(doc['_id'])
+
     for k, v in doc.items():
+        # Skip '_id' since we already mapped it to 'id'
+        if k == '_id':
+            continue
+            
         if isinstance(v, ObjectId):
-            if k == '_id':
-                doc_copy['id'] = str(v)
-            else:
-                doc_copy[k] = str(v)
+            doc_copy[k] = str(v)
         elif isinstance(v, datetime):
             doc_copy[k] = v.strftime('%Y-%m-%d %H:%M:%S')
         elif isinstance(v, list):
