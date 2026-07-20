@@ -333,8 +333,8 @@ def admin_inquiries():
     story = convert_id(db.our_story.find_one())
     
     if story:
-        stats_raw = story['stats'].split('|')
-        stats_list = [{'val': s.split(':')[0], 'label': s.split(':')[1]} for s in stats_raw if ':' in s]
+        stats_raw = story['stats'].split(',')
+        stats_list = [{'val': s.split('|')[0], 'label': s.split('|')[1]} for s in stats_raw if '|' in s]
         story = dict(story)
         story['stats_list'] = stats_list
     cms_data = {

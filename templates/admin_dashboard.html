@@ -2144,6 +2144,7 @@
         }
 
         function closeManageReviewModal() {
+            document.getElementById('manageReviewForm').reset();
             document.getElementById('manageReviewModal').classList.remove('active');
         }
 
@@ -2550,7 +2551,14 @@
             document.getElementById('billPoNum').value = poNum;
             showToast("Invoice loaded into the generator. You can now edit and re-generate the bill.");
         }
-
+        
+        // Initialize tab based on hash
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                switchPageView(hash);
+            }
+        });
     </script>
 
     <!-- Toast Message -->
