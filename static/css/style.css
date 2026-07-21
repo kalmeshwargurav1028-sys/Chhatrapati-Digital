@@ -661,6 +661,33 @@ h1, h2, h3 {
     color: var(--text-muted);
 }
 
+/* Floating Need Help */
+.help-float {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    background-color: #f7a93b;
+    color: #0d0d12;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 5px 15px rgba(247, 169, 59, 0.4);
+    z-index: 100;
+    text-decoration: none;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+}
+.help-float:hover {
+    background-color: #e09f2b;
+    transform: scale(1.05);
+}
+.help-float i {
+    font-size: 1.3rem;
+}
+
 /* Floating WhatsApp */
 .whatsapp-float {
     position: fixed;
