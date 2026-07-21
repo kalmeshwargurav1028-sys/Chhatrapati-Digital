@@ -177,7 +177,7 @@ def sync_to_spreadsheet(inquiry_id, service, details):
 def index():
     reviews = convert_ids(db.reviews.find({"status": "Approved"}).sort("timestamp", -1))
     pricing = convert_ids(db.pricing_packages.find())
-    services = convert_ids(db.services.find({"title": {"$nin": ["Premium Signage (LED & 3D)", "Web Development"]}}))
+    services = convert_ids(db.services.find({"title": {"$in": ["Graphic Design & Branding", "Event Photography & Video"]}}))
     portfolio = convert_ids(db.portfolio.find())
     story = convert_id(db.our_story.find_one())
     
