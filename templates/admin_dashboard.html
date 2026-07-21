@@ -1664,20 +1664,18 @@
             <p style="color:var(--text-gray);">Upload and manage files for your clients.</p>
         </div>
         
-        <div style="display:flex; flex-direction:column; gap:2rem;">
-            <!-- Top: Upload Form -->
+        <div style="display:grid; grid-template-columns: 1fr 1.5fr; gap:2rem;">
+            <!-- Left: Upload Form -->
             <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
                 <h3 style="margin-bottom:1.5rem; color:#1a202c;"><i class="fas fa-upload" style="color:#8b5cf6;"></i> Upload New Deliverable</h3>
                 <form id="uploadDeliverableForm" onsubmit="uploadDeliverable(event)">
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name / Email</label>
-                            <input type="text" id="delivClient" required class="form-control" placeholder="E.g. John Doe">
-                        </div>
-                        <div class="form-group" style="margin-bottom:0;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">File Description</label>
-                            <input type="text" id="delivDesc" required class="form-control" placeholder="E.g. Final Logo Package">
-                        </div>
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name / Email</label>
+                        <input type="text" id="delivClient" required class="form-control" placeholder="E.g. John Doe">
+                    </div>
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">File Description</label>
+                        <input type="text" id="delivDesc" required class="form-control" placeholder="E.g. Final Logo Package">
                     </div>
                     
                     <div class="form-group" style="margin-bottom:1.5rem;">
