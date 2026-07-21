@@ -878,6 +878,35 @@ def resolve_client_ticket(ticket_id):
             send_email_smtp(client_email, email_message, subject=f"Resolved: {subject_text}")
     return jsonify({"status": "success"})
 
+# --- Project Discussion API ---
+@app.route('/api/project/messages/<client_email>', methods=['GET'])
+def get_project_messages(client_email):
+    messages = list(db.project_messages.find({"client_email": client_email}).sort("timestamp", 1))
+    return jsonify({"status": "success", "messages": convert_ids(messages)})
+
+@app.route('/api/project/messages', methods=['POST'])
+def add_project_message():
+    data = request.get_json() if request.is_json else request.form
+    client_email = data.get('client_email')
+    sender = data.get('sender', 'client')
+    message_text = data.get('message_text')
+    
+    if not client_email or not message_text:
+        return jsonify({"status": "error", "message": "Missing required fields"}), 400
+        
+    db.project_messages.insert_one({
+        "client_email": client_email,
+        "sender": sender,
+        "message_text": message_text,
+        "timestamp": datetime.now()
+    })
+    
+    if sender == 'client':
+        db.notifications.insert_one({"type": "NEW MESSAGE", "message": f"From {client_email}", "timestamp": datetime.now(), "is_read": 0})
+        
+    return jsonify({"status": "success"})
+
+
 import re
 
 def _analyze_sentiment(html_text):

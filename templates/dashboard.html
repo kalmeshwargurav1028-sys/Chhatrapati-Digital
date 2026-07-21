@@ -366,34 +366,15 @@
                     <h3><i class="fas fa-comments"></i> Project Discussion Feed</h3>
                     <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; display:flex; flex-direction:column; height:450px;">
                         <!-- Chat Area -->
-                        <div style="flex:1; padding:1.5rem; overflow-y:auto; display:flex; flex-direction:column; gap:1.5rem;">
-                            <!-- Internal/Team Message -->
-                            <div style="display:flex; gap:10px; align-self:flex-start; max-width:80%;">
-                                <div style="width:40px; height:40px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">CD</div>
-                                <div style="background:white; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; border-top-left-radius:0;">
-                                    <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:5px;">Team Lead - Today 10:45 AM</div>
-                                    <p style="font-size:1rem; line-height:1.5;">Hi! We received your logo assets. Moving them to the review queue now.</p>
-                                </div>
-                            </div>
-                            
-                            <!-- Client Message -->
-                            <div style="display:flex; gap:10px; align-self:flex-end; max-width:80%; flex-direction:row-reverse;">
-                                <div style="width:40px; height:40px; background:#10b981; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">YOU</div>
-                                <div style="background:#10b981; color:white; padding:1rem; border-radius:8px; border-top-right-radius:0;">
-                                    <div style="font-size:0.85rem; color:rgba(255,255,255,0.8); margin-bottom:5px; text-align:right;">Today 11:00 AM</div>
-                                    <p style="font-size:1rem; line-height:1.5;">Perfect, thank you! Let me know if you need high-res versions.</p>
-                                </div>
-                            </div>
-                            
-                            <!-- System Status Message -->
-                            <div style="align-self:center; background:#e2e8f0; padding:0.5rem 1.5rem; border-radius:20px; font-size:0.85rem; color:#64748b; font-weight:600;">
-                                Status Changed: Team Review Queue
-                            </div>
+                        <div id="chatMessages" style="flex:1; padding:1.5rem; overflow-y:auto; display:flex; flex-direction:column; gap:1.5rem;">
+                            <!-- Messages loaded via JS -->
+                            <div style="text-align:center; color:#94a3b8; font-size:0.9rem; margin-top:2rem;">Enter your email below to load your project discussion feed.</div>
                         </div>
                         <!-- Chat Input -->
                         <div style="padding:1rem; border-top:1px solid #e2e8f0; display:flex; gap:10px; background:white; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
-                            <input type="text" class="form-control" placeholder="Type a message or @mention..." style="margin-bottom:0;">
-                            <button class="btn-primary" style="padding:0.8rem 1.5rem;"><i class="fas fa-paper-plane"></i></button>
+                            <input type="email" id="chatClientEmail" placeholder="Your Email..." class="form-control" style="max-width:200px; margin-bottom:0;" required onchange="loadProjectMessages()">
+                            <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." style="margin-bottom:0; flex:1;" onkeypress="if(event.key==='Enter') sendProjectMessage()">
+                            <button class="btn-primary" style="padding:0.8rem 1.5rem;" onclick="sendProjectMessage()"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
@@ -719,6 +700,76 @@
                 }
             });
         }
+
+        // --- Project Chat Logic ---
+        let currentClientEmail = localStorage.getItem('client_email') || '';
+        if (currentClientEmail) {
+            document.getElementById('chatClientEmail').value = currentClientEmail;
+            loadProjectMessages();
+        }
+
+        function loadProjectMessages() {
+            const email = document.getElementById('chatClientEmail').value;
+            if(!email) return;
+            fetch('/api/project/messages/' + encodeURIComponent(email))
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        const container = document.getElementById('chatMessages');
+                        let isAtBottom = (container.scrollHeight - container.scrollTop === container.clientHeight);
+                        
+                        container.innerHTML = '';
+                        if(data.messages.length === 0) {
+                            container.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.9rem; margin-top:2rem;">No messages yet. Send a message to start the discussion!</div>';
+                            return;
+                        }
+
+                        data.messages.forEach(msg => {
+                            let isClient = msg.sender === 'client';
+                            let html = `
+                                <div style="display:flex; gap:10px; align-self:${isClient ? 'flex-end' : 'flex-start'}; max-width:80%; ${isClient ? 'flex-direction:row-reverse;' : ''}">
+                                    <div style="width:40px; height:40px; background:${isClient ? '#10b981' : 'var(--primary)'}; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:bold; flex-shrink:0;">${isClient ? 'YOU' : 'CD'}</div>
+                                    <div style="background:${isClient ? '#10b981' : 'white'}; color:${isClient ? 'white' : 'inherit'}; border:1px solid #e2e8f0; padding:1rem; border-radius:8px; ${isClient ? 'border-top-right-radius:0;' : 'border-top-left-radius:0;'}">
+                                        <div style="font-size:0.85rem; color:${isClient ? 'rgba(255,255,255,0.8)' : '#94a3b8'}; margin-bottom:5px; ${isClient ? 'text-align:right;' : ''}">${isClient ? 'You' : 'Team Lead'}</div>
+                                        <p style="font-size:1rem; line-height:1.5; margin:0;">${msg.message_text}</p>
+                                    </div>
+                                </div>
+                            `;
+                            container.innerHTML += html;
+                        });
+                        
+                        if(isAtBottom) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    }
+                });
+        }
+
+        function sendProjectMessage() {
+            const email = document.getElementById('chatClientEmail').value;
+            const text = document.getElementById('chatInput').value;
+            if(!email || !text.trim()) {
+                showToast("Email and message required!");
+                return;
+            }
+            localStorage.setItem('client_email', email);
+            fetch('/api/project/messages', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ client_email: email, sender: 'client', message_text: text })
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    document.getElementById('chatInput').value = '';
+                    loadProjectMessages();
+                    setTimeout(() => {
+                        const container = document.getElementById('chatMessages');
+                        container.scrollTop = container.scrollHeight;
+                    }, 100);
+                }
+            });
+        }
+        
+        setInterval(loadProjectMessages, 5000);
     </script>
 
     <!-- Toast Message -->
