@@ -1,0 +1,2534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CD Admin | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f1f3f6;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-gray: #64748b;
+            --primary: #ef4444; /* Brand Red */
+            --border: #e2e8f0;
+            --status-new: #fef2f2;
+            --status-new-text: #ef4444;
+            --status-contacted: #eff6ff;
+            --status-contacted-text: #3b82f6;
+            --status-active: #f0fdf4;
+            --status-active-text: #22c55e;
+            --status-pending: #fffbeb;
+            --status-pending-text: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-menu {
+            padding: 1.5rem 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-menu .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 1.5rem;
+            color: var(--text-gray);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-menu .nav-link:hover, .nav-menu .nav-link.active {
+            background: #f8fafc;
+            color: var(--text-dark);
+            border-right: 3px solid var(--primary);
+        }
+
+        /* Main Wrapper */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: var(--white);
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-left .hamburger {
+            font-size: 1.2rem;
+            color: var(--text-gray);
+            cursor: pointer;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding-right: 1rem;
+        }
+        
+        .brand img {
+            height: 30px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            background: var(--bg-color);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-gray);
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 200px;
+        }
+
+        .profile-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .profile-menu img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Left Column */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+            transition: all 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .matrix-container {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            overflow: hidden;
+        }
+
+        .matrix-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .matrix-header h3 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dark);
+        }
+
+        .matrix-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .matrix-controls select, .matrix-controls input {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            outline: none;
+            color: var(--text-gray);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            font-weight: 600;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .id-cell {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+        .date-cell {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+        }
+
+        .details-cell {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .btn-outline {
+            background: #eff6ff;
+            color: #3b82f6;
+            border: 1px solid #bfdbfe;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: #dbeafe;
+        }
+
+        /* Right Column (Analytics) */
+        .analytics-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+        }
+
+        .metric-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-info h4 {
+            color: var(--text-dark);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .metric-sub {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            margin-top: 0.2rem;
+        }
+
+        .metric-sub.positive { color: var(--status-active-text); }
+        .metric-sub.urgent { color: var(--primary); font-weight: 600; }
+
+        .notifications-feed {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+
+        .notification-item {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .notification-item.blue { border-left-color: #3b82f6; background: #eff6ff; }
+        .notification-item.yellow { border-left-color: #f59e0b; background: #fffbeb; }
+
+        .notif-type {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .notif-desc {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--white);
+            width: 800px;
+            max-width: 90%;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .modal-close {
+            background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-gray);
+        }
+
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+        }
+
+        .modal-tab {
+            padding: 1rem 0;
+            margin-right: 2rem;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .modal-tab.active {
+            color: var(--text-dark);
+            border-bottom-color: var(--text-dark);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            min-height: 200px;
+        }
+
+        .modal-desc {
+            color: var(--text-gray);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .status-mgmt {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .status-mgmt h4 { margin-bottom: 0.5rem; font-size: 0.9rem; }
+        
+        .status-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .s-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+        .s-badge:hover { opacity: 0.8; }
+        .s-badge.active { opacity: 1; }
+
+        .sb-pending { background: var(--status-pending); color: var(--status-pending-text); border-color: #fcd34d; }
+        .sb-contacted { background: var(--status-contacted); color: var(--status-contacted-text); border-color: #93c5fd; }
+        .sb-active { background: var(--status-active); color: var(--status-active-text); border-color: #86efac; }
+        .sb-completed { background: var(--bg-color); color: var(--text-gray); border-color: var(--border); }
+
+        .modal-actions {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-action {
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--white);
+            transition: all 0.3s;
+        }
+        .btn-action.dark {
+            background: var(--text-dark);
+            color: var(--white);
+            border-color: var(--text-dark);
+        }
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Kanban Board Styles */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+            align-items: start;
+        }
+        .kanban-column {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1rem;
+            min-height: 400px;
+            border: 1px solid var(--border);
+        }
+        .kanban-col-header {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .kanban-card {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .kanban-card:active {
+            cursor: grabbing;
+        }
+        .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .kanban-card-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+        .kanban-card-meta {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Reports Styles */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .chart-container {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+
+        /* Billing Print Styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #invoicePreviewModal, #invoicePreviewModal * {
+                visibility: visible;
+            }
+            #invoicePreviewModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                box-shadow: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+    
+/* Toast System */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.toast-msg {
+    background-color: #388e3c;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+}
+.toast-msg.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+.toast-msg .toast-icon {
+    font-size: 1.3rem;
+}
+.toast-msg .toast-close {
+    margin-left: 20px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+.toast-msg .toast-close:hover {
+    opacity: 1;
+}
+
+</style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <img src="/static/assets/logo.png" alt="Chhatrapati Digital" style="max-height:30px;">
+                <span style="font-size: 1.2rem; font-weight: 800; color: #111;">CD <span style="color: #ef4444;">Admin</span></span>
+            </div>
+        </div>
+        <div class="nav-menu">
+            <a class="nav-link active" onclick="switchPageView('dashboard')"><i class="fas fa-home"></i> DASHBOARD</a>
+            <a class="nav-link" onclick="switchPageView('projects')"><i class="fas fa-tasks"></i> PROJECTS</a>
+            <a class="nav-link" onclick="switchPageView('reviews')"><i class="fas fa-star"></i> CLIENT REVIEWS</a>
+            <a class="nav-link" onclick="openGlobalQuoteModal()" style="cursor:pointer;"><i class="fas fa-file-invoice-dollar"></i> GENERATE QUOTE</a>
+            <a class="nav-link" onclick="switchPageView('messages')" style="color:var(--warning);"><i class="fas fa-envelope"></i> MESSAGES <span class="badge" style="background:#e53e3e; color:white; font-size:0.7rem; padding:0.1rem 0.4rem; border-radius:10px; margin-left:auto;">0</span></a>
+            <a class="nav-link" onclick="switchPageView('website')" style="color:var(--primary);"><i class="fas fa-edit"></i> WEBSITE MANAGER</a>
+            <a class="nav-link" onclick="switchPageView('vendors')" style="color:#ec4899;"><i class="fas fa-users"></i> VENDOR INQUIRIES</a>
+            <a class="nav-link" onclick="switchPageView('billing')" style="color:#1d4ed8;"><i class="fas fa-file-invoice-dollar"></i> BILLING</a>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <!-- Top Navigation -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <i class="fas fa-bars hamburger"></i>
+                <h2 style="font-size: 1.1rem; color: var(--text-gray); font-weight: 600; margin: 0;">Admin Portal</h2>
+            </div>
+        <div class="nav-right">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="globalSearch" placeholder="Search across CD Admin..." onkeyup="handleGlobalSearch(this.value)">
+            </div>
+            
+            <div style="position:relative;">
+                <i class="far fa-bell" style="font-size: 1.2rem; color: var(--text-gray); cursor: pointer;" onclick="toggleNotifDropdown()"></i>
+                <div id="notifBadge" style="display:none; position:absolute; top:-5px; right:-5px; background:var(--primary); width:8px; height:8px; border-radius:50%;"></div>
+                
+                <div id="notifDropdown" style="display:none; position:absolute; top:30px; right:0; width:300px; background:var(--white); box-shadow:0 10px 30px rgba(0,0,0,0.1); border-radius:8px; border:1px solid var(--border); z-index:1000; overflow:hidden;">
+                    <div style="padding:1rem; border-bottom:1px solid var(--border); font-weight:700;">Latest Notifications</div>
+                    <div id="notifDropdownList" style="max-height:300px; overflow-y:auto; padding:0.5rem;">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+            </div>
+            <div class="profile-menu">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&amp;w=100&amp;auto=format&amp;fit=crop" alt="Profile" onclick="switchPageView('profile')">
+                <span style="font-weight: 600; font-size: 0.9rem;" onclick="switchPageView('profile')"><span id="profileNameDisplay">Profile</span> <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span>
+                <a href="/admin/login" style="margin-left:10px; color:var(--text-gray); text-decoration:none;" title="Logout"><i class="fas fa-sign-out-alt"></i></a>
+            </div>
+        </div>
+        </nav>
+
+        <div style="flex: 1; overflow-y: auto; background: var(--bg-color);">
+            <!-- Main Content Views -->
+            <div class="main-container page-view" id="view-dashboard" style="display:grid;">
+        
+        <!-- Left Column -->
+        <div>
+            <div class="page-header">
+                <h1>Inquiries</h1>
+                <button class="btn-primary" onclick="openGlobalQuoteModal()">Generate Quote</button>
+            </div>
+
+            <div class="matrix-container">
+                <div class="matrix-header">
+                    <h3>Recent Inquiries & Project Master Matrix</h3>
+                    <div class="matrix-controls">
+                        <span style="font-size: 0.85rem; color: var(--text-gray);">Filter by:</span>
+                        <div class="search-bar" style="border: 1px solid var(--border); padding: 0.3rem 0.8rem;">
+                            <i class="fas fa-search" style="font-size: 0.8rem;"></i>
+                            <input type="text" id="tableSearch" placeholder="Search..." style="width: 100px; font-size: 0.85rem;">
+                        </div>
+                        <i class="fas fa-filter" style="color: var(--text-gray); cursor: pointer;"></i>
+                    </div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox"></th>
+                            <th>ID <i class="fas fa-sort" style="color:#ccc;"></i></th>
+                            <th>Version Type</th>
+                            <th>Project Details</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 3rem; color: #777;">No inquiries found yet.</td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div>
+            <h3 class="analytics-title">Dashboard Metrics & Analytics</h3>
+            
+            <div class="metric-card">
+                <div class="metric-info">
+                    <h4>Total Inquiries</h4>
+                    <div class="metric-value">0</div>
+                    <div class="metric-sub positive">Last 30 days: +5%</div>
+                </div>
+                <!-- Mock Sparkline -->
+                <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><path d="M0 25 L10 20 L20 22 L30 10 L40 15 L50 5 L60 0"/></svg>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-info">
+                    <h4>Pending Review</h4>
+                    <div class="metric-value">0</div>
+                    <div class="metric-sub urgent">Urgent</div>
+                </div>
+                <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M0 10 L10 12 L20 8 L30 15 L40 10 L50 20 L60 15"/></svg>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-info">
+                    <h4>Active Projects</h4>
+                    <div class="metric-value">0</div>
+                    <div class="metric-sub">Signage: 32, Photo: 52</div>
+                </div>
+                <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"><path d="M0 20 L10 15 L20 18 L30 5 L40 10 L50 2 L60 8"/></svg>
+            </div>
+            
+            <div class="metric-card">
+                <div class="metric-info">
+                    <h4>Conversion Rate</h4>
+                    <div class="metric-value">0.0%</div>
+                    <div class="metric-sub positive">Trending Up</div>
+                </div>
+                <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><path d="M0 25 L10 20 L20 15 L30 18 L40 5 L50 8 L60 0"/></svg>
+            </div>
+
+            <h3 class="analytics-title" style="margin-top: 2rem;">Urgent Notifications Feed</h3>
+            <div class="notifications-feed" id="notificationsFeed">
+                <!-- Notifications loaded via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SPA Views -->
+    <div class="main-container page-view" id="view-projects" style="display:none; flex-direction:column; gap:2rem;">
+        <div class="page-header">
+            <h1>Active Projects Board</h1>
+        </div>
+        <div class="kanban-board">
+            
+            <!-- Column: New -->
+            <div class="kanban-column" id="col-new" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="kanban-col-header">
+                    <span>New / Pending</span>
+                    <span style="background:var(--border); padding:0.2rem 0.6rem; border-radius:12px; font-size:0.8rem;">
+                        0
+                    </span>
+                </div>
+                
+            </div>
+
+            <!-- Column: Contacted -->
+            <div class="kanban-column" id="col-contacted" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="kanban-col-header">
+                    <span>In Communication</span>
+                    <span style="background:var(--border); padding:0.2rem 0.6rem; border-radius:12px; font-size:0.8rem;">
+                        0
+                    </span>
+                </div>
+                
+            </div>
+
+            <!-- Column: Active Project -->
+            <div class="kanban-column" id="col-active" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="kanban-col-header">
+                    <span>Active Projects</span>
+                    <span style="background:var(--border); padding:0.2rem 0.6rem; border-radius:12px; font-size:0.8rem;">
+                        0
+                    </span>
+                </div>
+                
+            </div>
+
+            <!-- Column: Completed -->
+            <div class="kanban-column" id="col-completed" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="kanban-col-header">
+                    <span>Completed</span>
+                    <span style="background:var(--border); padding:0.2rem 0.6rem; border-radius:12px; font-size:0.8rem;">
+                        0
+                    </span>
+                </div>
+                
+            </div>
+
+        </div>
+    </div>
+    
+    <div class="main-container page-view" id="view-reviews" style="display:none; flex-direction:column; gap:2rem;">
+        <div class="page-header">
+            <h1>Client Review Matrix</h1>
+        </div>
+        <div class="matrix-container">
+            <div class="matrix-header">
+                <h3>Action Table</h3>
+                <button class="btn-primary" onclick="openManageReviewModal()">+ Add New Review</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Client Name</th>
+                        <th>Star Rating</th>
+                        <th>Written Review Text</th>
+                        <th>Video Upload Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+        <!-- Vendor Inquiries View -->
+        <div class="main-container page-view" id="view-vendors" style="display:none;">
+            <!-- Left Column: Matrix -->
+            <div>
+                <div class="page-header" style="margin-bottom:1.5rem;">
+                    <h1 style="font-size: 1.6rem; text-transform: uppercase;">Vendor Partners & Resource Inventory</h1>
+                    <button class="btn-primary" style="background:#5da3ad; box-shadow:none;">New Partner</button>
+                </div>
+                
+                <div class="matrix-container" style="width: 100%;">
+                    <div class="matrix-header">
+                        <h3>Key Partner & Vendor Matrix</h3>
+                        <div class="matrix-controls">
+                            <span style="font-size: 0.85rem; color: var(--text-gray);">Filter by:</span>
+                            <div class="search-bar" style="border: 1px solid var(--border); padding: 0.3rem 0.8rem; background: var(--white); border-radius: 4px;">
+                                <i class="fas fa-search" style="font-size: 0.8rem;"></i>
+                                <input type="text" placeholder="Search..." style="width: 100px; font-size: 0.85rem;">
+                            </div>
+                            <i class="fas fa-filter" style="color: var(--text-gray); cursor: pointer;"></i>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:40px;"><input type="checkbox"></th>
+                                <th>Partner ID</th>
+                                <th>Contact Info</th>
+                                <th>Location</th>
+                                <th>Category</th>
+                                <th>Contract Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 3rem; color: #777;">No vendor partners found.</td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Column: Analytics -->
+            <div>
+                <h3 class="analytics-title">Dashboard Metrics & Analytics</h3>
+                
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <h4>Total Registered Vendors</h4>
+                        <div class="metric-value">85</div>
+                        <div class="metric-sub positive">Last 30 days: +5</div>
+                    </div>
+                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><path d="M0 25 L10 20 L20 22 L30 10 L40 15 L50 5 L60 0"/></svg>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <h4>Resource Fulfillment Rate</h4>
+                        <div class="metric-value">94%</div>
+                        <div class="metric-sub positive">Last 30 days: +4%</div>
+                    </div>
+                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><path d="M0 25 L10 20 L20 15 L30 18 L40 5 L50 8 L60 0"/></svg>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <h4>Pending Inquiries</h4>
+                        <div class="metric-value">12</div>
+                        <div class="metric-sub urgent">Urgent</div>
+                    </div>
+                    <svg width="60" height="30" viewBox="0 0 60 30" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M0 10 L10 12 L20 8 L30 15 L40 10 L50 20 L60 15"/></svg>
+                </div>
+                
+                <div class="metric-card" style="display:flex; flex-direction:column; align-items:flex-start; gap:1rem;">
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <div class="metric-info">
+                            <h4>Vendor Diversity Score</h4>
+                            <div class="metric-value">78%</div>
+                            <div class="metric-sub">Signage: 78%</div>
+                        </div>
+                        <div style="display:flex; gap:0.5rem; align-items:flex-end;">
+                            <div style="width:6px; height:20px; background:#ef4444;"></div>
+                            <div style="width:6px; height:30px; background:#3b82f6;"></div>
+                            <div style="width:6px; height:15px; background:#22c55e;"></div>
+                            <div style="width:6px; height:40px; background:#f59e0b;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="analytics-title" style="margin-top: 2rem;">Urgent Notifications Feed</h3>
+                <div class="notifications-feed">
+                    <div class="notification-item">
+                        <div class="notif-desc" style="font-weight:600;">The Oberoi contract is pending review</div>
+                        <div class="notif-type" style="color:var(--text-gray); font-weight:400;">23 minutes ago</div>
+                    </div>
+                    <div class="notification-item blue">
+                        <div class="notif-desc" style="font-weight:600;">Floral delivery delayed for TechCorp event</div>
+                        <div class="notif-type" style="color:var(--text-gray); font-weight:400;">25 minutes ago</div>
+                    </div>
+                    <div class="notification-item yellow">
+                        <div class="notif-desc" style="font-weight:600;">Catering resource gap identified for Patel wedding</div>
+                        <div class="notif-type" style="color:var(--text-gray); font-weight:400;">28 minutes ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    <!-- Review Details Modal -->
+    <div class="modal-overlay" id="reviewModal">
+        <div class="modal-content" style="width: 800px; display:grid; grid-template-columns: 1fr 300px; padding:0; overflow:hidden;">
+            <div style="background:#000; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center;">
+            <div id="revModalMediaContainer" style="background:#000; position:relative; min-height:400px; display:flex; align-items:center; justify-content:center;">
+                <!-- Media injected via JS -->
+            </div>
+            <div style="padding: 2rem; position:relative;">
+                <button class="modal-close" style="position:absolute; top:1rem; right:1rem;" onclick="closeReviewModal()">&times;</button>
+                <h2 style="font-size:1.5rem; margin-bottom:1rem;">Review Details</h2>
+                
+                <div style="margin-bottom:1rem;">
+                    <div style="font-size:0.8rem; color:var(--text-gray); font-weight:600;">Client</div>
+                    <div style="font-weight:700;" id="revModalName">Name</div>
+                </div>
+                
+                <div style="margin-bottom:1rem;">
+                    <div style="font-size:0.8rem; color:var(--text-gray); font-weight:600;">Star Rating</div>
+                    <div style="color:var(--gold); font-size:1.2rem;" id="revModalStars"></div>
+                </div>
+                
+                <div style="margin-bottom:1rem;">
+                    <div style="font-size:0.8rem; color:var(--text-gray); font-weight:600;">Status</div>
+                    <div style="font-weight:700;" id="revModalStatus">Pending</div>
+                </div>
+                
+                <div style="margin-bottom:2rem;">
+                    <div style="font-size:0.8rem; color:var(--text-gray); font-weight:600;">Review</div>
+                    <div style="font-size:0.9rem; line-height:1.5; color:var(--text-dark);" id="revModalText">...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- Vendor History Modal -->
+    <div class="modal-overlay" id="manageReviewModal">
+        <div class="modal-content" style="width: 600px; padding:2rem; position:relative;">
+            <button class="modal-close" style="position:absolute; top:1.5rem; right:1.5rem;" onclick="closeManageReviewModal()">&times;</button>
+            <h2 id="manageReviewTitle" style="font-size:1.5rem; margin-bottom:1.5rem;">Add New Review</h2>
+            
+            <form id="manageReviewForm" onsubmit="submitReview(event)">
+                <input type="hidden" id="revId">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name</label>
+                    <input type="text" id="revClientName" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px;">
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Star Rating (1-5)</label>
+                    <input type="number" id="revRating" min="1" max="5" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px;">
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Written Review Text</label>
+                    <textarea id="revText" rows="4" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; font-family:inherit;"></textarea>
+                </div>
+                <div style="margin-bottom:2rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Attach Video or Image (Optional, max 5MB)</label>
+                    <input type="file" id="revFile" accept="video/*,image/*" style="width:100%; padding:0.5rem;">
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:1rem;">
+                    <button type="button" class="btn-action" onclick="closeManageReviewModal()">Cancel</button>
+                    <button type="submit" class="btn-action dark">Save Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="vendorHistoryModal">
+        <div class="modal-content" style="width: 600px;">
+            <div class="modal-header">
+                <h2>Email History</h2>
+                <button class="modal-close" onclick="closeVendorHistoryModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="vendorHistoryBody" style="max-height: 400px; overflow-y: auto;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Vendor Email Modal -->
+    <div class="modal-overlay" id="vendorEmailModal">
+        <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+                <h2>Send Email Reply</h2>
+                <button class="modal-close" onclick="closeVendorEmailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:var(--text-gray); font-weight:600;">To Vendor Email</label>
+                    <input type="text" id="vendorEmailTarget" disabled style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px; background:#f5f5f5;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-size:0.85rem; color:var(--text-gray); font-weight:600;">Message</label>
+                    <textarea id="vendorEmailMessage" rows="5" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px; font-family:inherit; resize:vertical;" placeholder="Write your message here..."></textarea>
+                </div>
+                <button class="btn-primary" id="sendVendorEmailBtn" style="width:100%; padding:1rem; border-radius:6px; font-size:1rem; font-weight:600;" onclick="sendVendorEmail()">Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Quote Modal -->
+    <div class="modal-overlay" id="globalQuoteModal">
+        <div class="modal-content" style="width: 500px;">
+            <div class="modal-header">
+                <h2>Generate New Quote</h2>
+                <button class="modal-close" onclick="closeGlobalQuoteModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 2rem;">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom: 0.5rem; font-weight:600;">Client Email</label>
+                    <input type="email" id="gQuoteEmail" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" placeholder="client@example.com">
+                </div>
+                <div style="margin-bottom: 1rem; display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                    <div>
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Estimated Cost (₹)</label>
+                        <input type="number" id="gQuoteCost" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. 15000">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Timeline (Days)</label>
+                        <input type="number" id="gQuoteTime" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. 14">
+                    </div>
+                </div>
+                <div style="margin-bottom: 2rem;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Deliverables Overview</label>
+                    <input type="text" id="gQuoteDesc" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. 3 concepts, final source files">
+                </div>
+                <button class="btn-primary" style="width: 100%;" onclick="submitGlobalQuote()">Send Quotation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Page Profile View -->
+    <div class="main-container page-view" id="view-profile" style="display:none; grid-template-columns: 1fr 1fr; gap:2rem;">
+        
+        <!-- Left Column: Update Profile -->
+        <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&amp;w=100&amp;auto=format&amp;fit=crop" id="profPreview" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:1rem; border:4px solid var(--border);">
+                <h2 style="font-size:1.5rem; color:var(--text-dark);">Admin Name</h2>
+                <div style="color:var(--text-gray); font-size:0.9rem;">Super Admin</div>
+                <div style="color:var(--text-gray); font-size:0.8rem; margin-top:0.2rem;">email@example.com</div>
+            </div>
+            
+            <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">Update Profile</h3>
+            
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Full Name</label>
+                <input type="text" id="profName" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Email Address</label>
+                <input type="email" id="profEmail" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Phone Number</label>
+                <input type="text" id="profPhone" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="" placeholder="+91 9876543210">
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Profile Photo</label>
+                <input type="file" id="profAvatar" accept="image/*" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg-color);">
+            </div>
+            <div style="margin-bottom: 2rem;">
+                <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Bio / About Me</label>
+                <textarea id="profBio" rows="4" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px; font-family:inherit;" placeholder="Tell us a little about yourself..."></textarea>
+            </div>
+            <button class="btn-primary" style="width: 100%; padding:1rem; font-size:1rem;" onclick="saveProfile()">Save Profile</button>
+        </div>
+        
+        <!-- Right Column: Account Info -->
+        <div>
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">Account Information</h3>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.8rem; color:var(--text-gray);">Username</label>
+                        <div style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px; background:var(--bg-color); color:var(--text-dark);">
+                            Not set
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.8rem; color:var(--text-gray);">Role</label>
+                        <div style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px; background:var(--bg-color); color:var(--text-dark);">
+                            Super Admin
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.8rem; color:var(--text-gray);">Date Joined</label>
+                        <div style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px; background:var(--bg-color); color:var(--text-dark);">
+                            2026-02-11
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.8rem; color:var(--text-gray);">Last Login</label>
+                        <div style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px; background:var(--bg-color); color:var(--text-dark);">
+                            First Time Login
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inquiry Detail Modal -->
+    <div class="modal-overlay" id="inquiryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalHeaderTitle">INQUIRY DETAIL: #1024 - SIGNAGE</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-tabs">
+                <div class="modal-tab" onclick="switchTab('submission')">SUBMISSION DATA</div>
+                <div class="modal-tab" onclick="switchTab('comm')">COMMUNICATION LOG</div>
+                <div class="modal-tab active" onclick="switchTab('status')">STATUS MANAGEMENT</div>
+                <div class="modal-tab" onclick="switchTab('file')">FILE CENTER</div>
+                <div class="modal-tab" onclick="switchTab('quote')">QUOTATION BUILDER</div>
+            </div>
+            <div class="modal-body">
+                <div id="tab-submission" class="tab-content" style="display:none;"></div>
+                
+                <div id="tab-comm" class="tab-content" style="display:none;">
+                    <div class="modal-desc" style="margin-bottom: 1rem;">
+                        <textarea id="emailBody" rows="4" style="width:100%; padding:1rem; border:1px solid var(--border); border-radius:4px; font-family:inherit;" placeholder="Draft an email message..."></textarea>
+                    </div>
+                    <button class="btn-action" onclick="actionFollowUp('email')">Send Message</button>
+                </div>
+
+                <div id="tab-status" class="tab-content">
+                    <div class="status-mgmt">
+                        <div>
+                            <h4>Status</h4>
+                            <div style="font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.5rem;" id="modalStatusDate">Denied : July 16, 2026</div>
+                            <div style="font-size: 0.85rem; color: var(--text-gray);" id="modalStatusTime">Status Time : #1024</div>
+                        </div>
+                        <div>
+                            <h4>Status Management</h4>
+                            <div class="status-badges" id="statusBadgesContainer">
+                                <!-- Badges injected via JS -->
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-gray); margin-top: 0.5rem;">Instant status updates.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-file" class="tab-content" style="display:none;">
+                    <div class="modal-desc"><i class="fas fa-folder-open"></i> No files uploaded yet.</div>
+                </div>
+
+                <div id="tab-quote" class="tab-content" style="display:none;">
+                    <div class="modal-desc" style="margin-bottom: 1rem; display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+                        <div>
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:var(--text-dark);">Estimated Cost (₹)</label>
+                            <input type="number" id="quoteCost" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. 15000">
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:var(--text-dark);">Timeline (Days)</label>
+                            <input type="number" id="quoteTime" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. 14">
+                        </div>
+                        <div style="grid-column: span 2;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:var(--text-dark);">Deliverables Overview</label>
+                            <input type="text" id="quoteDesc" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. 3 concepts, final source files">
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="font-weight: 700; font-size: 0.9rem; margin-bottom: 0.5rem;">Follow-up Action</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-action dark" onclick="actionFollowUp('quote')">GENERATE QUOTATION</button>
+                <button class="btn-action" onclick="switchTab('comm')">SEND EMAIL</button>
+                <button class="btn-action" onclick="actionFollowUp('consultation')">SCHEDULE CONSULTATION</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Page Website Manager View -->
+    <div class="main-container page-view" id="view-website" style="display:none;">
+        <div class="page-header" style="margin-bottom:2rem;">
+            <h1>Website Manager (CMS)</h1>
+            <p style="color:var(--text-gray);">Update your live website content directly from this dashboard.</p>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
+            
+            <!-- Site Configuration Editor -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem; grid-column: 1 / -1;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-cog"></i> General Site Configuration</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Hero Title</label>
+                        <input type="text" id="configHeroTitle" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="Transform Your Brand with&lt;br&gt;High-End Digital Solutions">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Hero Subtitle</label>
+                        <input type="text" id="configHeroSubtitle" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="We create stunning designs, professional photography, and premium signage that drive sales and build trust.">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Contact Email</label>
+                        <input type="email" id="configEmail" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="raochethan604@gmail.com">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Contact Phone</label>
+                        <input type="text" id="configPhone" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="+91 74830 06958">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">WhatsApp Number</label>
+                        <input type="text" id="configWhatsapp" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="917483006958">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Instagram Link</label>
+                        <input type="text" id="configInstagram" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="https://www.instagram.com/mr_drackey02?igsh=dW02NmNiYmttdDBi">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Facebook Link</label>
+                        <input type="text" id="configFacebook" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="#">
+                    </div>
+                    <div>
+                        <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">LinkedIn Link</label>
+                        <input type="text" id="configLinkedin" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="#">
+                    </div>
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top:1.5rem;" onclick="saveSiteConfig()">Save Configuration</button>
+            </div>
+            
+            <!-- Pricing Package Editor -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-tag"></i> Pricing Packages</h3>
+                <div id="pricingEditorContainer">
+                    
+                </div>
+                <button class="btn-primary" style="width:100%;" onclick="savePricing()">Save Pricing Packages</button>
+            </div>
+            
+            <!-- Featured Work Uploader (Gallery) -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-images"></i> Gallery Uploader</h3>
+                
+                <div style="margin-bottom:2rem;">
+                    <h4 style="font-size:0.9rem; margin-bottom:0.5rem;">Upload New Project</h4>
+                    <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+                        <input type="text" id="portName" placeholder="Project Name" style="flex:1; padding:0.5rem; border:1px solid var(--border); border-radius:4px;">
+                        <select id="portCat" style="padding:0.5rem; border:1px solid var(--border); border-radius:4px;">
+                            <option value="wedding-photography">Wedding Photography</option>
+                            <option value="logo-design">Logo Design</option>
+                            <option value="branding">Branding</option>
+                            <option value="photography">General Photography</option>
+                            <option value="video-editing">Video Editing</option>
+                            <option value="signage">Signage & Printing</option>
+                            <option value="web-development">Web Development</option>
+                        </select>
+                    </div>
+                    <textarea id="portProcess" placeholder="Project Workflow / Process Description..." style="width:100%; padding:0.5rem; border:1px solid var(--border); border-radius:4px; margin-bottom:0.5rem; font-family:inherit; min-height:80px;"></textarea>
+                    <input type="file" id="portImage" accept="image/*" style="width:100%; padding:0.5rem; border:1px solid var(--border); border-radius:4px; margin-bottom:1rem;">
+                    <button class="btn-primary" style="width:100%;" onclick="uploadPortfolio()">Upload to Gallery</button>
+                </div>
+
+                <h4 style="font-size:0.9rem; margin-bottom:0.5rem;">Current Gallery Items</h4>
+                <div style="max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:4px; padding:0.5rem;">
+                    
+                </div>
+            </div>
+
+            <!-- Professional Services Editor -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-briefcase"></i> Professional Services</h3>
+                <div id="servicesEditorContainer">
+                    
+                </div>
+                <button class="btn-primary" style="width:100%; margin-top:1rem;" onclick="saveServices()">Save Services</button>
+            </div>
+
+            <!-- Our Story Editor -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"><i class="fas fa-book-open"></i> Our Story</h3>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Headline</label>
+                    <input type="text" id="storyHeadline" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Paragraph</label>
+                    <textarea id="storyPara" rows="5" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px; font-family:inherit;"></textarea>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:var(--text-gray);">Key Stats (Comma separated val|label)</label>
+                    <input type="text" id="storyStats" style="width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;" value="">
+                </div>
+                <button class="btn-primary" style="width: 100%; margin-top:1rem;" onclick="saveStory()">Save Story</button>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Billing & Invoice Generator View -->
+    <div class="main-container page-view" id="view-billing" style="display:none;">
+        <div style="margin-bottom:2rem;">
+            <h1 style="font-size:1.8rem; font-weight:800; color:var(--text-dark); margin-bottom:0.5rem;">Billing</h1>
+            <p style="color:var(--text-gray);">Create and preview professional invoices for your clients.</p>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem; align-items: start;">
+            <!-- Left: Generator Form -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+                <div>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name</label>
+                    <input type="text" id="billClientName" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="e.g. Acme Corp">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">PO Number</label>
+                    <input type="text" id="billPoNum" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" value="PO-2026-001">
+                </div>
+            </div>
+            
+            <h3 style="margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">Line Items</h3>
+            <div id="billItemsContainer">
+                <div class="bill-item" style="display:flex; gap:1rem; margin-bottom:1rem;">
+                    <input type="text" class="bi-name" style="flex:2; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Item Name">
+                    <input type="text" class="bi-desc" style="flex:3; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Description">
+                    <input type="number" class="bi-qty" style="flex:1; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Qty" value="1">
+                    <input type="number" class="bi-price" style="flex:1; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Price">
+                    <button class="btn-primary" style="background:var(--border); color:var(--text-dark);" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>
+            <button class="btn-outline" style="margin-bottom:2rem;" onclick="addBillItem()">+ Add Item</button>
+            
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+                <div>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Shipping Cost (₹)</label>
+                    <input type="number" id="billShipping" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" value="0">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Tax Amount (₹)</label>
+                    <input type="number" id="billTax" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" value="0">
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:1rem; margin-bottom:1rem;">
+                <button class="btn-action" style="flex:1; padding:0.8rem; font-size:1rem; font-weight:700; color:#4a5568; border:1px solid #cbd5e0; background:#ffffff; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="showToast('Draft saved!')"><i class="fas fa-save"></i> Save as Draft</button>
+                <button class="btn-action" style="flex:1; padding:0.8rem; font-size:1rem; font-weight:700; background:#ebf8ff; color:#3182ce; border:1px solid #3182ce; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:0.5rem;" onclick="generateInvoicePreview()"><i class="fas fa-file-pdf"></i> Preview PDF</button>
+            </div>
+            <button class="btn-primary" style="width:100%; padding:1rem; font-size:1.1rem; border-radius:6px;" onclick="generateInvoicePreview()">Generate Bill</button>
+            </div>
+            
+            <!-- Right: Billing History -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:1rem; color:#1a202c; display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-history" style="color:#718096;"></i> Billing History</h3>
+                
+                <div style="background:#f8fafc; padding:0.8rem 1rem; border-radius:6px; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.8rem;">
+                    <i class="fas fa-search" style="color:#a0aec0;"></i>
+                    <input type="text" placeholder="Search history..." style="border:none; background:transparent; width:100%; outline:none; font-size:0.9rem; color:#4a5568;">
+                </div>
+
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; padding-bottom:0.5rem; border-bottom:1px solid var(--border); margin-bottom:1rem;">
+                    <div style="font-size:0.75rem; font-weight:700; color:#718096; text-transform:uppercase;">File Name</div>
+                    <div style="font-size:0.75rem; font-weight:700; color:#718096; text-transform:uppercase;">Date</div>
+                    <div style="font-size:0.75rem; font-weight:700; color:#718096; text-transform:uppercase; text-align:right;">Actions</div>
+                </div>
+
+                
+                    <div style="text-align:center; padding:3rem 1rem; color:#718096;">
+                        <p>No recent POs found.</p>
+                    </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <!-- Client Messages View -->
+    <div class="main-container page-view" id="view-messages" style="display:none;">
+        <div style="margin-bottom:2rem; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h1 style="font-size:1.8rem; font-weight:800; color:var(--text-dark); margin-bottom:0.5rem;">Client Messages & Tickets</h1>
+                <p style="color:var(--text-gray);">Manage and resolve support requests submitted by clients.</p>
+            </div>
+            <div style="display:flex; gap:1rem;">
+                <div class="stat-card" style="padding:1rem 2rem;">
+                    <div class="stat-title">Total Messages</div>
+                    <div class="stat-value">0</div>
+                </div>
+                <div class="stat-card" style="padding:1rem 2rem; border-left:4px solid var(--warning);">
+                    <div class="stat-title">Pending Resolution</div>
+                    <div class="stat-value" style="color:var(--warning);">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:1rem; margin-top:2rem;">Active Tickets</h2>
+        <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); overflow:hidden;">
+            
+            
+                <div style="padding:3rem 2rem; text-align:center; color:var(--text-gray);">
+                    <i class="far fa-check-circle" style="font-size:3rem; margin-bottom:1rem; color:var(--success);"></i>
+                    <h3>All Caught Up!</h3>
+                    <p>There are no active support tickets at this time.</p>
+                </div>
+            
+        </div>
+
+        <h2 style="font-size:1.3rem; font-weight:700; margin-bottom:1rem; margin-top:2rem;">Resolved History</h2>
+        <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); overflow:hidden;">
+            
+            
+                <div style="padding:2rem; text-align:center; color:var(--text-gray);">
+                    <p>No resolved tickets yet.</p>
+                </div>
+            
+        </div>
+    </div>
+
+    <!-- Invoice Preview Modal -->
+    <div class="modal-overlay" id="invoicePreviewOverlay">
+        <div class="modal-content" id="invoicePreviewModal" style="width: 800px; padding: 3rem; background: #ffffff; color: #333333; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            
+            <!-- Controls (No Print) -->
+            <div class="no-print" style="display:flex; justify-content:space-between; margin-bottom:2rem; padding-bottom:1rem; border-bottom:1px dashed #ccc;">
+                <h3 style="color:#1d4ed8;">Document Preview</h3>
+                <div>
+                    <button class="btn-primary" style="background:#1d4ed8; margin-right:1rem;" onclick="window.print()"><i class="fas fa-print"></i> Print PDF</button>
+                    <button class="modal-close" style="position:static; background:#f1f3f6; color:#333; border-radius:50%; width:30px; height:30px; border:none;" onclick="document.getElementById('invoicePreviewOverlay').classList.remove('active')">&times;</button>
+                </div>
+            </div>
+
+            <!-- Invoice Document Header -->
+            <div style="display:flex; justify-content:space-between; margin-bottom:3rem;">
+                <img src="/static/assets/logo.png" alt="Chhatrapati Digital" style="max-height: 60px;">
+                <div style="text-align:right;">
+                    <h2 style="font-size:2rem; color:#4a5568; margin:0 0 0.5rem 0; font-weight:600;">PURCHASE ORDER</h2>
+                    <div style="font-size:0.9rem; color:#718096; margin-bottom:0.2rem;">Date: <span id="invDate"></span></div>
+                    <div style="font-size:0.9rem; color:#718096;">PO #: <span id="invPoNum"></span></div>
+                </div>
+            </div>
+            
+            <hr style="border:0; border-top:2px solid #1d4ed8; margin-bottom:2rem;">
+
+            <!-- Vendor Block -->
+            <div style="margin-bottom:3rem;">
+                <h4 style="color:#1d4ed8; font-size:1rem; margin-bottom:0.5rem; text-transform:uppercase;">Vendor</h4>
+                <div style="background:#f8fafc; padding:1.5rem; border-left:4px solid #1d4ed8;">
+                    <h3 id="invClientName" style="margin:0; color:#1d4ed8; font-size:1.2rem;">CLIENT NAME</h3>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <h4 style="color:#1d4ed8; font-size:1.2rem; margin-bottom:1rem;">Order Details</h4>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
+                <thead>
+                    <tr style="background:#1d4ed8; color:white;">
+                        <th style="padding:1rem; text-align:left; font-size:0.85rem; text-transform:uppercase;">S.No</th>
+                        <th style="padding:1rem; text-align:left; font-size:0.85rem; text-transform:uppercase;">Item Name</th>
+                        <th style="padding:1rem; text-align:left; font-size:0.85rem; text-transform:uppercase;">Description</th>
+                        <th style="padding:1rem; text-align:center; font-size:0.85rem; text-transform:uppercase;">Qty</th>
+                        <th style="padding:1rem; text-align:right; font-size:0.85rem; text-transform:uppercase;">Unit Price</th>
+                        <th style="padding:1rem; text-align:right; font-size:0.85rem; text-transform:uppercase;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="invTableBody">
+                    <!-- JS Injected -->
+                </tbody>
+            </table>
+
+            <!-- Totals -->
+            <div style="display:flex; justify-content:flex-end; margin-bottom:2rem;">
+                <table style="width:300px; border-collapse:collapse;">
+                    <tr>
+                        <td style="padding:0.5rem; color:#1d4ed8;">Subtotal:</td>
+                        <td style="padding:0.5rem; text-align:right;" id="invSubtotal">₹0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.5rem; color:#1d4ed8;">Shipping:</td>
+                        <td style="padding:0.5rem; text-align:right;" id="invShipping">₹0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0.5rem; color:#1d4ed8;">Tax:</td>
+                        <td style="padding:0.5rem; text-align:right;" id="invTax">₹0.00</td>
+                    </tr>
+                    <tr style="background:#f8fafc; font-weight:700;">
+                        <td style="padding:1rem 0.5rem; color:#1d4ed8;">TOTAL:</td>
+                        <td style="padding:1rem 0.5rem; text-align:right; color:#1d4ed8;" id="invTotal">₹0.00</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Amount In Words -->
+            <div style="background:#f8fafc; padding:1rem; border-left:4px solid #1d4ed8; margin-bottom:3rem;">
+                <strong style="color:#1d4ed8;">Amount In Words:</strong> <span id="invWords">Zero Rupees</span>
+            </div>
+
+            <!-- Terms -->
+            <div>
+                <h4 style="color:#1d4ed8; font-size:1rem; margin-bottom:0.5rem;">Terms and Conditions</h4>
+                <div style="font-size:0.85rem; color:#4a5568;">
+                    1) Payment Terms: UPI / Bank Transfer within 15 days.<br>
+                    2) Notes: Thank you for your business.
+                </div>
+            </div>
+            
+            <div style="margin-top:4rem; text-align:right;">
+                <hr style="width:200px; display:inline-block; border:0; border-top:1px solid #1d4ed8; margin-bottom:0.5rem;">
+                <div style="color:#1d4ed8; font-weight:700;">Authorized Signatory</div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+    </div>
+
+    </div>
+    </div>
+    <script>
+
+        function showToast(message) {
+            const toast = document.getElementById('toastMsg');
+            document.getElementById('toastText').innerText = message;
+            toast.classList.remove('show');
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        let currentInquiryId = null;
+
+        function deleteInquiry(inquiryId) {
+            if (confirm("Are you sure you want to delete this inquiry?")) {
+                fetch(`/api/inquiry/${inquiryId}`, {
+                    method: 'DELETE'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        showToast('Failed to delete inquiry.');
+                    }
+                });
+            }
+        }
+
+        function deleteVendorInquiry(vendorId) {
+            if (confirm("Are you sure you want to delete this vendor inquiry?")) {
+                fetch(`/api/vendor-inquiry/${vendorId}`, {
+                    method: 'DELETE'
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        showToast('Failed to delete vendor inquiry.');
+                    }
+                });
+            }
+        }
+
+        function viewVendorHistory(history) {
+            const body = document.getElementById('vendorHistoryBody');
+            body.innerHTML = '';
+            
+            if (!history || history.length === 0) {
+                body.innerHTML = '<div style="text-align:center; color:#777; padding:2rem;">No email history found.</div>';
+            } else {
+                history.forEach(item => {
+                    const div = document.createElement('div');
+                    div.style.borderLeft = '3px solid var(--primary)';
+                    div.style.padding = '1rem';
+                    div.style.marginBottom = '1rem';
+                    div.style.background = 'var(--bg-light)';
+                    div.style.borderRadius = '0 4px 4px 0';
+                    
+                    div.innerHTML = `
+                        <div style="font-size:0.8rem; color:var(--text-gray); margin-bottom:0.5rem;"><i class="fas fa-clock"></i> Sent</div>
+                        <div style="color:var(--text-dark); white-space:pre-wrap; font-size:0.95rem;">${item.message}</div>
+                    `;
+                    body.appendChild(div);
+                });
+            }
+            
+            document.getElementById('vendorHistoryModal').style.display = 'flex';
+        }
+
+        function closeVendorHistoryModal() {
+            document.getElementById('vendorHistoryModal').style.display = 'none';
+        }
+
+        let currentVendorEmailId = null;
+        let currentVendorEmailAddr = null;
+
+        function promptVendorEmail(vendorId, email) {
+            currentVendorEmailId = vendorId;
+            currentVendorEmailAddr = email;
+            document.getElementById('vendorEmailTarget').value = email;
+            document.getElementById('vendorEmailMessage').value = '';
+            document.getElementById('vendorEmailModal').style.display = 'flex';
+        }
+
+        function closeVendorEmailModal() {
+            document.getElementById('vendorEmailModal').style.display = 'none';
+        }
+
+        function sendVendorEmail() {
+            const message = document.getElementById('vendorEmailMessage').value;
+            const btn = document.getElementById('sendVendorEmailBtn');
+            
+            if (!message || message.trim() === '') {
+                showToast('Please enter a message to send.');
+                return;
+            }
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            btn.disabled = true;
+
+            fetch(`/api/vendor-inquiry/${currentVendorEmailId}/email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            })
+            .then(r => r.json())
+            .then(data => {
+                btn.innerHTML = 'Send Email';
+                btn.disabled = false;
+                if (data.status === 'success') {
+                    showToast('Email sent successfully!');
+                    location.reload();
+                } else {
+                    showToast('Failed to send email: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(() => {
+                btn.innerHTML = 'Send Email';
+                btn.disabled = false;
+                showToast('An error occurred while sending the email.');
+            });
+        }
+
+        // --- Search Functionality ---
+        const searchInput = document.getElementById('tableSearch');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const query = this.value.toLowerCase();
+                const rows = document.querySelectorAll('.matrix-container tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        // --- Profile Edit Logic ---
+        function saveProfile() {
+            const formData = new FormData();
+            formData.append('name', document.getElementById('profName').value);
+            formData.append('email', document.getElementById('profEmail').value);
+            formData.append('phone', document.getElementById('profPhone').value);
+            formData.append('bio', document.getElementById('profBio').value);
+            
+            const avatarFile = document.getElementById('profAvatar').files[0];
+            if(avatarFile) {
+                formData.append('avatar_file', avatarFile);
+            }
+            
+            fetch('/api/profile', {
+                method: 'POST',
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('profileNameDisplay').textContent = formData.get('name');
+                    if(data.avatar) {
+                        const profImg = document.querySelector('.profile-menu img');
+                        const prevImg = document.getElementById('profPreview');
+                        if(profImg) profImg.src = data.avatar;
+                        if(prevImg) prevImg.src = data.avatar;
+                    }
+                    showToast("Profile updated successfully!");
+                }
+            });
+        }
+
+        // --- Global Search ---
+        function handleGlobalSearch(query) {
+            query = query.toLowerCase();
+            // Fallback to searching the main matrix if on dashboard
+            const rows = document.querySelectorAll('.matrix-container tbody tr');
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+        
+        // --- SPA Navigation ---
+        function switchPageView(viewId) {
+            // Update Active Link
+            document.querySelectorAll('.nav-menu .nav-link').forEach(link => link.classList.remove('active'));
+            if(typeof window !== 'undefined' && window.event && window.event.target && window.event.target.closest) {
+                // Handle cases where the click wasn't directly on the a tag (e.g., clicking the icon inside it)
+                const targetLink = window.event.target.closest('.nav-link');
+                if (targetLink) targetLink.classList.add('active');
+            }
+            
+            // Hide all views by finding elements with class page-view
+            document.querySelectorAll('.page-view').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            const targetView = document.getElementById(`view-${viewId}`);
+            if(targetView) {
+                // Determine appropriate display mode
+                if (viewId === 'dashboard' || viewId === 'profile' || viewId === 'vendors') {
+                    targetView.style.display = 'grid';
+                } else if (viewId === 'projects' || viewId === 'reviews' || viewId === 'reports') {
+                    targetView.style.display = 'flex';
+                } else {
+                    targetView.style.display = 'block'; // for website and billing
+                }
+            }
+        }
+        
+        // --- Global Quote Modal ---
+        function openGlobalQuoteModal() { document.getElementById('globalQuoteModal').classList.add('active'); }
+        function closeGlobalQuoteModal() { document.getElementById('globalQuoteModal').classList.remove('active'); }
+        function submitGlobalQuote() {
+            showToast('Quotation Sent Successfully to ' + document.getElementById('gQuoteEmail').value);
+            closeGlobalQuoteModal();
+        }
+
+        // --- Notification Bell Dropdown ---
+        function toggleNotifDropdown() {
+            const d = document.getElementById('notifDropdown');
+            d.style.display = d.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('notifBadge').style.display = 'none';
+        }
+
+        // --- Real-time Notifications Polling ---
+        // (existing functionality)
+        
+        // --- Ticket Resolution ---
+        function resolveTicket(ticketId) {
+            if(confirm("Are you sure you want to mark this ticket as resolved?")) {
+                fetch('/api/admin/tickets/' + ticketId + '/resolve', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        window.location.hash = "messages";
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+        function fetchNotifications() {
+            fetch('/api/notifications')
+                .then(r => r.json())
+                .then(data => {
+                    const feed = document.getElementById('notificationsFeed');
+                    const dropList = document.getElementById('notifDropdownList');
+                    
+                    if (data.status === 'success') {
+                        feed.innerHTML = '';
+                        dropList.innerHTML = '';
+                        
+                        if(data.notifications.length > 0) {
+                            document.getElementById('notifBadge').style.display = 'block';
+                        }
+                        
+                        data.notifications.forEach(n => {
+                            const colorClass = n.type.includes('INQUIRY') ? 'blue' : 'yellow';
+                            const html = `
+                                <div class="notification-item ${colorClass}" style="margin-bottom:0.5rem; padding:0.5rem; border-left:3px solid ${colorClass === 'blue' ? '#3b82f6' : '#f59e0b'}; background:${colorClass === 'blue' ? '#eff6ff' : '#fffbeb'};">
+                                    <div class="notif-type" style="font-size:0.7rem; font-weight:700;">${n.type}</div>
+                                    <div class="notif-desc" style="font-size:0.85rem;">${n.message}</div>
+                                </div>
+                            `;
+                            feed.innerHTML += html;
+                            dropList.innerHTML += html;
+                        });
+                        
+                        if(data.notifications.length === 0) {
+                            dropList.innerHTML = '<div style="padding:1rem; text-align:center; color:#999;">No new notifications</div>';
+                        }
+                    }
+                });
+        }
+        
+        // Initial fetch and poll every 10 seconds
+        fetchNotifications();
+        setInterval(fetchNotifications, 10000);
+
+        // --- Modal & Tabs Functionality ---
+        function openModal(id) {
+            currentInquiryId = id;
+            document.getElementById('inquiryModal').classList.add('active');
+            
+            // Show loading state
+            document.getElementById('modalHeaderTitle').textContent = `INQUIRY DETAIL: #${id} - LOADING...`;
+            document.getElementById('tab-submission').innerHTML = `<div class="modal-desc">Loading data...</div>`;
+            document.getElementById('tab-comm').innerHTML = `<div class="modal-desc">Loading data...</div>`;
+            
+            fetch(`/api/inquiry/${id}`)
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        const i = data.inquiry;
+                        
+                        document.getElementById('modalHeaderTitle').textContent = `INQUIRY DETAIL: #${id} - ${i.service.toUpperCase()}`;
+                        document.getElementById('modalStatusDate').textContent = `Last Updated: ${i.timestamp.split(' ')[0]}`;
+                        document.getElementById('modalStatusTime').textContent = `Status Tracking : #${id}`;
+                        
+                        renderStatusBadges(i.status);
+                        
+                        // Populate Submission Data
+                        document.getElementById('tab-submission').innerHTML = `
+                            <div class="modal-desc">
+                                <strong>Client Name:</strong> ${i.client_name || 'Unknown'}<br><br>
+                                <strong>Client Email:</strong> ${i.client_email || 'unknown@example.com'}<br><br>
+                                <strong>Service:</strong> ${i.service}<br><br>
+                                <strong>Details provided:</strong><br>
+                                ${i.details}<br><br>
+                                <strong>Submitted on:</strong> ${i.timestamp}
+                            </div>`;
+                            
+                        // Populate Communication Log
+                        let commHtml = `<div class="modal-desc" style="max-height:250px; overflow-y:auto; margin-bottom:1rem; padding-right:0.5rem;">`;
+                        if (i.history && i.history.length > 0) {
+                            i.history.reverse().forEach(entry => {
+                                commHtml += `
+                                <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                                    <div style="font-size: 0.8rem; color: var(--text-gray); margin-bottom: 0.2rem;">${entry.timestamp}</div>
+                                    <div style="font-size: 0.95rem; color: var(--text-dark); white-space: pre-wrap;">${entry.message}</div>
+                                </div>`;
+                            });
+                        } else {
+                            commHtml += `<div style="color:var(--text-gray);">No communication history yet.</div>`;
+                        }
+                        commHtml += `</div>
+                            <div class="modal-desc" style="margin-bottom: 1rem;">
+                                <textarea id="emailBody" rows="4" style="width:100%; padding:1rem; border:1px solid var(--border); border-radius:4px; font-family:inherit;" placeholder="Draft an email message..."></textarea>
+                            </div>
+                            <button class="btn-action" onclick="actionFollowUp('email')">Send Message</button>`;
+                            
+                        document.getElementById('tab-comm').innerHTML = commHtml;
+                            
+                        // Populate File Data
+                        let fileHtml = `<div class="modal-desc"><i class="fas fa-folder-open"></i> No files uploaded yet.</div>`;
+                        if (i.file_data && i.file_name) {
+                            fileHtml = `
+                                <div class="modal-desc">
+                                    <div style="font-weight:600; margin-bottom: 0.5rem;">Attached File: ${i.file_name}</div>
+                                    <a href="${i.file_data}" download="${i.file_name}" class="btn-action dark" style="text-decoration:none; display:inline-block;"><i class="fas fa-download"></i> Download File</a>
+                                    <br><br>
+                                    <div style="max-height: 400px; overflow-y: auto; border: 1px solid var(--border); padding: 1rem; border-radius: 8px; text-align: center;">
+                                        ${i.file_data.startsWith('data:image/') ? `<img src="${i.file_data}" style="max-width:100%; border-radius:4px;">` : `<i class="fas fa-file-alt" style="font-size: 3rem; color: var(--text-gray);"></i><br><br>Preview not available for this file type.`}
+                                    </div>
+                                </div>`;
+                        }
+                        document.getElementById('tab-file').innerHTML = fileHtml;
+                        
+                    } else {
+                        showToast("Failed to load inquiry details");
+                        closeModal();
+                    }
+                })
+                .catch(err => {
+                    showToast("Error loading inquiry data");
+                    closeModal();
+                });
+                
+            // Reset to default tab (Submission Data)
+            switchTab('submission');
+        }
+
+        function closeModal() {
+            document.getElementById('inquiryModal').classList.remove('active');
+            currentInquiryId = null;
+        }
+
+        function switchTab(tabId) {
+            // Update Tab active state
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            const activeTabHeader = document.querySelector(`.modal-tab[onclick="switchTab('${tabId}')"]`);
+            if(activeTabHeader) activeTabHeader.classList.add('active');
+
+            // Update Tab Content visibility
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.getElementById(`tab-${tabId}`).style.display = 'block';
+        }
+
+        function renderStatusBadges(currentStatus) {
+            const container = document.getElementById('statusBadgesContainer');
+            container.innerHTML = '';
+            
+            if(currentStatus === 'New') currentStatus = 'Pending';
+            
+            const statuses = [
+                { id: 'Pending', class: 'sb-pending' },
+                { id: 'Contacted', class: 'sb-contacted' },
+                { id: 'Active Project', class: 'sb-active' },
+                { id: 'Completed', class: 'sb-completed' }
+            ];
+            
+            statuses.forEach(s => {
+                const badge = document.createElement('div');
+                badge.className = `s-badge ${s.class} ${s.id === currentStatus ? 'active' : ''}`;
+                badge.textContent = s.id;
+                badge.onclick = () => updateStatus(currentInquiryId, s.id);
+                container.appendChild(badge);
+            });
+        }
+
+        function updateStatus(id, newStatus) {
+            fetch(`/api/inquiries/${id}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    renderStatusBadges(newStatus);
+                    setTimeout(() => window.location.reload(), 500);
+                }
+            });
+        }
+        
+        function actionFollowUp(actionType) {
+            let details = {};
+            
+            if (actionType === 'quote') {
+                details = {
+                    cost: document.getElementById('quoteCost').value,
+                    time: document.getElementById('quoteTime').value,
+                    desc: document.getElementById('quoteDesc').value
+                };
+                if(!details.cost) { showToast("Please enter a cost."); return; }
+            } else if (actionType === 'email') {
+                details = { message: document.getElementById('emailBody').value };
+                if(!details.message) { showToast("Please enter an email message."); return; }
+            }
+            
+            showToast("Processing action... Please wait.");
+            
+            fetch(`/api/inquiries/${currentInquiryId}/action`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action_type: actionType, details: details })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    showToast(`${actionType.toUpperCase()} action triggered successfully!`);
+                    
+                    if (actionType === 'quote') {
+                        document.getElementById('quoteCost').value = '';
+                        document.getElementById('quoteTime').value = '';
+                        document.getElementById('quoteDesc').value = '';
+                    } else if (actionType === 'email') {
+                        document.getElementById('emailBody').value = '';
+                    }
+                    
+                    openModal(currentInquiryId); // Reload data
+                } else {
+                    showToast("Error: " + data.message);
+                }
+            })
+            .catch(err => {
+                showToast("Network error.");
+            });
+        }
+        // --- Review Management Logic ---
+        function updateReviewStatus(id, status) {
+            fetch(`/api/reviews/${id}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: status })
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    window.location.reload();
+                }
+            });
+        }
+        
+        function openReviewModal(name, rating, text, status, videoPath) {
+            document.getElementById('revModalName').textContent = name;
+            let stars = '';
+            for(let i=0; i<parseInt(rating); i++) stars += '<i class="fas fa-star"></i>';
+            document.getElementById('revModalStars').innerHTML = stars;
+            document.getElementById('revModalStatus').textContent = status;
+            document.getElementById('revModalText').textContent = text;
+            
+            const mediaContainer = document.getElementById('revModalMediaContainer');
+            if(videoPath) {
+                if (videoPath.startsWith('data:image/')) {
+                    mediaContainer.innerHTML = `<img src="${videoPath}" style="width:100%; max-height:500px; object-fit:contain;">`;
+                } else {
+                    mediaContainer.innerHTML = `<video controls style="width:100%; max-height:500px;"><source src="${videoPath}" type="video/mp4">Your browser does not support the video tag.</video>`;
+                }
+            } else {
+                mediaContainer.innerHTML = `<div style="color:var(--text-gray);"><i class="fas fa-video-slash" style="font-size:3rem; margin-bottom:1rem;"></i><br>No Media Attached</div>`;
+            }
+            
+            document.getElementById('reviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            const mediaContainer = document.getElementById('revModalMediaContainer');
+            mediaContainer.innerHTML = '';
+            document.getElementById('reviewModal').classList.remove('active');
+        }
+
+        function openManageReviewModal(id, name, rating, text) {
+            if (typeof id === 'object' || !id) id = '';
+            document.getElementById('revId').value = id;
+            document.getElementById('revClientName').value = name || '';
+            document.getElementById('revRating').value = rating || 5;
+            document.getElementById('revText').value = text || '';
+            document.getElementById('revFile').value = '';
+            
+            document.getElementById('manageReviewTitle').textContent = id ? 'Edit Review' : 'Add New Review';
+            document.getElementById('manageReviewModal').classList.add('active');
+        }
+
+        function closeManageReviewModal() {
+            document.getElementById('manageReviewForm').reset();
+            document.getElementById('manageReviewModal').classList.remove('active');
+        }
+
+        function submitReview(e) {
+            e.preventDefault();
+            const id = document.getElementById('revId').value;
+            const fileInput = document.getElementById('revFile');
+            
+            if(fileInput.files.length > 0 && fileInput.files[0].size > 5 * 1024 * 1024) {
+                alert("File size must be less than 5MB.");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('client_name', document.getElementById('revClientName').value);
+            formData.append('rating', document.getElementById('revRating').value);
+            formData.append('review_text', document.getElementById('revText').value);
+            if(fileInput.files.length > 0) {
+                formData.append('file', fileInput.files[0]);
+            }
+
+            const url = id ? `/api/admin/reviews/${id}` : '/api/admin/reviews';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    window.location.hash = "reviews";
+                    window.location.reload();
+                } else {
+                    showToast(data.message || 'Failed to save review');
+                }
+            });
+        }
+
+        function deleteReview(id) {
+            if(confirm('Are you sure you want to delete this review?')) {
+                fetch(`/api/admin/reviews/${id}`, { method: 'DELETE' })
+                .then(r => r.json()).then(data => {
+                    if(data.status === 'success') {
+                        window.location.hash = "reviews";
+                        window.location.reload();
+                    } else {
+                        showToast(data.message || 'Failed to delete review');
+                    }
+                });
+            }
+        }
+
+        // --- Website Manager (CMS) Logic ---
+        function savePricing() {
+            const packages = [];
+            document.querySelectorAll('.pricing-pkg-edit').forEach(pkg => {
+                packages.push({
+                    id: pkg.getAttribute('data-id'),
+                    name: pkg.querySelector('.pkg-name').value,
+                    price: pkg.querySelector('.pkg-price').value,
+                    features: pkg.querySelector('.pkg-features').value,
+                    is_popular: pkg.querySelector('.pkg-popular').checked ? 1 : 0
+                });
+            });
+            fetch('/api/cms/pricing', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ packages })
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') showToast('Pricing saved!');
+            });
+        }
+        
+        function saveServices() {
+            const services = [];
+            document.querySelectorAll('.service-edit').forEach(srv => {
+                services.push({
+                    id: srv.getAttribute('data-id'),
+                    icon: srv.querySelector('.srv-icon').value,
+                    title: srv.querySelector('.srv-title').value,
+                    description: srv.querySelector('.srv-desc').value
+                });
+            });
+            fetch('/api/cms/services', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ services })
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') showToast('Services saved!');
+            });
+        }
+        
+        function saveStory() {
+            const headline = document.getElementById('storyHeadline').value;
+            const paragraph = document.getElementById('storyPara').value;
+            const stats = document.getElementById('storyStats').value;
+            fetch('/api/cms/story', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ headline, paragraph, stats })
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') showToast('Story saved!');
+            });
+        }
+        
+        function saveSiteConfig() {
+            const configData = {
+                hero_title: document.getElementById('configHeroTitle').value,
+                hero_subtitle: document.getElementById('configHeroSubtitle').value,
+                contact_email: document.getElementById('configEmail').value,
+                contact_phone: document.getElementById('configPhone').value,
+                whatsapp_num: document.getElementById('configWhatsapp').value,
+                instagram_link: document.getElementById('configInstagram').value,
+                facebook_link: document.getElementById('configFacebook').value,
+                linkedin_link: document.getElementById('configLinkedin').value
+            };
+            fetch('/api/cms/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(configData)
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') showToast('Site configuration saved!');
+            });
+        }
+        
+        function uploadPortfolio() {
+            const formData = new FormData();
+            formData.append('project_name', document.getElementById('portName').value);
+            formData.append('category', document.getElementById('portCat').value);
+            formData.append('work_process', document.getElementById('portProcess').value);
+            const imageFile = document.getElementById('portImage').files[0];
+            if(!imageFile) return showToast("Please select an image");
+            formData.append('image_file', imageFile);
+            
+            fetch('/api/cms/portfolio', {
+                method: 'POST',
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    window.location.reload(); // Quick reload to show updated portfolio list
+                }
+            });
+        }
+        
+        function deletePortfolio(id) {
+            if(confirm("Delete this portfolio item?")) {
+                fetch(`/api/cms/portfolio/${id}`, { method: 'DELETE' })
+                .then(r => r.json()).then(data => {
+                    if(data.status === 'success') window.location.reload();
+                });
+            }
+        }
+
+        // --- Kanban Board Drag and Drop Logic ---
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedCard = document.getElementById(data);
+            
+            // Find the closest kanban-column
+            let dropTarget = ev.target;
+            while (dropTarget && !dropTarget.classList.contains('kanban-column')) {
+                dropTarget = dropTarget.parentElement;
+            }
+            
+            if (dropTarget) {
+                dropTarget.appendChild(draggedCard);
+                
+                // Map column id to status string
+                let newStatus = 'Pending';
+                if(dropTarget.id === 'col-new') newStatus = 'Pending';
+                if(dropTarget.id === 'col-contacted') newStatus = 'Contacted';
+                if(dropTarget.id === 'col-active') newStatus = 'Active Project';
+                if(dropTarget.id === 'col-completed') newStatus = 'Completed';
+                
+                const inquiryId = data.replace('card-', '');
+                updateStatusQuietly(inquiryId, newStatus);
+            }
+        }
+        
+        function updateStatusQuietly(id, newStatus) {
+            fetch(`/api/inquiries/${id}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            }).then(r => r.json()).then(data => {
+                if(data.email_dispatched) {
+                    showToast(`Welcome Email automatically dispatched to client for Inquiry #${id}!`);
+                    fetchNotifications();
+                }
+            });
+        }
+
+        // --- Reports & Analytics (Chart.js) ---
+        // Need to parse inquiries data passed from jinja for charts
+        const rawInquiries = [
+            
+        ];
+        
+        function initCharts() {
+            // Only init once
+            if(window.chartsInitialized) return;
+            window.chartsInitialized = true;
+            
+            // 1. Conversion Funnel
+            let totalNew = 0, totalContacted = 0, totalActive = 0, totalCompleted = 0;
+            rawInquiries.forEach(i => {
+                if(i.status === 'New' || i.status === 'Pending') totalNew++;
+                if(i.status === 'Contacted') totalContacted++;
+                if(i.status === 'Active Project') totalActive++;
+                if(i.status === 'Completed') totalCompleted++;
+            });
+            
+            new Chart(document.getElementById('conversionChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['New Inquiries', 'Contacted', 'Active Projects', 'Completed'],
+                    datasets: [{
+                        label: 'Inquiry Volume',
+                        data: [totalNew, totalContacted, totalActive, totalCompleted],
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#64748b'],
+                        borderRadius: 6
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+            
+            // 2. Service Distribution (Doughnut)
+            let srvCounts = {};
+            rawInquiries.forEach(i => {
+                srvCounts[i.service] = (srvCounts[i.service] || 0) + 1;
+            });
+            
+            new Chart(document.getElementById('serviceChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(srvCounts),
+                    datasets: [{
+                        data: Object.values(srvCounts),
+                        backgroundColor: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'],
+                        borderWidth: 0
+                    }]
+                }
+            });
+            
+            // 3. Volume Trend (Line Chart placeholder)
+            new Chart(document.getElementById('volumeChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'New Inquiries',
+                        data: [2, 5, 3, 8, 4, 1, 6],
+                        borderColor: '#ef4444',
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)'
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+        
+        // Hook chart init into the tab switcher
+        const originalSwitch = window.switchPageView;
+        window.switchPageView = function(viewId) {
+            originalSwitch(viewId);
+            if(viewId === 'reports') {
+                initCharts();
+            }
+        };
+        // --- Billing Generator Logic ---
+        function addBillItem() {
+            const container = document.getElementById('billItemsContainer');
+            const row = document.createElement('div');
+            row.className = 'bill-item';
+            row.style.cssText = 'display:flex; gap:1rem; margin-bottom:1rem;';
+            row.innerHTML = `
+                <input type="text" class="bi-name" style="flex:2; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Item Name">
+                <input type="text" class="bi-desc" style="flex:3; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Description">
+                <input type="number" class="bi-qty" style="flex:1; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Qty" value="1">
+                <input type="number" class="bi-price" style="flex:1; padding:0.8rem; border:1px solid var(--border); border-radius:4px;" placeholder="Price">
+                <button class="btn-primary" style="background:var(--border); color:var(--text-dark);" onclick="this.parentElement.remove()"><i class="fas fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+        }
+
+        function generateInvoicePreview() {
+            // Populate Header
+            document.getElementById('invClientName').textContent = document.getElementById('billClientName').value || 'CLIENT NAME';
+            document.getElementById('invPoNum').textContent = document.getElementById('billPoNum').value;
+            
+            const today = new Date();
+            document.getElementById('invDate').textContent = today.toISOString().split('T')[0];
+
+            // Build Table and Calculate Subtotal
+            const tbody = document.getElementById('invTableBody');
+            tbody.innerHTML = '';
+            
+            let subtotal = 0;
+            const items = document.querySelectorAll('.bill-item');
+            items.forEach((item, index) => {
+                const name = item.querySelector('.bi-name').value;
+                const desc = item.querySelector('.bi-desc').value;
+                const qty = parseFloat(item.querySelector('.bi-qty').value) || 0;
+                const price = parseFloat(item.querySelector('.bi-price').value) || 0;
+                const total = qty * price;
+                subtotal += total;
+                
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #e2e8f0';
+                tr.innerHTML = `
+                    <td style="padding:1rem; font-size:0.9rem;">${index + 1}</td>
+                    <td style="padding:1rem; font-size:0.9rem; font-weight:600;">${name}</td>
+                    <td style="padding:1rem; font-size:0.9rem; color:#4a5568;">${desc}</td>
+                    <td style="padding:1rem; font-size:0.9rem; text-align:center;">${qty}</td>
+                    <td style="padding:1rem; font-size:0.9rem; text-align:right;">₹${price.toFixed(2)}</td>
+                    <td style="padding:1rem; font-size:0.9rem; text-align:right; font-weight:600;">₹${total.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Calculate Totals
+            const shipping = parseFloat(document.getElementById('billShipping').value) || 0;
+            const tax = parseFloat(document.getElementById('billTax').value) || 0;
+            const finalTotal = subtotal + shipping + tax;
+
+            document.getElementById('invSubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('invShipping').textContent = `₹${shipping.toFixed(2)}`;
+            document.getElementById('invTax').textContent = `₹${tax.toFixed(2)}`;
+            document.getElementById('invTotal').textContent = `₹${finalTotal.toFixed(2)}`;
+
+            // Convert to Words
+            document.getElementById('invWords').textContent = numberToWords(finalTotal) + ' Rupees Only';
+
+            // Show Modal
+            document.getElementById('invoicePreviewOverlay').classList.add('active');
+            
+            // Save to database
+            fetch('/api/invoices', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    client_name: document.getElementById('invClientName').textContent,
+                    po_num: document.getElementById('invPoNum').textContent,
+                    total: finalTotal
+                })
+            });
+        }
+
+        // Helper: Number to Words (Indian Numbering System)
+        function numberToWords(price) {
+            const sglDigit = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+            const dblDigit = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tensPlace = ["", "Ten", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+            
+            let n = parseInt(price, 10);
+            if (n === 0) return "Zero";
+            
+            function convertUnderThousand(num) {
+                let word = "";
+                if (num > 99) {
+                    word += sglDigit[Math.floor(num / 100)] + " Hundred ";
+                    num %= 100;
+                }
+                if (num > 9 && num < 20) {
+                    word += dblDigit[num - 10] + " ";
+                } else {
+                    if (num > 19) {
+                        word += tensPlace[Math.floor(num / 10)] + " ";
+                        num %= 10;
+                    }
+                    if (num > 0) {
+                        word += sglDigit[num] + " ";
+                    }
+                }
+                return word;
+            }
+            
+            let res = "";
+            if (n >= 10000000) {
+                res += convertUnderThousand(Math.floor(n / 10000000)) + "Crore ";
+                n %= 10000000;
+            }
+            if (n >= 100000) {
+                res += convertUnderThousand(Math.floor(n / 100000)) + "Lakh ";
+                n %= 100000;
+            }
+            if (n >= 1000) {
+                res += convertUnderThousand(Math.floor(n / 1000)) + "Thousand ";
+                n %= 1000;
+            }
+            if (n > 0) {
+                res += convertUnderThousand(n);
+            }
+            return res.trim();
+        }
+        // --- Invoice History Actions ---
+        function deleteInvoice(id) {
+            if(confirm("Are you sure you want to delete this invoice from history?")) {
+                fetch(`/api/invoices/${id}`, { method: 'DELETE' })
+                .then(r => r.json()).then(data => {
+                    if(data.status === 'success') window.location.reload();
+                });
+            }
+        }
+        
+        function editInvoice(clientName, poNum) {
+            document.getElementById('billClientName').value = clientName;
+            document.getElementById('billPoNum').value = poNum;
+            showToast("Invoice loaded into the generator. You can now edit and re-generate the bill.");
+        }
+        
+        // Initialize tab based on hash
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                switchPageView(hash);
+            }
+        });
+    </script>
+
+    <!-- Toast Message -->
+    <div class="toast-container">
+    <div class="toast-msg" id="toastMsg">
+        <i class="far fa-check-circle toast-icon"></i>
+        <span id="toastText">Action completed successfully!</span>
+        <i class="fas fa-times toast-close" onclick="document.getElementById('toastMsg').classList.remove('show')"></i>
+    </div>
+</div>
+
+</body>
+</html>
