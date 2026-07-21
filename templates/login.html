@@ -346,9 +346,19 @@
             <p style="color:#64748b; font-size:0.95rem; margin-bottom:1.5rem;">To continue to Chhatrapati Digital</p>
             
             <form id="oauthForm">
-                <div class="form-group" style="text-align:left;">
-                    <label>Email or Phone</label>
-                    <input type="email" id="oauthEmail" required placeholder="Enter your email" style="width: 100%; padding: 1rem; border: 1px solid #e0e6ed; border-radius: 8px; font-size: 1.05rem;">
+                <div id="step1">
+                    <div class="form-group" style="text-align:left;">
+                        <label id="oauthInputLabel">Email or Phone</label>
+                        <input type="email" id="oauthEmail" required placeholder="Enter your email" style="width: 100%; padding: 1rem; border: 1px solid #e0e6ed; border-radius: 8px; font-size: 1.05rem;">
+                    </div>
+                </div>
+                
+                <div id="step2" style="display:none;">
+                    <p style="color:#22c55e; font-weight:600; margin-bottom:1rem;"><i class="fas fa-check-circle"></i> OTP sent to your email.</p>
+                    <div class="form-group" style="text-align:left;">
+                        <label>Enter 6-digit OTP</label>
+                        <input type="text" id="oauthOtp" placeholder="123456" style="width: 100%; padding: 1rem; border: 1px solid #e0e6ed; border-radius: 8px; font-size: 1.05rem; letter-spacing: 2px; text-align:center;">
+                    </div>
                 </div>
                 
                 <button type="submit" id="oauthSubmitBtn" class="submit-btn" style="margin-top:1rem;">Next <i class="fas fa-arrow-right"></i></button>
@@ -358,23 +368,34 @@
 
     <script>
         let currentProvider = '';
+        let currentStep = 1;
         
         function openOAuthModal(provider) {
             currentProvider = provider;
+            currentStep = 1;
+            
+            document.getElementById('step1').style.display = 'block';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('oauthEmail').value = '';
+            document.getElementById('oauthOtp').value = '';
+            document.getElementById('oauthOtp').removeAttribute('required');
+            
             const icon = document.getElementById('oauthIcon');
             const title = document.getElementById('oauthTitle');
             const btn = document.getElementById('oauthSubmitBtn');
-            const emailInput = document.getElementById('oauthEmail');
+            const label = document.getElementById('oauthInputLabel');
             
-            emailInput.value = '';
+            btn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
             
             if(provider === 'google') {
                 icon.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:50px;">';
                 title.textContent = 'Sign in with Google';
+                label.textContent = 'Google Email';
                 btn.style.background = '#2563eb';
             } else if (provider === 'facebook') {
                 icon.innerHTML = '<i class="fab fa-facebook" style="color:#1877f2;"></i>';
                 title.textContent = 'Log in to Facebook';
+                label.textContent = 'Facebook Email';
                 btn.style.background = '#1877f2';
             }
             
@@ -387,11 +408,41 @@
             const btn = document.getElementById('oauthSubmitBtn');
             const originalText = btn.innerHTML;
             
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
-            
-            // Simulate backend OAuth check
-            setTimeout(() => {
-                fetch('/login', { method: 'POST' })
+            if (currentStep === 1) {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending OTP...';
+                
+                fetch('/api/auth/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        currentStep = 2;
+                        document.getElementById('step1').style.display = 'none';
+                        document.getElementById('step2').style.display = 'block';
+                        document.getElementById('oauthOtp').setAttribute('required', 'true');
+                        btn.innerHTML = 'Verify & Login <i class="fas fa-check"></i>';
+                    } else {
+                        btn.innerHTML = originalText;
+                        showToast(data.message || 'Failed to send OTP.');
+                    }
+                })
+                .catch(() => {
+                    btn.innerHTML = originalText;
+                    showToast('An error occurred.');
+                });
+                
+            } else if (currentStep === 2) {
+                const otp = document.getElementById('oauthOtp').value;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+                
+                fetch('/api/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, otp: otp })
+                })
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === 'success') {
@@ -401,15 +452,15 @@
                             window.location.href = data.redirect;
                         }, 1500);
                     } else {
-                        btn.innerHTML = originalText;
-                        showToast('Authentication failed.');
+                        btn.innerHTML = 'Verify & Login <i class="fas fa-check"></i>';
+                        showToast(data.message || 'Invalid OTP.');
                     }
                 })
                 .catch(() => {
-                    btn.innerHTML = originalText;
+                    btn.innerHTML = 'Verify & Login <i class="fas fa-check"></i>';
                     showToast('An error occurred.');
                 });
-            }, 1000);
+            }
         });
     </script>
 </body>

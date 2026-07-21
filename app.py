@@ -766,6 +766,45 @@ def login():
         return jsonify({"status": "success", "redirect": "/dashboard"})
     return render_template('login.html')
 
+import random
+OTP_STORE = {}
+
+@app.route('/api/auth/send-otp', methods=['POST'])
+def send_otp():
+    data = request.json or {}
+    email = data.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+    
+    otp_code = str(random.randint(100000, 999999))
+    OTP_STORE[email] = otp_code
+    
+    msg_body = f"""Hello,
+
+Your One-Time Password (OTP) for logging into Chhatrapati Digital is: {otp_code}
+
+Please enter this code in the login popup.
+"""
+    send_email_smtp(email, msg_body, subject="Your Chhatrapati Digital Login OTP")
+    
+    return jsonify({"status": "success", "message": "OTP sent successfully"})
+
+@app.route('/api/auth/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.json or {}
+    email = data.get('email')
+    otp_code = data.get('otp')
+    
+    if not email or not otp_code:
+        return jsonify({"status": "error", "message": "Email and OTP are required"}), 400
+        
+    stored_otp = OTP_STORE.get(email)
+    if stored_otp and stored_otp == str(otp_code):
+        del OTP_STORE[email]
+        return jsonify({"status": "success", "redirect": "/dashboard"})
+    else:
+        return jsonify({"status": "error", "message": "Invalid or expired OTP"}), 401
+
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
