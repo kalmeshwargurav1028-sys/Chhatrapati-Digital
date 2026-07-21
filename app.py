@@ -41,9 +41,7 @@ def init_db():
     if db.services.count_documents({}) == 0:
         db.services.insert_many([
             {"icon": 'fa-paint-brush', "title": 'Graphic Design & Branding', "description": 'Logos, business cards, social media posts, and complete brand identity packages.'},
-            {"icon": 'fa-sign', "title": 'Premium Signage (LED & 3D)', "description": 'Eye-catching glow signs, neon boards, 3D acrylic letters, and flex banners.'},
-            {"icon": 'fa-camera', "title": 'Event Photography & Video', "description": 'Cinematic coverage for weddings, corporate events, and product shoots.'},
-            {"icon": 'fa-laptop-code', "title": 'Web Development', "description": 'Custom websites, e-commerce stores, and SEO optimization.'}
+            {"icon": 'fa-camera', "title": 'Event Photography & Video', "description": 'Cinematic coverage for weddings, corporate events, and product shoots.'}
         ])
         
     if db.portfolio.count_documents({}) == 0:
@@ -179,7 +177,7 @@ def sync_to_spreadsheet(inquiry_id, service, details):
 def index():
     reviews = convert_ids(db.reviews.find({"status": "Approved"}).sort("timestamp", -1))
     pricing = convert_ids(db.pricing_packages.find())
-    services = convert_ids(db.services.find())
+    services = convert_ids(db.services.find({"title": {"$nin": ["Premium Signage (LED & 3D)", "Web Development"]}}))
     portfolio = convert_ids(db.portfolio.find())
     story = convert_id(db.our_story.find_one())
     
