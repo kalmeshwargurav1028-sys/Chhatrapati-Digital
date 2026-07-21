@@ -342,9 +342,9 @@
     </section>
 
     <!-- Floating Need Help Button -->
-    <a href="#order" class="help-float" aria-label="Need Help?">
+    <button id="openHelpBtn" class="help-float" aria-label="Need Help?" style="border: none; cursor: pointer; outline: none;">
         <i class="far fa-life-ring"></i> Need help?
-    </a>
+    </button>
 
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/{{ config.whatsapp_num if config else '917483006958' }}" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
@@ -424,6 +424,28 @@
                 </div>
                 <button type="submit" class="cta-button primary modal-submit">Request Estimate</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; padding: 2rem; border-radius: 12px; background: white;">
+            <div class="modal-header" style="border-bottom: 1px solid #edf2f7; padding-bottom: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="background: #f7a93b; color: #1a202c; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="far fa-life-ring"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.4rem; color: #111; font-weight: 700;">Need help?</h3>
+                        <p style="margin: 0; color: #718096; font-size: 0.95rem; margin-top: 4px;">Support & escalation</p>
+                    </div>
+                </div>
+                <button id="closeHelpBtn" class="close-btn" style="background: transparent; border: none; font-size: 1.5rem; color: #718096; cursor: pointer;">&times;</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 0.5rem 0;">
+                <span style="display: inline-block; width: 10px; height: 10px; background-color: #f7a93b; border-radius: 50%;"></span>
+                <p style="margin: 0; font-weight: 600; color: #111; font-size: 1.05rem;">CHETHAN RAO - +91 74830 06958</p>
+            </div>
         </div>
     </div>
 

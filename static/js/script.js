@@ -309,6 +309,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Help Modal Logic
+    const helpModal = document.getElementById('helpModal');
+    const openHelpBtn = document.getElementById('openHelpBtn');
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
+
+    if (openHelpBtn && helpModal) {
+        openHelpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            helpModal.classList.add('active');
+        });
+
+        closeHelpBtn.addEventListener('click', () => {
+            helpModal.classList.remove('active');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.remove('active');
+            }
+        });
+    }
+
     // Lightbox Gallery Logic
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightboxImg');
