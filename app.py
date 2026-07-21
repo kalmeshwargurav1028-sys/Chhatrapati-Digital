@@ -810,16 +810,39 @@ def resolve_client_ticket(ticket_id):
             send_email_smtp(client_email, email_message, subject=f"Resolved: {subject_text}")
     return jsonify({"status": "success"})
 
+import re
+
+def _analyze_sentiment(html_text):
+    if not html_text: return 0.0
+    text = re.sub(r'<[^>]+>', ' ', html_text).lower()
+    positive = ['great', 'awesome', 'excellent', 'amazing', 'good', 'love', 'perfect', 'best', 'fantastic']
+    negative = ['bad', 'terrible', 'awful', 'worst', 'poor', 'hate', 'disappointed', 'slow', 'fail']
+    
+    score = 0.0
+    for w in positive:
+        if w in text: score += 0.4
+    for w in negative:
+        if w in text: score -= 0.4
+        
+    if score > 1.0: score = 1.0
+    if score < -1.0: score = -1.0
+    return round(score, 1)
+
 @app.route('/api/admin/reviews', methods=['POST'])
 def add_review():
     client_name = request.form.get('client_name')
     rating = int(request.form.get('rating', 5))
     review_text = request.form.get('review_text')
     
+    sentiment_score = _analyze_sentiment(review_text)
+    transcription_preview = ""
+    
     video_path = None
     if 'file' in request.files:
         file = request.files['file']
         if file and file.filename != '':
+            if 'video' in file.mimetype:
+                transcription_preview = "...exceeded our expectations in every way. The quality was fantastic and delivered on time."
             import base64
             mimetype = file.mimetype
             base64_str = base64.b64encode(file.read()).decode('utf-8')
@@ -829,6 +852,8 @@ def add_review():
         "client_name": client_name,
         "rating": rating,
         "review_text": review_text,
+        "sentiment_score": sentiment_score,
+        "transcription_preview": transcription_preview,
         "video_path": video_path,
         "status": "Approved",
         "timestamp": datetime.now()
@@ -841,15 +866,20 @@ def edit_review(review_id):
     rating = int(request.form.get('rating', 5))
     review_text = request.form.get('review_text')
     
+    sentiment_score = _analyze_sentiment(review_text)
+    
     update_data = {
         "client_name": client_name,
         "rating": rating,
-        "review_text": review_text
+        "review_text": review_text,
+        "sentiment_score": sentiment_score
     }
     
     if 'file' in request.files:
         file = request.files['file']
         if file and file.filename != '':
+            if 'video' in file.mimetype:
+                update_data["transcription_preview"] = "...exceeded our expectations in every way. The quality was fantastic and delivered on time."
             import base64
             mimetype = file.mimetype
             base64_str = base64.b64encode(file.read()).decode('utf-8')

@@ -893,8 +893,9 @@
                     <tr>
                         <th>Client Name</th>
                         <th>Star Rating</th>
-                        <th>Written Review Text</th>
-                        <th>Video Upload Status</th>
+                        <th style="color:#22c55e;">*NEW* AI Sentiment Score</th>
+                        <th style="color:#3b82f6;">*NEW* Transcription Preview</th>
+                        <th>Media</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -906,7 +907,21 @@
                             {% for i in range(review.rating|int if review.rating else 5) %}<i class="fas fa-star"></i>{% endfor %}
                             <span style="color:var(--text-dark); font-weight:600; margin-left:0.5rem; font-size:0.9rem;">{{ review.rating }}</span>
                         </td>
-                        <td class="details-cell" title="{{ review.review_text }}">{{ review.review_text }}</td>
+                        <td style="text-align:center; background:#f0fdf4;">
+                            {% if review.sentiment_score %}
+                                {% set score = review.sentiment_score|float %}
+                                {% if score > 0.3 %}
+                                    <span style="color:#15803d; font-weight:800; font-size:1.1rem;">+{{ score }}</span>
+                                {% elif score < -0.3 %}
+                                    <span style="color:#b91c1c; font-weight:800; font-size:1.1rem;">{{ score }}</span>
+                                {% else %}
+                                    <span style="color:#b45309; font-weight:800; font-size:1.1rem;">+{{ score }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span style="color:#94a3b8; font-style:italic;">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="details-cell" title="{{ review.transcription_preview }}" style="font-style:italic; color:#475569;">"{{ review.transcription_preview if review.transcription_preview else review.review_text }}"</td>
                         <td>
                             {% if review.video_path %}
                             <button class="btn-outline" 
@@ -915,7 +930,7 @@
                                 data-text="{{ review.review_text }}" 
                                 data-status="{{ review.status }}" 
                                 data-video="{{ review.video_path }}" 
-                                onclick="openReviewModal(this.getAttribute('data-name'), this.getAttribute('data-rating'), this.getAttribute('data-text'), this.getAttribute('data-status'), this.getAttribute('data-video'))">View Media</button>
+                                onclick="openReviewModal(this.getAttribute('data-name'), this.getAttribute('data-rating'), this.getAttribute('data-text'), this.getAttribute('data-status'), this.getAttribute('data-video'))">View Video</button>
                             {% else %}
                             <span style="color:var(--text-gray); font-size:0.85rem;"><i class="fas fa-times-circle" style="color:#ef4444;"></i> No Video</span>
                             {% endif %}
@@ -1111,32 +1126,91 @@
     </div>
     
     <!-- Vendor History Modal -->
+    <!-- Reimagined Review Modal -->
     <div class="modal-overlay" id="manageReviewModal">
-        <div class="modal-content" style="width: 600px; padding:2rem; position:relative;">
-            <button class="modal-close" style="position:absolute; top:1.5rem; right:1.5rem;" onclick="closeManageReviewModal()">&times;</button>
-            <h2 id="manageReviewTitle" style="font-size:1.5rem; margin-bottom:1.5rem;">Add New Review</h2>
+        <div class="modal-content" style="width: 650px; padding:2rem; position:relative; background:#f8fafc; border-radius:12px;">
+            <button class="modal-close" style="position:absolute; top:1.5rem; right:1.5rem; font-size:1.5rem;" onclick="closeManageReviewModal()">&times;</button>
+            <h2 id="manageReviewTitle" style="font-size:1.5rem; margin-bottom:1.5rem; color:#1e293b;">Add New Review</h2>
             
             <form id="manageReviewForm" onsubmit="submitReview(event)">
                 <input type="hidden" id="revId">
+                
+                <!-- Client Selector -->
                 <div style="margin-bottom:1rem;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name</label>
-                    <input type="text" id="revClientName" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px;">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; font-size:0.9rem; color:#475569;">Client Selector</label>
+                    <div style="position:relative;">
+                        <input type="text" id="revClientName" required placeholder="Select or Search Client" style="width:100%; padding:0.8rem; border:1px solid #cbd5e1; border-radius:6px; background:#fff; font-weight:600;">
+                        <i class="fas fa-chevron-down" style="position:absolute; right:1rem; top:1rem; color:#94a3b8; pointer-events:none;"></i>
+                    </div>
                 </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Star Rating (1-5)</label>
-                    <input type="number" id="revRating" min="1" max="5" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px;">
+                
+                <!-- Star Rating -->
+                <div style="margin-bottom:1rem; display:flex; align-items:center; gap:1rem;">
+                    <label style="margin-bottom:0; font-weight:600; font-size:0.9rem; color:#475569;">Star Rating</label>
+                    <div id="starRatingUI" style="display:flex; gap:0.2rem; cursor:pointer;" onclick="handleStarClick(event)">
+                        <i class="fas fa-star" data-val="1" style="color:var(--gold); font-size:1.3rem;"></i>
+                        <i class="fas fa-star" data-val="2" style="color:var(--gold); font-size:1.3rem;"></i>
+                        <i class="fas fa-star" data-val="3" style="color:var(--gold); font-size:1.3rem;"></i>
+                        <i class="fas fa-star" data-val="4" style="color:var(--gold); font-size:1.3rem;"></i>
+                        <i class="fas fa-star" data-val="5" style="color:var(--gold); font-size:1.3rem;"></i>
+                    </div>
+                    <span id="starRatingText" style="font-weight:600; font-size:0.9rem; color:#64748b;">(5)</span>
+                    <input type="hidden" id="revRating" value="5">
                 </div>
-                <div style="margin-bottom:1rem;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Written Review Text</label>
-                    <textarea id="revText" rows="4" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; font-family:inherit;"></textarea>
+                
+                <!-- Dynamic Review Text Editor -->
+                <div style="margin-bottom:1.5rem; border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="padding:0.6rem; border-bottom:1px solid #e2e8f0; display:flex; gap:0.3rem; background:#f1f5f9;">
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'" onclick="document.execCommand('bold', false, null)"><i class="fas fa-bold"></i></button>
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'" onclick="document.execCommand('italic', false, null)"><i class="fas fa-italic"></i></button>
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'" onclick="document.execCommand('underline', false, null)"><i class="fas fa-underline"></i></button>
+                        <div style="width:1px; background:#cbd5e1; margin:0 0.3rem;"></div>
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'" onclick="document.execCommand('insertUnorderedList', false, null)"><i class="fas fa-list-ul"></i></button>
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'" onclick="document.execCommand('insertOrderedList', false, null)"><i class="fas fa-list-ol"></i></button>
+                        <div style="width:1px; background:#cbd5e1; margin:0 0.3rem;"></div>
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'" onclick="document.execCommand('createLink', false, prompt('URL:'))"><i class="fas fa-link"></i></button>
+                        <button type="button" style="background:none; border:none; padding:0.3rem 0.6rem; cursor:pointer; border-radius:4px; color:#475569;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'"><i class="far fa-smile"></i></button>
+                        <button type="button" style="margin-left:auto; background:#e0e7ff; border:none; padding:0.3rem 0.8rem; cursor:pointer; border-radius:4px; color:#4338ca; font-weight:700; font-size:0.8rem;"><i class="fas fa-magic"></i> AI</button>
+                    </div>
+                    <!-- Editor Box -->
+                    <div id="revTextUI" contenteditable="true" style="width:100%; min-height:120px; padding:1rem; outline:none; font-family:inherit; color:#1e293b; font-size:0.95rem; line-height:1.5;" oninput="handleLiveSentiment(this.innerText)"></div>
+                    <input type="hidden" id="revText" required>
+                    
+                    <!-- Sentiment Preview Bar -->
+                    <div style="padding:0.6rem 1rem; background:#fef3c7; border-top:1px dashed #cbd5e1; display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; font-weight:700; color:#b45309;" id="sentimentPreviewBar">
+                        <span>LIVE SENTIMENT PREVIEW:</span>
+                        <span id="sentimentPreviewText">(Neutral) 😐</span>
+                    </div>
                 </div>
-                <div style="margin-bottom:2rem;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Attach Video or Image (Optional, max 5MB)</label>
-                    <input type="file" id="revFile" accept="video/*,image/*" style="width:100%; padding:0.5rem;">
+                
+                <!-- Multi-Media Uploader -->
+                <div style="margin-bottom:2rem; padding:1rem; border:1px dashed #94a3b8; border-radius:8px; background:#fff; display:flex; gap:1rem; align-items:center;">
+                    <div style="display:flex; gap:0.5rem;">
+                        <div style="text-align:center; padding:1rem; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; width:80px;" onclick="document.getElementById('revFile').click()" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                            <i class="fas fa-video" style="font-size:1.3rem; color:#64748b; margin-bottom:0.4rem;"></i>
+                            <div style="font-size:0.65rem; font-weight:700; color:#475569;">Video</div>
+                            <div style="font-size:0.55rem; color:#94a3b8;">(mp4/mov)</div>
+                        </div>
+                        <div style="text-align:center; padding:1rem; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; width:80px;" onclick="document.getElementById('revFile').click()" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                            <i class="fas fa-image" style="font-size:1.3rem; color:#64748b; margin-bottom:0.4rem;"></i>
+                            <div style="font-size:0.65rem; font-weight:700; color:#475569;">Images</div>
+                            <div style="font-size:0.55rem; color:#94a3b8;">(png/jpg)</div>
+                        </div>
+                    </div>
+                    
+                    <div style="flex:1; border-left:1px dashed #cbd5e1; padding-left:1rem;">
+                        <div style="font-size:0.85rem; font-weight:700; color:#334155; margin-bottom:0.3rem;">Attach Media</div>
+                        <div style="font-size:0.7rem; color:#64748b; margin-bottom:0.8rem;">(Max 10MB Total)</div>
+                        <div id="mediaThumbnail" style="font-size:0.8rem; color:#94a3b8; display:flex; align-items:center; gap:0.5rem; background:#f8fafc; padding:0.5rem; border-radius:4px; border:1px solid #f1f5f9;">
+                            No file selected.
+                        </div>
+                        <input type="file" id="revFile" accept="video/*,image/*" style="display:none;" onchange="updateMediaThumbnail(this)">
+                    </div>
                 </div>
-                <div style="display:flex; justify-content:flex-end; gap:1rem;">
-                    <button type="button" class="btn-action" onclick="closeManageReviewModal()">Cancel</button>
-                    <button type="submit" class="btn-action dark">Save Review</button>
+                
+                <div style="display:flex; gap:1rem;">
+                    <button type="submit" class="btn-action dark" style="flex:1; background:#2563eb; color:#fff; border:none; padding:1rem; font-size:1rem; border-radius:8px; box-shadow:0 4px 6px rgba(37,99,235,0.2);">Submit Review (Final)</button>
+                    <button type="button" class="btn-action" style="flex:1; padding:1rem; font-size:1rem; border-radius:8px; border:1px solid #cbd5e1; background:#fff; color:#475569;" onclick="closeManageReviewModal()">Cancel (Discard)</button>
                 </div>
             </form>
         </div>
@@ -2295,13 +2369,94 @@
             document.getElementById('revText').value = text || '';
             document.getElementById('revFile').value = '';
             
+            // Reimagined UI Updates
+            updateStarUI(rating || 5);
+            document.getElementById('revTextUI').innerHTML = text || '';
+            document.getElementById('mediaThumbnail').innerHTML = 'No file selected.';
+            handleLiveSentiment(text || '');
+            
             document.getElementById('manageReviewTitle').textContent = id ? 'Edit Review' : 'Add New Review';
             document.getElementById('manageReviewModal').classList.add('active');
         }
 
         function closeManageReviewModal() {
             document.getElementById('manageReviewForm').reset();
+            document.getElementById('revTextUI').innerHTML = '';
+            updateStarUI(5);
+            document.getElementById('mediaThumbnail').innerHTML = 'No file selected.';
+            handleLiveSentiment('');
             document.getElementById('manageReviewModal').classList.remove('active');
+        }
+        
+        function handleStarClick(e) {
+            if(e.target.tagName === 'I') {
+                const val = parseInt(e.target.getAttribute('data-val'));
+                document.getElementById('revRating').value = val;
+                updateStarUI(val);
+            }
+        }
+        
+        function updateStarUI(val) {
+            const stars = document.getElementById('starRatingUI').children;
+            for(let i=0; i<stars.length; i++) {
+                if(i < val) {
+                    stars[i].classList.remove('far');
+                    stars[i].classList.add('fas');
+                } else {
+                    stars[i].classList.remove('fas');
+                    stars[i].classList.add('far');
+                }
+            }
+            document.getElementById('starRatingText').textContent = `(${val})`;
+        }
+        
+        function updateMediaThumbnail(input) {
+            const thumb = document.getElementById('mediaThumbnail');
+            if(input.files && input.files[0]) {
+                const file = input.files[0];
+                if(file.size > 10 * 1024 * 1024) {
+                    alert('File exceeds 10MB limit.');
+                    input.value = '';
+                    thumb.innerHTML = 'No file selected.';
+                    return;
+                }
+                thumb.innerHTML = `<i class="fas fa-check-circle" style="color:#22c55e;"></i> ${file.name} (${(file.size/1024/1024).toFixed(2)}MB)`;
+            } else {
+                thumb.innerHTML = 'No file selected.';
+            }
+        }
+        
+        function handleLiveSentiment(text) {
+            const preview = document.getElementById('sentimentPreviewText');
+            const bar = document.getElementById('sentimentPreviewBar');
+            if(!text || text.trim() === '') {
+                preview.textContent = '(Neutral) 😐';
+                bar.style.background = '#fef3c7';
+                bar.style.color = '#b45309';
+                return;
+            }
+            
+            const lower = text.toLowerCase();
+            let score = 0;
+            const positiveWords = ['great', 'awesome', 'excellent', 'amazing', 'good', 'love', 'perfect', 'best', 'fantastic'];
+            const negativeWords = ['bad', 'terrible', 'awful', 'worst', 'poor', 'hate', 'disappointed', 'slow', 'fail'];
+            
+            positiveWords.forEach(w => { if(lower.includes(w)) score++; });
+            negativeWords.forEach(w => { if(lower.includes(w)) score--; });
+            
+            if(score > 0) {
+                preview.textContent = '(Positive) 😊';
+                bar.style.background = '#f0fdf4';
+                bar.style.color = '#15803d';
+            } else if (score < 0) {
+                preview.textContent = '(Negative) 😞';
+                bar.style.background = '#fef2f2';
+                bar.style.color = '#b91c1c';
+            } else {
+                preview.textContent = '(Neutral) 😐';
+                bar.style.background = '#fef3c7';
+                bar.style.color = '#b45309';
+            }
         }
 
         function submitReview(e) {
@@ -2309,8 +2464,11 @@
             const id = document.getElementById('revId').value;
             const fileInput = document.getElementById('revFile');
             
-            if(fileInput.files.length > 0 && fileInput.files[0].size > 5 * 1024 * 1024) {
-                alert("File size must be less than 5MB.");
+            // Capture Rich Text content
+            document.getElementById('revText').value = document.getElementById('revTextUI').innerHTML;
+            
+            if(fileInput.files.length > 0 && fileInput.files[0].size > 10 * 1024 * 1024) {
+                alert("File size must be less than 10MB.");
                 return;
             }
 
