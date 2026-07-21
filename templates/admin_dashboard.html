@@ -1664,28 +1664,37 @@
             <p style="color:var(--text-gray);">Upload and manage files for your clients.</p>
         </div>
         
-        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:2rem;">
-            <!-- Left: Upload Form -->
+        <div style="display:flex; flex-direction:column; gap:2rem;">
+            <!-- Top: Upload Form -->
             <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
-                <h3 style="margin-bottom:1.5rem; color:#1a202c;"><i class="fas fa-upload" style="color:#8b5cf6;"></i> Upload New File</h3>
+                <h3 style="margin-bottom:1.5rem; color:#1a202c;"><i class="fas fa-upload" style="color:#8b5cf6;"></i> Upload New Deliverable</h3>
                 <form id="uploadDeliverableForm" onsubmit="uploadDeliverable(event)">
-                    <div class="form-group" style="margin-bottom:1.5rem;">
-                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name / Email</label>
-                        <input type="text" id="delivClient" required class="form-control" placeholder="E.g. John Doe">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name / Email</label>
+                            <input type="text" id="delivClient" required class="form-control" placeholder="E.g. John Doe">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">File Description</label>
+                            <input type="text" id="delivDesc" required class="form-control" placeholder="E.g. Final Logo Package">
+                        </div>
                     </div>
+                    
                     <div class="form-group" style="margin-bottom:1.5rem;">
-                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">File Description</label>
-                        <input type="text" id="delivDesc" required class="form-control" placeholder="E.g. Final Logo Package">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Attach File (Max 10MB)</label>
+                        <div id="dropZone" style="width:100%; padding:2.5rem; border:2px dashed #cbd5e1; border-radius:8px; background:#f8fafc; text-align:center; cursor:pointer; transition:all 0.3s;" onclick="document.getElementById('delivFile').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:2.5rem; color:#8b5cf6; margin-bottom:1rem;"></i>
+                            <p id="dropZoneText" style="color:#64748b; font-weight:500;">Drag and drop your file here, or click to browse</p>
+                            <small style="color:#94a3b8; display:block; margin-top:5px;">Maximum file size: 10 MB</small>
+                            <input type="file" id="delivFile" required style="display:none;" onchange="handleFileSelect(event)">
+                        </div>
                     </div>
-                    <div class="form-group" style="margin-bottom:1.5rem;">
-                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Select File</label>
-                        <input type="file" id="delivFile" required class="form-control" style="padding:0.5rem;">
-                    </div>
-                    <button type="submit" class="btn-primary" style="width:100%; padding:1rem; font-size:1rem; border-radius:8px; background:#8b5cf6;"><i class="fas fa-cloud-upload-alt"></i> Upload to Client</button>
+                    
+                    <button type="submit" class="btn-primary" style="width:100%; padding:1rem; font-size:1rem; border-radius:8px; background:#8b5cf6;"><i class="fas fa-paper-plane"></i> Send to Client</button>
                 </form>
             </div>
             
-            <!-- Right: Uploaded Files Matrix -->
+            <!-- Bottom: Uploaded Files Matrix -->
             <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
                 <h3 style="margin-bottom:1.5rem; color:#1a202c;"><i class="fas fa-folder" style="color:#8b5cf6;"></i> Uploaded Deliverables</h3>
                 <div style="max-height:500px; overflow-y:auto;">
@@ -2950,12 +2959,63 @@
         }
         
         // --- Deliverables Actions ---
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').style.borderColor = '#8b5cf6';
+            document.getElementById('dropZone').style.background = '#f3e8ff';
+        }
+        
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').style.borderColor = '#cbd5e1';
+            document.getElementById('dropZone').style.background = '#f8fafc';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            handleDragLeave(e);
+            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                document.getElementById('delivFile').files = e.dataTransfer.files;
+                updateDropZoneText(e.dataTransfer.files[0]);
+            }
+        }
+        
+        function handleFileSelect(e) {
+            if (e.target.files && e.target.files.length > 0) {
+                updateDropZoneText(e.target.files[0]);
+            }
+        }
+        
+        function updateDropZoneText(file) {
+            if(file.size > 10 * 1024 * 1024) {
+                alert("File is too large! Maximum size is 10 MB.");
+                document.getElementById('delivFile').value = '';
+                document.getElementById('dropZoneText').innerHTML = "Drag and drop your file here, or click to browse";
+                return;
+            }
+            document.getElementById('dropZoneText').innerHTML = `Selected: <strong>${file.name}</strong>`;
+        }
+
         function uploadDeliverable(e) {
             e.preventDefault();
+            const fileInput = document.getElementById('delivFile');
+            if(!fileInput.files || fileInput.files.length === 0) {
+                showToast('Please select a file to upload.');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            if(file.size > 10 * 1024 * 1024) {
+                showToast('File size exceeds the 10MB limit.');
+                return;
+            }
+            
             const formData = new FormData();
             formData.append('client_name', document.getElementById('delivClient').value);
             formData.append('file_name', document.getElementById('delivDesc').value);
-            formData.append('file', document.getElementById('delivFile').files[0]);
+            formData.append('file', file);
+            
+            showToast('Uploading file...');
             
             fetch('/api/admin/deliverables', {
                 method: 'POST',
@@ -2967,6 +3027,8 @@
                 } else {
                     showToast('Failed to upload file.');
                 }
+            }).catch(err => {
+                showToast('Error uploading file. It might be too large for this prototype.');
             });
         }
         
