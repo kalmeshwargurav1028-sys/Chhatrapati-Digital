@@ -261,6 +261,10 @@
             <div class="nav-item" onclick="switchView('billing', this)">
                 <i class="fas fa-file-invoice-dollar"></i> Billing & Invoices
             </div>
+            
+            <div class="nav-item" onclick="switchView('files', this)" style="color:var(--primary);">
+                <i class="fas fa-folder-open"></i> Deliverables
+            </div>
 
             <div class="nav-item" onclick="switchView('support', this)">
                 <i class="fas fa-life-ring"></i> Support & Tickets
@@ -388,7 +392,35 @@
                     </table>
                 </div>
             </div>
+            </div>
 
+            <!-- FILES VIEW -->
+            <div id="files" class="page-view">
+                <h1 style="font-size:2rem; margin-bottom:2rem;">Deliverables Center</h1>
+                
+                <div class="dash-card">
+                    <p style="color:var(--text-muted); margin-bottom:1.5rem;">Securely download your finalized project files.</p>
+                    
+                    {% if deliverables and deliverables|length > 0 %}
+                    <ul style="list-style:none;">
+                        {% for item in deliverables %}
+                        <li style="margin-bottom:1rem;">
+                            <a href="{{ item.file_data }}" download="{{ item.file_name }}" style="display:flex; justify-content:space-between; padding:1rem; border:1px solid var(--border); border-radius:8px; text-decoration:none; color:var(--text-dark); background:#f8fafc;">
+                                <span><i class="fas fa-file-download" style="color:var(--primary); margin-right:10px;"></i> {{ item.file_name }}</span>
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div style="padding: 2rem; text-align: center; color: var(--text-muted); border: 1px dashed var(--border); border-radius: 8px;">
+                        <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 1rem; color: #cbd5e1;"></i>
+                        <p>No deliverables uploaded yet.</p>
+                        <p style="font-size: 0.9rem;">Once your finalized files are ready, they will appear here for download!</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
 
             <!-- SUPPORT VIEW -->
             <div id="support" class="page-view">

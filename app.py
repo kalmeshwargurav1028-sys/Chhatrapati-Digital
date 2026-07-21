@@ -423,6 +423,7 @@ def admin_inquiries():
     
     invoices = convert_ids(db.invoices.find().sort("timestamp", -1))
     tickets = convert_ids(db.client_tickets.find().sort("timestamp", -1))
+    deliverables = convert_ids(db.deliverables.find().sort("timestamp", -1))
     
     total_inquiries = len(inquiries)
     pending_review = sum(1 for i in inquiries if i.get('status', 'New') in ('New', 'Pending'))
@@ -443,7 +444,7 @@ def admin_inquiries():
         "unresolved_tickets": sum(1 for t in tickets if t.get('status') != 'Resolved')
     }
     
-    return render_template('admin_dashboard.html', inquiries=inquiries, vendor_inquiries=vendor_inquiries, reviews=reviews, metrics=metrics, profile=profile, cms=cms_data, invoices=invoices, tickets=tickets)
+    return render_template('admin_dashboard.html', inquiries=inquiries, vendor_inquiries=vendor_inquiries, reviews=reviews, metrics=metrics, profile=profile, cms=cms_data, invoices=invoices, tickets=tickets, deliverables=deliverables)
 
 @app.route('/api/profile', methods=['GET', 'POST'])
 def handle_profile():
@@ -816,8 +817,36 @@ def dashboard():
     invoices = convert_ids(db.invoices.find().sort("_id", -1))
     tickets = convert_ids(db.client_tickets.find().sort("_id", -1))
     inquiries = convert_ids(db.inquiries.find().sort("timestamp", -1))
+    deliverables = convert_ids(db.deliverables.find().sort("timestamp", -1))
     
-    return render_template('dashboard.html', invoices=invoices, tickets=tickets, inquiries=inquiries)
+    return render_template('dashboard.html', invoices=invoices, tickets=tickets, inquiries=inquiries, deliverables=deliverables)
+
+@app.route('/api/admin/deliverables', methods=['POST'])
+def add_deliverable():
+    client_name = request.form.get('client_name')
+    file_name = request.form.get('file_name')
+    
+    file_data = None
+    if 'file' in request.files:
+        file = request.files['file']
+        if file and file.filename != '':
+            import base64
+            mimetype = file.mimetype
+            base64_str = base64.b64encode(file.read()).decode('utf-8')
+            file_data = f"data:{mimetype};base64,{base64_str}"
+            
+    db.deliverables.insert_one({
+        "client_name": client_name,
+        "file_name": file_name,
+        "file_data": file_data,
+        "timestamp": datetime.now()
+    })
+    return jsonify({"status": "success"})
+
+@app.route('/api/admin/deliverables/<deliverable_id>', methods=['DELETE'])
+def delete_deliverable(deliverable_id):
+    db.deliverables.delete_one({"_id": safe_object_id(deliverable_id)})
+    return jsonify({"status": "success"})
 
 @app.route('/api/client/tickets', methods=['POST'])
 def add_client_ticket():

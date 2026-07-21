@@ -656,6 +656,7 @@
             <a class="nav-link" onclick="switchPageView('website')" style="color:var(--primary);"><i class="fas fa-edit"></i> WEBSITE MANAGER</a>
             <a class="nav-link" onclick="switchPageView('vendors')" style="color:#ec4899;"><i class="fas fa-users"></i> VENDOR INQUIRIES</a>
             <a class="nav-link" onclick="switchPageView('billing')" style="color:#1d4ed8;"><i class="fas fa-file-invoice-dollar"></i> BILLING</a>
+            <a class="nav-link" onclick="switchPageView('deliverables')" style="color:#8b5cf6;"><i class="fas fa-folder-open"></i> DELIVERABLES</a>
         </div>
     </aside>
 
@@ -1651,6 +1652,68 @@
                         <p>No recent POs found.</p>
                     </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    <!-- Deliverables Center View -->
+    <div class="main-container page-view" id="view-deliverables" style="display:none;">
+        <div style="margin-bottom:2rem;">
+            <h1 style="font-size:1.8rem; font-weight:800; color:var(--text-dark); margin-bottom:0.5rem;">Deliverables Center</h1>
+            <p style="color:var(--text-gray);">Upload and manage files for your clients.</p>
+        </div>
+        
+        <div style="display:grid; grid-template-columns: 1fr 2fr; gap:2rem;">
+            <!-- Left: Upload Form -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; color:#1a202c;"><i class="fas fa-upload" style="color:#8b5cf6;"></i> Upload New File</h3>
+                <form id="uploadDeliverableForm" onsubmit="uploadDeliverable(event)">
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Client Name / Email</label>
+                        <input type="text" id="delivClient" required class="form-control" placeholder="E.g. John Doe">
+                    </div>
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">File Description</label>
+                        <input type="text" id="delivDesc" required class="form-control" placeholder="E.g. Final Logo Package">
+                    </div>
+                    <div class="form-group" style="margin-bottom:1.5rem;">
+                        <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Select File</label>
+                        <input type="file" id="delivFile" required class="form-control" style="padding:0.5rem;">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; padding:1rem; font-size:1rem; border-radius:8px; background:#8b5cf6;"><i class="fas fa-cloud-upload-alt"></i> Upload to Client</button>
+                </form>
+            </div>
+            
+            <!-- Right: Uploaded Files Matrix -->
+            <div style="background:var(--white); border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,0.03); padding:2rem;">
+                <h3 style="margin-bottom:1.5rem; color:#1a202c;"><i class="fas fa-folder" style="color:#8b5cf6;"></i> Uploaded Deliverables</h3>
+                <div style="max-height:500px; overflow-y:auto;">
+                    {% if deliverables and deliverables|length > 0 %}
+                        {% for item in deliverables %}
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:1rem; border:1px solid #e2e8f0; border-radius:8px; margin-bottom:1rem;">
+                            <div style="display:flex; align-items:center; gap:1rem;">
+                                <div style="width:40px; height:40px; background:#f3e8ff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#8b5cf6;">
+                                    <i class="fas fa-file"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight:600; color:#1a202c;">{{ item.file_name }}</div>
+                                    <div style="font-size:0.85rem; color:#718096;">For: {{ item.client_name }} | {{ (item.timestamp|string).split('.')[0] }}</div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:0.5rem;">
+                                <a href="{{ item.file_data }}" download="{{ item.file_name }}" class="btn-action" style="padding:0.5rem; color:#3182ce; border:1px solid #e2e8f0; border-radius:4px; text-decoration:none;"><i class="fas fa-download"></i></a>
+                                <button class="btn-action" style="padding:0.5rem; color:#e53e3e; border:1px solid #e2e8f0; border-radius:4px; cursor:pointer; background:white;" onclick="deleteDeliverable('{{ item.id }}')"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="text-align:center; padding:3rem 1rem; color:#718096;">
+                            <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:1rem; color:#cbd5e1;"></i>
+                            <p>No deliverables uploaded yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -2884,6 +2947,36 @@
             document.getElementById('billClientName').value = clientName;
             document.getElementById('billPoNum').value = poNum;
             showToast("Invoice loaded into the generator. You can now edit and re-generate the bill.");
+        }
+        
+        // --- Deliverables Actions ---
+        function uploadDeliverable(e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('client_name', document.getElementById('delivClient').value);
+            formData.append('file_name', document.getElementById('delivDesc').value);
+            formData.append('file', document.getElementById('delivFile').files[0]);
+            
+            fetch('/api/admin/deliverables', {
+                method: 'POST',
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if(data.status === 'success') {
+                    showToast('Deliverable uploaded successfully!');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('Failed to upload file.');
+                }
+            });
+        }
+        
+        function deleteDeliverable(id) {
+            if(confirm("Are you sure you want to delete this deliverable?")) {
+                fetch(`/api/admin/deliverables/${id}`, { method: 'DELETE' })
+                .then(r => r.json()).then(data => {
+                    if(data.status === 'success') window.location.reload();
+                });
+            }
         }
         
         // Initialize tab based on hash
