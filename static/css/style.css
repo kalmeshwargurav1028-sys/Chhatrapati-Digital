@@ -664,7 +664,7 @@ h1, h2, h3 {
 /* Floating Need Help */
 .help-float {
     position: fixed;
-    bottom: 110px;
+    bottom: 30px;
     right: 30px;
     background-color: #f7a93b;
     color: #0d0d12;
@@ -691,7 +691,7 @@ h1, h2, h3 {
 /* Floating WhatsApp */
 .whatsapp-float {
     position: fixed;
-    bottom: 30px;
+    bottom: 110px;
     right: 30px;
     width: 60px;
     height: 60px;
