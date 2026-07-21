@@ -170,7 +170,24 @@
                     
                     <button type="submit" class="submit-btn">LOGIN <i class="fas fa-arrow-right"></i></button>
                     
-                    <div class="form-links">
+                    <div style="display:flex; align-items:center; margin:1.5rem 0; color:#a0aec0; font-size:0.9rem; font-weight:600;">
+                        <div style="flex:1; height:1px; background:#e0e6ed;"></div>
+                        <span style="padding:0 10px;">OR</span>
+                        <div style="flex:1; height:1px; background:#e0e6ed;"></div>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:0.8rem;">
+                        <button type="button" style="width:100%; padding:0.9rem; background:#fff; color:#3b4256; border:1px solid #e0e6ed; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 2px 5px rgba(0,0,0,0.02); transition:background 0.3s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'" onclick="showToast('Google Sign-In coming soon!')">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:20px;">
+                            Sign in with Google
+                        </button>
+                        <button type="button" style="width:100%; padding:0.9rem; background:#1877f2; color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 10px rgba(24,119,242,0.2); transition:background 0.3s;" onmouseover="this.style.background='#166fe5'" onmouseout="this.style.background='#1877f2'" onclick="showToast('Facebook Sign-In coming soon!')">
+                            <i class="fab fa-facebook-f" style="font-size:1.2rem;"></i>
+                            Sign in with Facebook
+                        </button>
+                    </div>
+                    
+                    <div class="form-links" style="margin-top:1.5rem;">
                         <a href="#" class="link-forgot" onclick="toggleForm('forgot')"><i class="fas fa-key"></i> Forgot Password</a>
                         <a href="#" class="link-help" onclick="document.getElementById('helpModal').style.display='flex'; return false;"><i class="far fa-question-circle"></i> Need help?</a>
                         <a href="#" class="link-create" onclick="toggleForm('register')">Create New Account</a>
