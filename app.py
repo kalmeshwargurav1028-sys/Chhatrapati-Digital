@@ -848,6 +848,21 @@ def delete_deliverable(deliverable_id):
     db.deliverables.delete_one({"_id": safe_object_id(deliverable_id)})
     return jsonify({"status": "success"})
 
+@app.route('/api/client/upload', methods=['POST'])
+def client_upload_deliverable():
+    data = request.get_json()
+    if not data or 'file_name' not in data or 'file_data' not in data:
+        return jsonify({"status": "error", "message": "Missing file data"}), 400
+        
+    db.deliverables.insert_one({
+        "file_name": data['file_name'],
+        "file_data": data['file_data'],
+        "description": data.get('description', ''),
+        "uploaded_by": data.get('client_email', 'client'),
+        "timestamp": datetime.now()
+    })
+    return jsonify({"status": "success"})
+
 @app.route('/api/client/tickets', methods=['POST'])
 def add_client_ticket():
     email = request.form.get('email')
