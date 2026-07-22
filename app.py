@@ -893,6 +893,14 @@ def resolve_client_ticket(ticket_id):
             send_email_smtp(client_email, email_message, subject=f"Resolved: {subject_text}")
     return jsonify({"status": "success"})
 
+@app.route('/api/admin/tickets/<ticket_id>/reopen', methods=['POST'])
+def reopen_client_ticket(ticket_id):
+    db.client_tickets.update_one(
+        {"_id": safe_object_id(ticket_id)},
+        {"$set": {"status": "Open"}, "$unset": {"resolved_at": ""}}
+    )
+    return jsonify({"status": "success"})
+
 @app.route('/api/project/messages', methods=['GET', 'POST'])
 def handle_project_messages():
     if request.method == 'GET':

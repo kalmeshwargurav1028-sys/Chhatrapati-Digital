@@ -644,7 +644,7 @@
         <div class="sidebar-header">
             <div class="brand">
                 <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Chhatrapati Digital" style="max-height:30px;">
-                <span style="font-size: 1.2rem; font-weight: 800; color: #111;">CD <span style="color: #ef4444;">Admin</span></span>
+                <span style="font-size: 1.2rem; font-weight: 800; color: #111;">Chhatrapati<span style="color: #ef4444;">Digital</span></span>
             </div>
         </div>
         <div class="nav-menu">
@@ -670,7 +670,7 @@
         <div class="nav-right">
             <div class="search-bar">
                 <i class="fas fa-search"></i>
-                <input type="text" id="globalSearch" placeholder="Search across CD Admin..." onkeyup="handleGlobalSearch(this.value)">
+                <input type="text" id="globalSearch" placeholder="Search..." onkeyup="handleGlobalSearch(this.value)">
             </div>
             
             <div style="position:relative;">
@@ -1812,8 +1812,8 @@
                             Resolved on:<br>{{ (ticket.resolved_at|string).split('.')[0] }}
                             {% endif %}
                         </span>
-                        <button class="btn-primary" style="background:var(--bg-light); color:var(--text-gray); border:1px solid var(--border);" disabled>
-                            Resolved
+                        <button class="btn-primary" style="background:var(--bg-light); color:var(--text-gray); border:1px solid var(--border);" onclick="reopenTicket('{{ ticket.id }}')">
+                            <i class="fas fa-undo"></i> Reopen Ticket
                         </button>
                     </div>
                 </div>
@@ -2150,6 +2150,19 @@
         function resolveTicket(ticketId) {
             if(confirm("Are you sure you want to mark this ticket as resolved?")) {
                 fetch('/api/admin/tickets/' + ticketId + '/resolve', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        window.location.hash = "messages";
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+        
+        function reopenTicket(ticketId) {
+            if(confirm("Are you sure you want to reopen this ticket?")) {
+                fetch('/api/admin/tickets/' + ticketId + '/reopen', { method: 'POST' })
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === 'success') {
