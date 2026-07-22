@@ -3074,7 +3074,7 @@
         function loadAdminMessages(email) {
             if(!email) return;
             email = email.trim().toLowerCase();
-            fetch('/api/project/messages/' + encodeURIComponent(email))
+            fetch('/api/project/messages?email=' + encodeURIComponent(email))
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === 'success') {

@@ -878,16 +878,17 @@ def resolve_client_ticket(ticket_id):
             send_email_smtp(client_email, email_message, subject=f"Resolved: {subject_text}")
     return jsonify({"status": "success"})
 
-# --- Project Discussion API ---
-@app.route('/api/project/messages/<client_email>', methods=['GET'])
-def get_project_messages(client_email):
-    client_email = client_email.strip()
-    # Case-insensitive query using regex
-    messages = list(db.project_messages.find({"client_email": {"$regex": f"^{client_email}$", "$options": "i"}}).sort("timestamp", 1))
-    return jsonify({"status": "success", "messages": convert_ids(messages)})
+@app.route('/api/project/messages', methods=['GET', 'POST'])
+def handle_project_messages():
+    if request.method == 'GET':
+        client_email = request.args.get('email', '').strip()
+        if not client_email:
+            return jsonify({"status": "error", "message": "Missing email"}), 400
+        messages = list(db.project_messages.find({"client_email": {"$regex": f"^{client_email}$", "$options": "i"}}).sort("timestamp", 1))
+        return jsonify({"status": "success", "messages": convert_ids(messages)})
+        
+    # POST
 
-@app.route('/api/project/messages', methods=['POST'])
-def add_project_message():
     data = request.get_json() if request.is_json else request.form
     client_email = data.get('client_email', '').strip().lower()
     sender = data.get('sender', 'client')

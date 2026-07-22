@@ -382,7 +382,7 @@
                         </div>
                         <!-- Chat Input -->
                         <div style="padding:1rem; border-top:1px solid #e2e8f0; display:flex; gap:10px; background:white; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
-                            <input type="text" id="chatClientEmail" placeholder="Your Registered Email..." class="form-control" style="width:280px; flex-shrink:0; margin-bottom:0;" required onchange="loadProjectMessages()">
+                            <input type="text" id="chatClientEmail" placeholder="Your Registered Email..." class="form-control" style="width:320px; flex-shrink:0; margin-bottom:0;" required onchange="loadProjectMessages()">
                             <input type="text" id="chatInput" class="form-control" placeholder="Type a message..." style="margin-bottom:0; flex:1;" onkeypress="if(event.key==='Enter') sendProjectMessage()">
                             <button class="btn-primary" style="padding:0.8rem 1.5rem;" onclick="sendProjectMessage()"><i class="fas fa-paper-plane"></i></button>
                         </div>
@@ -827,7 +827,7 @@
             let email = document.getElementById('chatClientEmail').value;
             if(!email) return;
             email = email.trim().toLowerCase();
-            fetch('/api/project/messages/' + encodeURIComponent(email))
+            fetch('/api/project/messages?email=' + encodeURIComponent(email))
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === 'success') {
