@@ -881,8 +881,9 @@ def resolve_client_ticket(ticket_id):
 # --- Project Discussion API ---
 @app.route('/api/project/messages/<client_email>', methods=['GET'])
 def get_project_messages(client_email):
-    client_email = client_email.strip().lower()
-    messages = list(db.project_messages.find({"client_email": client_email}).sort("timestamp", 1))
+    client_email = client_email.strip()
+    # Case-insensitive query using regex
+    messages = list(db.project_messages.find({"client_email": {"$regex": f"^{client_email}$", "$options": "i"}}).sort("timestamp", 1))
     return jsonify({"status": "success", "messages": convert_ids(messages)})
 
 @app.route('/api/project/messages', methods=['POST'])
