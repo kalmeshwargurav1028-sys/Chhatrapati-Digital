@@ -11,8 +11,8 @@
             --primary: #004de6;
             --primary-light: rgba(0, 77, 230, 0.1);
             --bg-color: #f4f7fa;
-            --sidebar-bg: #1e293b;
-            --sidebar-text: #cbd5e1;
+            --sidebar-bg: #e0f2fe;
+            --sidebar-text: #334155;
             --sidebar-active: #ffffff;
             --text-dark: #0f172a;
             --text-muted: #64748b;
@@ -51,7 +51,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         .sidebar-logo-text {
-            color: var(--white);
+            color: #0f172a;
             font-weight: 800;
             font-size: 1.2rem;
             text-transform: uppercase;
@@ -79,11 +79,12 @@
             font-weight: 500;
         }
         .nav-item:hover, .nav-item.active {
-            background-color: rgba(255,255,255,0.1);
-            color: var(--sidebar-active);
+            background-color: rgba(0, 77, 230, 0.1);
+            color: var(--primary);
         }
         .nav-item.active {
-            background-color: var(--primary);
+            background-color: var(--primary) !important;
+            color: var(--white) !important;
         }
 
         /* Main Content Styles */
@@ -251,7 +252,7 @@
         <div class="sidebar-header">
             <a href="/" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; width:100%; text-decoration:none;">
                 <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Chhatrapati Digital Logo" style="max-width: 40px;">
-                <span style="font-size: 1.2rem; font-weight: 800; color: #111;">Chhatrapati<span style="color: #ef4444;">Digital</span></span>
+                <span class="sidebar-logo-text">Chhatrapati<span>Digital</span></span>
             </a>
         </div>
         <div class="nav-menu">
@@ -269,10 +270,6 @@
 
             <div class="nav-item" onclick="switchView('billing', this)">
                 <i class="fas fa-wallet"></i> Finance Center
-            </div>
-            
-            <div class="nav-item" onclick="switchView('profile', this)">
-                <i class="fas fa-user"></i> My Profile
             </div>
             
             <div class="nav-item" onclick="switchView('support', this)">
@@ -411,7 +408,7 @@
                                 <small style="color:#64748b;">/ month</small>
                             </div>
                         </div>
-                        <button class="btn-primary" style="width:100%; background:white; color:var(--primary); border:1px solid var(--primary);"><i class="fas fa-cog"></i> Manage Auto-Pay Setup</button>
+                        <button class="btn-primary" style="width:100%; background:white; color:var(--primary); border:1px solid var(--primary);" onclick="showAutoPaySetup()"><i class="fas fa-cog"></i> Setup Auto-Pay</button>
                     </div>
 
                     <!-- Right: One-Click Payments & Invoices -->
@@ -433,6 +430,43 @@
                             <p style="color:var(--text-muted); text-align:center;">No pending invoices to clear.</p>
                             {% endfor %}
                         </div>
+                    </div>
+                </div>
+
+                <!-- Payment History -->
+                <div class="dash-card" style="margin-top:2rem;">
+                    <h3><i class="fas fa-history"></i> Payment History</h3>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Jul 01, 2026</td>
+                                    <td>Monthly SEO Retainer</td>
+                                    <td>₹15,000</td>
+                                    <td><span class="badge badge-success">Paid</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 15, 2026</td>
+                                    <td>Website Redesign (Milestone 2)</td>
+                                    <td>₹40,000</td>
+                                    <td><span class="badge badge-success">Paid</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Jun 01, 2026</td>
+                                    <td>Monthly SEO Retainer</td>
+                                    <td>₹15,000</td>
+                                    <td><span class="badge badge-success">Paid</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -716,6 +750,10 @@
                 });
             };
             reader.readAsDataURL(file);
+        }
+
+        function showAutoPaySetup() {
+            alert("Auto-Pay Setup\n\nTo ensure uninterrupted service, you can set up Auto-Pay via our secure Stripe integration. This will automatically deduct your retainer fee on the 1st of every month.\n\nPlease contact your account manager to receive your secure Auto-Pay enrollment link.");
         }
 
         // Ticket submission logic
