@@ -881,13 +881,14 @@ def resolve_client_ticket(ticket_id):
 # --- Project Discussion API ---
 @app.route('/api/project/messages/<client_email>', methods=['GET'])
 def get_project_messages(client_email):
+    client_email = client_email.strip().lower()
     messages = list(db.project_messages.find({"client_email": client_email}).sort("timestamp", 1))
     return jsonify({"status": "success", "messages": convert_ids(messages)})
 
 @app.route('/api/project/messages', methods=['POST'])
 def add_project_message():
     data = request.get_json() if request.is_json else request.form
-    client_email = data.get('client_email')
+    client_email = data.get('client_email', '').strip().lower()
     sender = data.get('sender', 'client')
     message_text = data.get('message_text')
     
