@@ -271,6 +271,10 @@
                 <i class="fas fa-wallet"></i> Finance Center
             </div>
             
+            <div class="nav-item" onclick="switchView('profile', this)">
+                <i class="fas fa-user"></i> My Profile
+            </div>
+            
             <div class="nav-item" onclick="switchView('support', this)">
                 <i class="fas fa-life-ring"></i> Help & Support
             </div>
@@ -348,6 +352,24 @@
                                     <div style="font-size:0.9rem; font-weight:600;">Invoice Generated</div>
                                     <div style="font-size:0.85rem; color:#64748b;">A new invoice is ready for payment.</div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Widget -->
+                    <div class="dash-card" style="margin-top: 2rem; background: var(--primary); color: white; border: none;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 style="color: white; margin:0;"><i class="far fa-calendar-alt"></i> Calendar & Time</h3>
+                            <div id="liveClock" style="font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums;"></div>
+                        </div>
+                        <div id="currentDateDisplay" style="font-size: 0.9rem; margin-bottom: 1rem; opacity: 0.9;"></div>
+                        
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem;">
+                            <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 5px; font-size: 0.8rem; font-weight: bold; margin-bottom: 10px; opacity: 0.8;">
+                                <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+                            </div>
+                            <div id="calendarGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 5px; font-size: 0.85rem;">
+                                <!-- Calendar days injected via JS -->
                             </div>
                         </div>
                     </div>
@@ -494,9 +516,47 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- SUPPORT VIEW -->
+            <!-- MY PROFILE VIEW -->
+            <div id="profile" class="page-view">
+                <h1 style="font-size:2rem; margin-bottom:0.5rem;">My Profile</h1>
+                <p style="color:var(--text-muted); margin-bottom:2rem;">Manage your personal and company details.</p>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
+                    <div class="dash-card">
+                        <h3 style="margin-bottom:1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">Personal Information</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:#475569;">Full Name</label>
+                            <input type="text" id="profName" class="form-control" placeholder="John Doe">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:#475569;">Registered Email</label>
+                            <input type="email" id="profEmail" class="form-control" placeholder="john@example.com" disabled style="background:#f8fafc; cursor:not-allowed;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:#475569;">Phone Number</label>
+                            <input type="text" id="profPhone" class="form-control" placeholder="+91 9876543210">
+                        </div>
+                    </div>
+                    
+                    <div class="dash-card">
+                        <h3 style="margin-bottom:1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:0.5rem;">Company Details</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:#475569;">Company Name</label>
+                            <input type="text" id="profCompany" class="form-control" placeholder="Acme Corp">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom: 0.5rem; font-weight:600; font-size:0.9rem; color:#475569;">Bio / Additional Info</label>
+                            <textarea id="profBio" class="form-control" rows="4" placeholder="Briefly describe your business..."></textarea>
+                        </div>
+                        <div style="margin-top: 2rem;">
+                            <button class="btn-primary" style="width: 100%; padding:1rem;" onclick="saveClientProfile()">Save Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- HELP & SUPPORT VIEW -->
             <div id="support" class="page-view">
                 <h1 style="font-size:2rem; margin-bottom:2rem;">Support & Tickets</h1>
                 
@@ -700,6 +760,87 @@
                 }
             });
         }
+
+        // --- Client Profile Logic ---
+        function loadClientProfile() {
+            const email = localStorage.getItem('client_email');
+            if (email) {
+                document.getElementById('profEmail').value = email;
+                fetch('/api/client/profile/' + encodeURIComponent(email))
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success' && data.profile) {
+                            document.getElementById('profName').value = data.profile.name || '';
+                            document.getElementById('profPhone').value = data.profile.phone || '';
+                            document.getElementById('profCompany').value = data.profile.company || '';
+                            document.getElementById('profBio').value = data.profile.bio || '';
+                        }
+                    });
+            }
+        }
+
+        function saveClientProfile() {
+            const email = document.getElementById('profEmail').value || localStorage.getItem('client_email');
+            if (!email) {
+                showToast("Please enter an email in the project discussion feed first.");
+                return;
+            }
+            
+            const data = {
+                email: email,
+                name: document.getElementById('profName').value,
+                phone: document.getElementById('profPhone').value,
+                company: document.getElementById('profCompany').value,
+                bio: document.getElementById('profBio').value
+            };
+            
+            fetch('/api/client/profile', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(r => r.json()).then(res => {
+                if(res.status === 'success') {
+                    showToast("Profile saved successfully!");
+                }
+            });
+        }
+        
+        // --- Calendar & Clock Logic ---
+        function initCalendar() {
+            const clockEl = document.getElementById('liveClock');
+            const dateEl = document.getElementById('currentDateDisplay');
+            const gridEl = document.getElementById('calendarGrid');
+            
+            if(!clockEl || !dateEl || !gridEl) return;
+            
+            setInterval(() => {
+                const now = new Date();
+                clockEl.innerText = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            }, 1000);
+            
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateEl.innerText = now.toLocaleDateString(undefined, options);
+            
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            gridEl.innerHTML = '';
+            for(let i=0; i<firstDay; i++) {
+                gridEl.innerHTML += '<div></div>';
+            }
+            for(let i=1; i<=daysInMonth; i++) {
+                const isToday = (i === now.getDate());
+                gridEl.innerHTML += `<div style="${isToday ? 'background:white; color:var(--primary); border-radius:50%; font-weight:bold;' : 'padding:2px;'}">${i}</div>`;
+            }
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            initCalendar();
+            loadClientProfile();
+        });
 
         // --- Project Chat Logic ---
         let currentClientEmail = localStorage.getItem('client_email') || '';

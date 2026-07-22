@@ -906,6 +906,35 @@ def add_project_message():
         
     return jsonify({"status": "success"})
 
+# --- Client Profile API ---
+@app.route('/api/client/profile/<email>', methods=['GET'])
+def get_client_profile(email):
+    profile = db.client_profile.find_one({"email": email})
+    if not profile:
+        return jsonify({"status": "error", "message": "Profile not found"}), 404
+    return jsonify({"status": "success", "profile": convert_id(profile)})
+
+@app.route('/api/client/profile', methods=['POST'])
+def update_client_profile():
+    data = request.json
+    email = data.get('email')
+    if not email:
+        return jsonify({"status": "error", "message": "Email is required"}), 400
+        
+    update_data = {
+        "name": data.get('name', ''),
+        "phone": data.get('phone', ''),
+        "company": data.get('company', ''),
+        "bio": data.get('bio', ''),
+        "last_updated": datetime.now()
+    }
+    
+    db.client_profile.update_one(
+        {"email": email},
+        {"$set": update_data},
+        upsert=True
+    )
+    return jsonify({"status": "success"})
 
 import re
 
