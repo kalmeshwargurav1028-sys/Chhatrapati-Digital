@@ -3073,6 +3073,7 @@
 
         function loadAdminMessages(email) {
             if(!email) return;
+            email = email.trim().toLowerCase();
             fetch('/api/project/messages/' + encodeURIComponent(email))
                 .then(r => r.json())
                 .then(data => {
@@ -3106,9 +3107,10 @@
         }
 
         function sendAdminMessage() {
-            const email = document.getElementById('activeChatEmail').value;
+            let email = document.getElementById('activeChatEmail').value;
             const text = document.getElementById('adminChatInput').value;
             if(!email || !text.trim()) return;
+            email = email.trim().toLowerCase();
 
             fetch('/api/project/messages', {
                 method: 'POST',

@@ -504,6 +504,7 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
             <!-- MY PROFILE VIEW -->
             <div id="profile" class="page-view">
@@ -823,8 +824,9 @@
         }
 
         function loadProjectMessages() {
-            const email = document.getElementById('chatClientEmail').value;
+            let email = document.getElementById('chatClientEmail').value;
             if(!email) return;
+            email = email.trim().toLowerCase();
             fetch('/api/project/messages/' + encodeURIComponent(email))
                 .then(r => r.json())
                 .then(data => {
@@ -860,7 +862,7 @@
         }
 
         function sendProjectMessage() {
-            const email = document.getElementById('chatClientEmail').value;
+            let email = document.getElementById('chatClientEmail').value;
             const text = document.getElementById('chatInput').value;
             if(!email) {
                 showToast("Please enter your email address to chat.");
@@ -870,6 +872,7 @@
                 showToast("Please type a message before sending.");
                 return;
             }
+            email = email.trim().toLowerCase();
             localStorage.setItem('client_email', email);
             fetch('/api/project/messages', {
                 method: 'POST',
