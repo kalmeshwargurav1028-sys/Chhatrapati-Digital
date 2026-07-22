@@ -140,7 +140,7 @@ def send_email_notification(inquiry_id, service, details):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        server = smtplib.SMTP('smtp.office365.com', 587)
+        server = smtplib.SMTP('smtp.office365.com', 587, timeout=5)
         server.starttls()
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, msg.as_string())
@@ -324,7 +324,7 @@ def send_email_smtp(receiver_email, message_body, subject="Chhatrapati Digital")
     msg.attach(MIMEText(message_body, 'plain'))
     
     try:
-        server = smtplib.SMTP('smtp.office365.com', 587)
+        server = smtplib.SMTP('smtp.office365.com', 587, timeout=5)
         server.starttls()
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, receiver_email, msg.as_string())

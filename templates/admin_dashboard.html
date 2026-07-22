@@ -2151,12 +2151,28 @@
         // --- Ticket Resolution ---
         function resolveTicket(ticketId) {
             if(confirm("Are you sure you want to mark this ticket as resolved?")) {
+                const btn = window.event ? window.event.target.closest('button') : null;
+                if(btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                }
+                
                 fetch('/api/admin/tickets/' + ticketId + '/resolve', { method: 'POST' })
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === 'success') {
                         window.location.hash = "messages";
                         window.location.reload();
+                    } else {
+                        if(btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fas fa-check"></i> Mark Resolved';
+                        }
+                    }
+                }).catch(e => {
+                    if(btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-check"></i> Mark Resolved';
                     }
                 });
             }
