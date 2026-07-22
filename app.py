@@ -126,8 +126,8 @@ def safe_object_id(id_val):
     return id_val
 
 def send_email_notification(inquiry_id, service, details):
-    sender_email = "agent4@indusschool.com"
-    sender_password = "Agent@2026"
+    sender_email = os.environ.get("SMTP_EMAIL", "agent4@indusschool.com")
+    sender_password = os.environ.get("SMTP_PASSWORD", "Agent@2026")
     receiver_email = "raochethan604@gmail.com"
 
     subject = f"NEW INQUIRY: {service}"
@@ -311,8 +311,8 @@ def submit_vendor_inquiry():
     return jsonify({"status": "success", "message": "Details submitted successfully!"})
 
 def send_email_smtp(receiver_email, message_body, subject="Chhatrapati Digital"):
-    sender_email = "agent4@indusschool.com"
-    sender_password = "Agent@2026"
+    sender_email = os.environ.get("SMTP_EMAIL", "agent4@indusschool.com")
+    sender_password = os.environ.get("SMTP_PASSWORD", "Agent@2026")
     
 
     
