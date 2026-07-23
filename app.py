@@ -251,6 +251,7 @@ def submit_order():
         "details": details, 
         "timestamp": datetime.now(), 
         "status": "New",
+        "project_phase": "New Inquiry & Feasibility Review",
         "history": []
     }
     
@@ -488,22 +489,33 @@ def clear_notifications():
 
 @app.route('/api/inquiries/<inquiry_id>/status', methods=['POST'])
 def update_inquiry_status(inquiry_id):
-    data = request.json
+    data = request.json or {}
     new_status = data.get('status')
+    new_phase = data.get('project_phase')
     
-    db.inquiries.update_one({"_id": safe_object_id(inquiry_id)}, {"$set": {"status": new_status}})
+    update_doc = {}
+    if new_status:
+        update_doc["status"] = new_status
+    if new_phase:
+        update_doc["project_phase"] = new_phase
+        
+    if update_doc:
+        db.inquiries.update_one({"_id": safe_object_id(inquiry_id)}, {"$set": update_doc})
     
     email_dispatched = False
     if new_status == 'Active Project':
         db.notifications.insert_one({"type": "AUTOMATED EMAIL", "message": f"Welcome packet sent for #{inquiry_id}", "timestamp": datetime.now(), "is_read": 0})
         email_dispatched = True
         
-        with open('email_outbox.txt', 'a') as f:
-            f.write(f"--- AUTOMATED WELCOME EMAIL ---\n")
-            f.write(f"To: Inquiry #{inquiry_id}\n")
-            f.write(f"Subject: Welcome to Chhatrapati Digital - Next Steps\n")
-            f.write(f"Body: Hello! We are thrilled to start working on your project. Here is your welcome packet and timeline...\n")
-            f.write("-------------------------------\n\n")
+        try:
+            with open('email_outbox.txt', 'a') as f:
+                f.write(f"--- AUTOMATED WELCOME EMAIL ---\n")
+                f.write(f"To: Inquiry #{inquiry_id}\n")
+                f.write(f"Subject: Welcome to Chhatrapati Digital - Next Steps\n")
+                f.write(f"Body: Hello! We are thrilled to start working on your project. Here is your welcome packet and timeline...\n")
+                f.write("-------------------------------\n\n")
+        except Exception:
+            pass
             
     return jsonify({"status": "success", "email_dispatched": email_dispatched})
 

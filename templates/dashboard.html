@@ -313,11 +313,29 @@
                                 <h3><i class="fas fa-tasks" style="color:var(--primary);"></i> Active Project Status</h3>
                                 <button class="btn-primary" onclick="switchView('projects')">View Details</button>
                             </div>
-                            <h4 style="margin-bottom:0.5rem;">Graphic Design & Branding</h4>
-                            <p style="color:#64748b; font-size:0.9rem; margin-bottom:1rem;">Current Phase: Team Review & Ideation</p>
-                            <!-- Progress Bar -->
+                            {% set active_proj = inquiries|selectattr("status", "in", ["Active Project", "Contacted", "Pending", "New"])|first if inquiries else None %}
+                            {% if not active_proj and inquiries and inquiries|length > 0 %}
+                                {% set active_proj = inquiries|first %}
+                            {% endif %}
+                            {% set proj_service = active_proj.service if active_proj else 'Graphic Design & Branding' %}
+                            {% set proj_phase = active_proj.project_phase if active_proj and active_proj.project_phase else (active_proj.status if active_proj else 'Team Review & Ideation') %}
+                            {% set phase_percentage = 40 %}
+                            {% if 'Completed' in proj_phase or proj_phase == 'Completed & Delivered' %}
+                                {% set phase_percentage = 100 %}
+                            {% elif 'Approval' in proj_phase or proj_phase == 'Client Approval & Review' %}
+                                {% set phase_percentage = 85 %}
+                            {% elif 'Design' in proj_phase or proj_phase == 'In Design' %}
+                                {% set phase_percentage = 65 %}
+                            {% elif 'Team Review' in proj_phase or proj_phase == 'Team Review & Ideation' or proj_phase == 'Active Project' %}
+                                {% set phase_percentage = 40 %}
+                            {% elif 'New' in proj_phase or 'Pending' in proj_phase %}
+                                {% set phase_percentage = 15 %}
+                            {% endif %}
+                            <h4 id="activeProjectTitle" style="margin-bottom:0.5rem;">{{ proj_service }}</h4>
+                            <p id="activeProjectPhase" style="color:#64748b; font-size:0.9rem; margin-bottom:1rem;">Current Phase: <strong style="color:var(--primary);">{{ proj_phase }}</strong></p>
+                            <!-- Dynamic Progress Bar -->
                             <div style="background:#e2e8f0; height:10px; border-radius:5px; width:100%; overflow:hidden;">
-                                <div style="background:var(--primary); height:100%; width:40%;"></div>
+                                <div id="activeProgressBar" style="background:var(--primary); height:100%; width:{{ phase_percentage }}%; transition: width 0.5s ease;"></div>
                             </div>
                         </div>
                         

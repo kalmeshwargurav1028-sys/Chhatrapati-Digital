@@ -728,8 +728,9 @@
                             <th>ID <i class="fas fa-sort" style="color:#ccc;"></i></th>
                             <th>Version Type</th>
                             <th>Project Details</th>
+                            <th>Phase & Status</th>
                             <th>Contact</th>
-                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -742,6 +743,10 @@
                             </td>
                             <td style="font-weight: 600;">{{ inquiry.service }}</td>
                             <td class="details-cell" title="{{ inquiry.details }}">{{ inquiry.details }}</td>
+                            <td>
+                                <span style="background:#e0f2fe; color:#0369a1; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:600; display:inline-block; margin-bottom:0.2rem;">{{ inquiry.project_phase if inquiry.project_phase else inquiry.status }}</span>
+                                <div style="font-size:0.75rem; color:var(--text-gray);">Status: {{ inquiry.status }}</div>
+                            </td>
                             <td style="font-size: 0.85rem; color: var(--text-gray);">{{ inquiry.client_email if inquiry.client_email else 'client@example.com' }}</td>
                             <td style="display:flex; gap:0.5rem; align-items:center;">
                                 <button class="btn-outline" onclick="openModal('{{ inquiry.id }}')">Review Details</button>
@@ -750,7 +755,7 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 3rem; color: #777;">No inquiries found yet.</td>
+                            <td colspan="7" style="text-align: center; padding: 3rem; color: #777;">No inquiries found yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -2276,7 +2281,7 @@
                         document.getElementById('modalStatusDate').textContent = `Last Updated: ${i.timestamp.split(' ')[0]}`;
                         document.getElementById('modalStatusTime').textContent = `Status Tracking : #${id}`;
                         
-                        renderStatusBadges(i.status);
+                        renderStatusBadges(i.status, i.project_phase);
                         
                         // Populate Submission Data
                         document.getElementById('tab-submission').innerHTML = `
@@ -2284,6 +2289,7 @@
                                 <strong>Client Name:</strong> ${i.client_name || 'Unknown'}<br><br>
                                 <strong>Client Email:</strong> ${i.client_email || 'unknown@example.com'}<br><br>
                                 <strong>Service:</strong> ${i.service}<br><br>
+                                <strong>Active Phase:</strong> <span style="background:#e0f2fe; color:#0369a1; padding:0.2rem 0.5rem; border-radius:4px; font-weight:600;">${i.project_phase || 'New Inquiry & Feasibility Review'}</span><br><br>
                                 <strong>Details provided:</strong><br>
                                 ${i.details}<br><br>
                                 <strong>Submitted on:</strong> ${i.timestamp}
@@ -2355,7 +2361,7 @@
             document.getElementById(`tab-${tabId}`).style.display = 'block';
         }
 
-        function renderStatusBadges(currentStatus) {
+        function renderStatusBadges(currentStatus, currentPhase) {
             const container = document.getElementById('statusBadgesContainer');
             container.innerHTML = '';
             
@@ -2375,6 +2381,37 @@
                 badge.onclick = () => updateStatus(currentInquiryId, s.id);
                 container.appendChild(badge);
             });
+
+            // Add Project Phase Dropdown Control
+            let phaseContainer = document.getElementById('phaseSelectorContainer');
+            if (!phaseContainer) {
+                phaseContainer = document.createElement('div');
+                phaseContainer.id = 'phaseSelectorContainer';
+                phaseContainer.style.marginTop = '1rem';
+                phaseContainer.style.paddingTop = '0.8rem';
+                phaseContainer.style.borderTop = '1px solid var(--border)';
+                container.parentNode.appendChild(phaseContainer);
+            }
+
+            const phases = [
+                "New Inquiry & Feasibility Review",
+                "Team Review & Ideation",
+                "In Design",
+                "Client Approval & Review",
+                "Completed & Delivered"
+            ];
+            
+            const selectedPhase = currentPhase || "New Inquiry & Feasibility Review";
+            let options = phases.map(p => `<option value="${p}" ${p === selectedPhase ? 'selected' : ''}>${p}</option>`).join('');
+
+            phaseContainer.innerHTML = `
+                <label style="font-size:0.8rem; font-weight:700; color:var(--text-dark); display:block; margin-bottom:0.4rem;">
+                    <i class="fas fa-tasks" style="color:var(--primary);"></i> UPDATE PROJECT PHASE:
+                </label>
+                <select id="projectPhaseSelect" onchange="updatePhase(currentInquiryId, this.value)" style="width:100%; padding:0.6rem; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:0.85rem; font-weight:600; color:var(--text-dark);">
+                    ${options}
+                </select>
+            `;
         }
 
         function updateStatus(id, newStatus) {
@@ -2386,7 +2423,22 @@
             .then(r => r.json())
             .then(data => {
                 if(data.status === 'success') {
-                    renderStatusBadges(newStatus);
+                    showToast('Status updated to ' + newStatus);
+                    setTimeout(() => window.location.reload(), 500);
+                }
+            });
+        }
+
+        function updatePhase(id, newPhase) {
+            fetch(`/api/inquiries/${id}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project_phase: newPhase })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    showToast('Project phase updated to: ' + newPhase);
                     setTimeout(() => window.location.reload(), 500);
                 }
             });
