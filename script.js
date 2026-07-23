@@ -1,130 +1,119 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Mobile Navbar Toggle
-    const menuToggle = document.getElementById('menu-toggle');
-    const navMenu = document.getElementById('nav-menu');
-
-    if (menuToggle && navMenu) {
-        menuToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            const icon = menuToggle.querySelector('i');
-            if (navMenu.classList.contains('active')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        });
-
-        // Close menu when clicking a link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                const icon = menuToggle.querySelector('i');
-                if (icon) {
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            });
-        });
-    }
-
-    // 2. Smooth Scrolling for Anchor Links & Active Nav Highlight
+    // Smooth scrolling
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const target = document.querySelector(targetId);
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
             if (target) {
-                e.preventDefault();
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
+                target.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
 
-    // 3. Stats Counter Animation on Scroll
-    const statNumbers = document.querySelectorAll('.stat-number');
-    let animatedStats = false;
+    // Form Submission Handling
+    const orderForm = document.getElementById('orderForm');
+    const formStatus = document.getElementById('formStatus');
 
-    const statsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !animatedStats) {
-                animatedStats = true;
-                statNumbers.forEach(stat => {
-                    const target = parseInt(stat.getAttribute('data-target'), 10);
-                    let count = 0;
-                    const increment = Math.ceil(target / 40);
-                    const timer = setInterval(() => {
-                        count += increment;
-                        if (count >= target) {
-                            stat.textContent = target + (target === 100 ? '%' : '+');
-                            clearInterval(timer);
-                        } else {
-                            stat.textContent = count;
-                        }
-                    }, 40);
+    if (orderForm) {
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const service = document.getElementById('serviceType').value;
+            const name = document.getElementById('orderName').value;
+            const contact = document.getElementById('orderContact').value;
+            const details = document.getElementById('orderDetails').value;
+            const submitBtn = orderForm.querySelector('button[type="submit"]');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            formStatus.textContent = '';
+            formStatus.className = 'form-status';
+
+            const fileInput = document.getElementById('orderFile');
+            const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+            if (file && file.size > 5 * 1024 * 1024) {
+                formStatus.textContent = 'File is too large. Maximum size is 5MB.';
+                formStatus.classList.add('error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Inquiry';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('service', service);
+            formData.append('client_name', name);
+            formData.append('client_email', contact);
+            formData.append('details', details);
+            if (file) {
+                formData.append('attachment', file);
+            }
+
+            try {
+                const response = await fetch('/api/order', {
+                    method: 'POST',
+                    body: formData
                 });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    formStatus.textContent = result.message;
+                    formStatus.classList.remove('error');
+                    orderForm.reset();
+                } else {
+                    throw new Error('Submission failed');
+                }
+            } catch (error) {
+                formStatus.textContent = 'Error submitting order. Please try again.';
+                formStatus.classList.add('error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Inquiry';
             }
         });
-    }, { threshold: 0.5 });
-
-    const statsSection = document.querySelector('.stats-section');
-    if (statsSection) {
-        statsObserver.observe(statsSection);
     }
 
-    // 4. Portfolio Category Filtering
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const galleryItems = document.querySelectorAll('.gallery-item');
+    // Vendor Form Submission Handling
+    const vendorForm = document.getElementById('vendorForm');
+    if (vendorForm) {
+        vendorForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const mobile = document.getElementById('vendorMobile').value;
+            const email = document.getElementById('vendorEmail').value;
+            const city = document.getElementById('vendorCity').value;
+            const category = document.getElementById('vendorCategory').value;
+            const submitBtn = vendorForm.querySelector('button[type="submit"]');
 
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
 
-            const filter = btn.getAttribute('data-filter');
+            try {
+                const response = await fetch('/api/vendor-inquiry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile, email, city, category })
+                });
 
-            galleryItems.forEach(item => {
-                const category = item.getAttribute('data-category');
-                if (filter === 'all' || category === filter) {
-                    item.classList.remove('hide');
-                    item.style.opacity = '1';
-                    item.style.transform = 'scale(1)';
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message || 'Details submitted successfully!');
+                    vendorForm.reset();
                 } else {
-                    item.classList.add('hide');
-                    item.style.opacity = '0';
-                    item.style.transform = 'scale(0.8)';
+                    throw new Error('Submission failed');
                 }
-            });
-        });
-    });
-
-    // 5. FAQ Accordion Toggle
-    const faqItems = document.querySelectorAll('.faq-item');
-    faqItems.forEach(item => {
-        const questionBtn = item.querySelector('.faq-question');
-        questionBtn.addEventListener('click', () => {
-            const isActive = item.classList.contains('active');
-            
-            // Close all FAQ items
-            faqItems.forEach(i => i.classList.remove('active'));
-            
-            // If wasn't active, open it
-            if (!isActive) {
-                item.classList.add('active');
+            } catch (error) {
+                alert('Error submitting details. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
             }
         });
-    });
+    }
 
-    // 6. Element Scroll Fade-in Observer
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px"
-    };
-
+    // Intersection Observer for scroll animations
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -133,114 +122,315 @@ document.addEventListener('DOMContentLoaded', () => {
                 observer.unobserve(entry.target);
             }
         });
-    }, observerOptions);
+    }, { threshold: 0.1 });
 
-    const animatedElements = document.querySelectorAll('.service-card, .gallery-item, .order-box, .info-card, .contact-form-card, .testimonial-card, .ba-card');
-    
-    animatedElements.forEach((el, index) => {
+    document.querySelectorAll('.service-card, .gallery-item, .order-box, .pricing-card, .testimonial-card, .faq-item, .about-content, .footer-col').forEach((el, index) => {
         el.style.opacity = "0";
-        el.style.transform = "translateY(30px)";
-        el.style.transition = `opacity 0.6s ease ${index * 0.08}s, transform 0.6s ease ${index * 0.08}s, box-shadow 0.3s ease, border-color 0.3s ease`;
+        el.style.transform = "translateY(20px)";
+        el.style.transition = `all 0.5s ease ${index * 0.1}s`;
         observer.observe(el);
     });
 
-    // 7. Interactive Quote Calculator
-    const serviceSelect = document.getElementById('quote-service');
-    const sizeInput = document.getElementById('quote-size');
-    const sizeGroup = document.getElementById('size-group');
-    const priceDisplay = document.getElementById('estimated-price');
-    const whatsappBtn = document.getElementById('send-whatsapp-quote');
+    // Portfolio Filters Logic
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const galleryItems = document.querySelectorAll('.gallery-item');
 
-    function calculatePrice() {
-        if (!serviceSelect || !priceDisplay) return;
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            btn.classList.add('active');
 
-        const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-        const rate = parseFloat(selectedOption.getAttribute('data-rate')) || 0;
-        const isFixed = selectedOption.getAttribute('data-fixed') === 'true';
+            const filterValue = btn.getAttribute('data-filter');
 
-        if (isFixed) {
-            if (sizeGroup) sizeGroup.style.display = 'none';
-            priceDisplay.textContent = `₹${rate.toLocaleString('en-IN')}`;
-        } else {
-            if (sizeGroup) sizeGroup.style.display = 'block';
-            const size = parseFloat(sizeInput.value) || 0;
-            const total = Math.round(rate * size);
-            priceDisplay.textContent = `₹${total.toLocaleString('en-IN')}`;
-        }
-    }
+            galleryItems.forEach(item => {
+                if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                    item.classList.remove('hide');
+                    // Small delay to allow display:block to apply before animating opacity
+                    setTimeout(() => {
+                        item.style.opacity = "1";
+                        item.style.transform = "translateY(0)";
+                    }, 50);
+                } else {
+                    item.classList.add('hide');
+                    item.style.opacity = "0";
+                }
+            });
+        });
+    });
 
-    if (serviceSelect && sizeInput) {
-        serviceSelect.addEventListener('change', calculatePrice);
-        sizeInput.addEventListener('input', calculatePrice);
-        calculatePrice();
-    }
+    // Before/After Slider Logic
+    const sliderControl = document.getElementById('sliderControl');
+    const beforeWrapper = document.getElementById('beforeWrapper');
+    const sliderLine = document.getElementById('sliderLine');
+    const sliderButton = document.getElementById('sliderButton');
 
-    if (whatsappBtn && serviceSelect) {
-        whatsappBtn.addEventListener('click', () => {
-            const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
-            const serviceName = selectedOption.textContent.split('(')[0].trim();
-            const isFixed = selectedOption.getAttribute('data-fixed') === 'true';
-            const finalPrice = priceDisplay ? priceDisplay.textContent : '';
-            
-            let message = `Hello Chhatrapati Digital, I would like to place an order for:\n`;
-            message += `• Service: ${serviceName}\n`;
-            if (!isFixed && sizeInput) {
-                message += `• Size/Area: ${sizeInput.value} sq. ft.\n`;
-            }
-            message += `• Estimated Price: ${finalPrice}\n\nPlease let me know the next steps!`;
-
-            window.open(`https://wa.me/919876543210?text=${encodeURIComponent(message)}`, '_blank');
+    if (sliderControl) {
+        sliderControl.addEventListener('input', (e) => {
+            const sliderValue = e.target.value;
+            beforeWrapper.style.width = `${sliderValue}%`;
+            sliderLine.style.left = `${sliderValue}%`;
+            sliderButton.style.left = `${sliderValue}%`;
         });
     }
 
-    // 8. Portfolio Lightbox Modal
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxCaption = document.getElementById('lightbox-caption');
-    const lightboxClose = document.getElementById('lightbox-close');
+    // Pricing Calculator Logic
+    const budgetRange = document.getElementById('budgetRange');
+    const budgetDisplay = document.getElementById('budgetDisplay');
+    const estimateTotal = document.getElementById('estimateTotal');
+    const toggles = [
+        document.getElementById('srvLogo'),
+        document.getElementById('srvPhoto'),
+        document.getElementById('srvSignage')
+    ];
 
-    document.querySelectorAll('.gallery-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const src = item.getAttribute('data-src') || item.querySelector('img').getAttribute('src');
-            const caption = item.getAttribute('data-caption') || item.querySelector('span').textContent;
+    function calculateEstimate() {
+        if (!budgetRange) return;
+        let baseBudget = parseInt(budgetRange.value);
+        let addOns = 0;
+        
+        toggles.forEach(toggle => {
+            if (toggle && toggle.checked) {
+                addOns += parseInt(toggle.value);
+            }
+        });
 
-            if (lightbox && lightboxImg && lightboxCaption) {
-                lightboxImg.src = src;
-                lightboxCaption.textContent = caption;
-                lightbox.classList.add('active');
+        let total = baseBudget + addOns;
+        budgetDisplay.textContent = `₹${baseBudget.toLocaleString()}`;
+        estimateTotal.textContent = `₹${total.toLocaleString()}`;
+    }
+
+    if (budgetRange) {
+        budgetRange.addEventListener('input', calculateEstimate);
+        toggles.forEach(toggle => {
+            if (toggle) toggle.addEventListener('change', calculateEstimate);
+        });
+        // Initial Calculation
+        calculateEstimate();
+    }
+
+    // FAQ Accordion Logic
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        
+        question.addEventListener('click', () => {
+            const isActive = item.classList.contains('active');
+            
+            // Close all other FAQs
+            faqItems.forEach(otherItem => {
+                otherItem.classList.remove('active');
+                otherItem.querySelector('.faq-answer').style.maxHeight = null;
+            });
+
+            // Toggle current FAQ
+            if (!isActive) {
+                item.classList.add('active');
+                answer.style.maxHeight = answer.scrollHeight + "px";
             }
         });
     });
 
-    if (lightboxClose) {
-        lightboxClose.addEventListener('click', () => {
-            lightbox.classList.remove('active');
+    // Project Planner Modal Logic
+    const plannerModal = document.getElementById('plannerModal');
+    const openPlannerBtn = document.getElementById('openPlannerBtn');
+    const closePlannerBtn = document.getElementById('closePlannerBtn');
+    const plannerForm = document.getElementById('plannerForm');
+
+    if (openPlannerBtn && plannerModal) {
+        openPlannerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            plannerModal.classList.add('active');
+        });
+
+        closePlannerBtn.addEventListener('click', () => {
+            plannerModal.classList.remove('active');
+        });
+
+        // Close on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target === plannerModal) {
+                plannerModal.classList.remove('active');
+            }
+        });
+
+        plannerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const submitBtn = plannerForm.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Estimating...';
+            submitBtn.disabled = true;
+            
+            const clientName = document.getElementById('modalName').value;
+            const clientEmail = document.getElementById('modalEmail').value;
+            const projectType = document.getElementById('modalProjectType').value;
+            const details = document.getElementById('modalDetails').value;
+            const timeline = document.getElementById('modalTimeline').value;
+            
+            const fullDetails = details + " | Timeline: " + timeline;
+            
+            const fileInput = document.getElementById('modalFile');
+            const file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+            if (file && file.size > 5 * 1024 * 1024) {
+                alert('File is too large. Maximum size is 5MB.');
+                submitBtn.textContent = 'Request Estimate';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('client_name', clientName);
+            formData.append('client_email', clientEmail);
+            formData.append('service', projectType);
+            formData.append('details', fullDetails);
+            if (file) {
+                formData.append('attachment', file);
+            }
+
+            fetch('/api/order', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Thank you! Your estimate request has been received. We will contact you shortly.");
+                plannerForm.reset();
+                submitBtn.textContent = 'Request Estimate';
+                submitBtn.disabled = false;
+                plannerModal.classList.remove('active');
+            })
+            .catch(error => {
+                alert("Something went wrong. Please try again.");
+                submitBtn.textContent = 'Request Estimate';
+                submitBtn.disabled = false;
+            });
         });
     }
 
-    if (lightbox) {
-        lightbox.addEventListener('click', (e) => {
-            if (e.target === lightbox) {
-                lightbox.classList.remove('active');
+    // Help Modal Logic
+    const helpModal = document.getElementById('helpModal');
+    const openHelpBtn = document.getElementById('openHelpBtn');
+    const closeHelpBtn = document.getElementById('closeHelpBtn');
+
+    if (openHelpBtn && helpModal) {
+        openHelpBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            helpModal.classList.add('active');
+        });
+
+        closeHelpBtn.addEventListener('click', () => {
+            helpModal.classList.remove('active');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.remove('active');
             }
         });
     }
 
-    // 9. Contact Form Submission Handler
-    const inquiryForm = document.getElementById('inquiry-form');
-    if (inquiryForm) {
-        inquiryForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('contact-name').value;
-            const phone = document.getElementById('contact-phone').value;
-            const msg = document.getElementById('contact-message').value;
+    // Lightbox Gallery Logic
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const closeLightbox = document.querySelector('.close-lightbox');
+    const prevLightbox = document.querySelector('.prev-lightbox');
+    const nextLightbox = document.querySelector('.next-lightbox');
+    
+    let currentFilteredItems = [];
+    let currentIndex = 0;
 
-            let fullMsg = `New Website Inquiry:\n`;
-            fullMsg += `• Name: ${name}\n`;
-            fullMsg += `• Phone: ${phone}\n`;
-            fullMsg += `• Requirements: ${msg}`;
+    if (lightbox) {
+        galleryItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Update current filtered items based on visibility
+                currentFilteredItems = Array.from(galleryItems).filter(el => !el.classList.contains('hide'));
+                currentIndex = currentFilteredItems.indexOf(item);
+                
+                showLightboxImage(currentIndex);
+                lightbox.style.display = 'block';
+            });
+        });
 
-            window.open(`https://wa.me/919876543210?text=${encodeURIComponent(fullMsg)}`, '_blank');
+        const showLightboxImage = (index) => {
+            if (currentFilteredItems.length > 0) {
+                const item = currentFilteredItems[index];
+                const img = item.querySelector('img');
+                const title = item.querySelector('h3').textContent;
+                const category = item.querySelector('p').textContent;
+                
+                lightboxImg.src = img.src;
+                lightboxCaption.innerHTML = `<strong>${title}</strong><br>${category}`;
+            }
+        };
+
+        closeLightbox.addEventListener('click', () => {
+            lightbox.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.style.display = 'none';
+            }
+        });
+
+        prevLightbox.addEventListener('click', () => {
+            currentIndex = (currentIndex > 0) ? currentIndex - 1 : currentFilteredItems.length - 1;
+            showLightboxImage(currentIndex);
+        });
+
+        nextLightbox.addEventListener('click', () => {
+            currentIndex = (currentIndex < currentFilteredItems.length - 1) ? currentIndex + 1 : 0;
+            showLightboxImage(currentIndex);
         });
     }
 });
+
+// Gallery Modal Logic
+function openGalleryModal(element) {
+    const title = element.getAttribute('data-title');
+    const category = element.getAttribute('data-category');
+    const image = element.getAttribute('data-image');
+    const process = element.getAttribute('data-process');
+
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalCategory').innerText = category;
+    document.getElementById('modalImage').src = image;
+    document.getElementById('modalProcess').innerText = process;
+
+    const modal = document.getElementById('galleryModal');
+    modal.style.display = 'flex';
+}
+
+function closeGalleryModal() {
+    const modal = document.getElementById('galleryModal');
+    modal.style.display = 'none';
+}
+
+// Close modal when clicking outside of it
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('galleryModal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// FAQ Accordion Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const faqItems = document.querySelectorAll('.faq-item');
+    faqItems.forEach(item => {
+        const questionBtn = item.querySelector('.faq-question');
+        if (questionBtn) {
+            questionBtn.addEventListener('click', () => {
+                const isActive = item.classList.contains('active');
+                faqItems.forEach(i => i.classList.remove('active'));
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        }
+    });
+});
+

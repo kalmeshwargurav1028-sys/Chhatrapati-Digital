@@ -3,305 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chhatrapati Digital | Premium Digital & Printing Studio</title>
-    <meta name="description" content="Chhatrapati Digital offers high quality Video & Photography, Graphic Design, Flex & Vinyl Printing, and LED 3D & Neon Signage services.">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>Chhatrapati Digital | Premium Digital Services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+
 </head>
 <body>
 
     <!-- Navigation Bar -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <a href="#hero" class="nav-brand">
-                <i class="fas fa-layer-group brand-icon"></i>
-                <span>Chhatrapati Digital</span>
+    <nav class="navbar" style="background:#f4f5f8; padding: 1rem 5%;">
+        <div class="logo-container">
+            <a href="/" style="text-decoration:none; display:flex; align-items:center; gap:0.5rem;">
+                <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Chhatrapati Digital Logo" style="max-height: 50px; width: auto;">
+                <span style="font-size: 1.4rem; font-weight: 800; color: #111;">Chhatrapati<span style="color: #ef4444;">Digital</span></span>
             </a>
-            <div class="nav-menu" id="nav-menu">
-                <a href="#hero" class="nav-link active">Home</a>
-                <a href="#services" class="nav-link">Services</a>
-                <a href="#portfolio" class="nav-link">Portfolio</a>
-                <a href="#testimonials" class="nav-link">Reviews</a>
-                <a href="#faq" class="nav-link">FAQ</a>
-                <a href="#contact" class="nav-link">Contact</a>
-                <a href="https://wa.me/919876543210?text=Hello%20Chhatrapati%20Digital,%20I%20want%20to%20inquire%20about%20your%20services." target="_blank" class="nav-cta">WhatsApp Us</a>
-            </div>
-            <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation">
-                <i class="fas fa-bars"></i>
-            </button>
         </div>
+        <ul class="nav-links">
+            <li><a href="#services" style="color:#333; font-weight:500; font-size: 1.1rem;">Services</a></li>
+            <li><a href="#portfolio" style="color:#333; font-weight:500; font-size: 1.1rem;">Gallery</a></li>
+            <li><a href="#pricing" style="color:#333; font-weight:500; font-size: 1.1rem;">Pricing</a></li>
+            <li><a href="/login" class="client-login-link" style="color:#333; font-weight:500; font-size: 1.1rem;">Login</a></li>
+            <li><a href="#order" class="cta-button nav-btn" style="background:#cc2b2b; color:white; border:none; border-radius:6px; padding:0.6rem 1.2rem; font-weight:600; font-size: 1.1rem; box-shadow:0 4px 6px rgba(185,28,28,0.2);">Start Project</a></li>
+        </ul>
     </nav>
 
     <!-- Hero Section -->
-    <header id="hero" class="hero">
-        <div class="hero-overlay"></div>
+    <header class="hero">
         <div class="hero-content">
-            <div class="hero-badge"><i class="fas fa-star"></i> Premium Quality Digital & Printing Studio</div>
-            <h1 class="hero-title">Chhatrapati Digital</h1>
-            <p class="hero-subtitle">Elevating Your Vision to Digital & Visual Reality</p>
-            <div class="hero-buttons">
-                <a href="#services" class="cta-button primary">Explore Services <i class="fas fa-arrow-down"></i></a>
-                <a href="#order" class="cta-button secondary">Get Instant Quote <i class="fas fa-calculator"></i></a>
+            <div class="hero-text-block">
+                <h1 class="hero-title" style="font-weight: 700; color: #1f2937;">{{ config.hero_title|safe if config else 'Transform Your Brand with<br>High-End Digital Solutions' }}</h1>
+                <p class="hero-subtitle" style="color: #4b5563;">{{ config.hero_subtitle if config else 'We create stunning designs, professional photography, and premium signage that drive sales and build trust.' }}</p>
+                <div class="hero-buttons">
+                    <a href="#order" class="cta-button primary">Request a Quote</a>
+                </div>
+            </div>
+            <div class="hero-image-block">
+                <div class="hero-image-container">
+                    <!-- Placeholder representing the desk setup in the reference -->
+                    <img src="https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1000&auto=format&fit=crop" alt="Premium Design Setup">
+                    <div class="hero-gold-plaque">
+                        CHHATRAPATI
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Stats & Achievements Counter Bar -->
-    <section class="stats-section">
-        <div class="container">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <i class="fas fa-tasks stat-icon"></i>
-                    <h3 class="stat-number" data-target="500">0</h3>
-                    <p class="stat-label">Projects Completed</p>
+    <!-- About Us Section -->
+    <section id="about" class="about-section" data-aos="fade-up">
+        <div class="about-content">
+            <div class="about-text">
+                <h2>{{ story.headline if story else 'Our Story' }}</h2>
+                <p>{{ story.paragraph if story else 'Chhatrapati Digital was founded on a simple principle: bold brands deserve bold representation.' }}</p>
+                <div class="about-stats">
+                    {% if story and story.stats_list %}
+                        {% for st in story.stats_list %}
+                        <div class="stat"><span class="stat-num">{{ st.val }}</span><br>{{ st.label }}</div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="stat"><span class="stat-num">500+</span><br>Projects</div>
+                        <div class="stat"><span class="stat-num">100%</span><br>Satisfaction</div>
+                        <div class="stat"><span class="stat-num">24/7</span><br>Support</div>
+                    {% endif %}
                 </div>
-                <div class="stat-card">
-                    <i class="fas fa-smile stat-icon"></i>
-                    <h3 class="stat-number" data-target="100">0</h3>
-                    <p class="stat-label">% Satisfied Clients</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-award stat-icon"></i>
-                    <h3 class="stat-number" data-target="10">0</h3>
-                    <p class="stat-label">Years Experience</p>
-                </div>
-                <div class="stat-card">
-                    <i class="fas fa-bolt stat-icon"></i>
-                    <h3 class="stat-number" data-target="24">0</h3>
-                    <p class="stat-label">Hr Express Delivery</p>
-                </div>
+            </div>
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2070&auto=format&fit=crop" alt="Our Workspace">
             </div>
         </div>
     </section>
 
     <!-- Services Section -->
-    <section id="services" class="services-section">
-        <div class="container">
-            <h2 class="section-title">What Service Do You Need?</h2>
-            <p class="section-subtitle">We deliver top-tier creative and digital printing solutions tailored to your business.</p>
-
-            <div class="services-grid">
-                <!-- Category 1 -->
+    <section id="services" class="services-section" data-aos="fade-up">
+        <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Professional Services</h2>
+        <div class="services-grid">
+            {% if services %}
+                {% for srv in services %}
                 <div class="service-card">
-                    <div class="card-icon"><i class="fas fa-camera-retro"></i></div>
-                    <h3>Video & Photography</h3>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Wedding Photography & Cinematography</li>
-                        <li><i class="fas fa-check-circle"></i> Corporate & Private Event Coverage</li>
-                        <li><i class="fas fa-check-circle"></i> Professional Video Editing & Color Grading</li>
-                        <li><i class="fas fa-check-circle"></i> Custom Photo Frames & Canvas Prints</li>
+                    <div class="card-icon" style="color:#004de6;"><i class="fas {{ srv.icon }}"></i></div>
+                    <h3 style="color:#004de6; font-size:1.2rem; font-weight:700;">{{ srv.title }}</h3>
+                    <ul style="list-style:none; padding:0; margin-top:1.5rem; text-align:left; border-top:1px solid #edf2f7; padding-top:1rem;">
+                        {% for item in srv.description.split(',') %}
+                        <li style="margin-bottom:0.8rem; font-size:1rem; color:#4a5568; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="fas fa-check" style="color:#004de6; font-size:1rem;"></i> {{ item.replace('and ', '').strip()|title }}
+                        </li>
+                        {% endfor %}
                     </ul>
-                    <a href="https://wa.me/919876543210?text=Hi%20Chhatrapati%20Digital,%20I%20am%20interested%20in%20Video%20%26%20Photography%20services." target="_blank" class="service-card-btn">Inquire Now <i class="fas fa-arrow-right"></i></a>
+                    <a href="#order" style="display:inline-block; margin-top:1.5rem; color:#ef4444; font-weight:700; text-decoration:none; border-bottom: 2px solid #ef4444; padding-bottom: 3px;">Start Project <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></a>
                 </div>
-
-                <!-- Category 2 -->
-                <div class="service-card">
-                    <div class="card-icon"><i class="fas fa-pen-nib"></i></div>
-                    <h3>Graphic Design</h3>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Custom 3D & Vector Logo Design</li>
-                        <li><i class="fas fa-check-circle"></i> Premium Visiting Cards & Stationery</li>
-                        <li><i class="fas fa-check-circle"></i> Wedding & Event Invitation Cards</li>
-                        <li><i class="fas fa-check-circle"></i> Social Media Graphics & Banners</li>
-                    </ul>
-                    <a href="https://wa.me/919876543210?text=Hi%20Chhatrapati%20Digital,%20I%20am%20interested%20in%20Graphic%20Design%20services." target="_blank" class="service-card-btn">Inquire Now <i class="fas fa-arrow-right"></i></a>
-                </div>
-
-                <!-- Category 3 -->
-                <div class="service-card">
-                    <div class="card-icon"><i class="fas fa-print"></i></div>
-                    <h3>Flex & Vinyl Printing</h3>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> High-Gloss Star Flex Banners</li>
-                        <li><i class="fas fa-check-circle"></i> Self-Adhesive Vinyl & Window Film</li>
-                        <li><i class="fas fa-check-circle"></i> HD Posters & Standees</li>
-                        <li><i class="fas fa-check-circle"></i> One-Way Vision & Backlit Flex</li>
-                    </ul>
-                    <a href="https://wa.me/919876543210?text=Hi%20Chhatrapati%20Digital,%20I%20am%20interested%20in%20Flex%20%26%20Vinyl%20Printing." target="_blank" class="service-card-btn">Inquire Now <i class="fas fa-arrow-right"></i></a>
-                </div>
-
-                <!-- Category 4 -->
-                <div class="service-card">
-                    <div class="card-icon"><i class="fas fa-lightbulb"></i></div>
-                    <h3>Signage & Boards</h3>
-                    <ul>
-                        <li><i class="fas fa-check-circle"></i> Acrylic LED 3D Letter Boards</li>
-                        <li><i class="fas fa-check-circle"></i> Custom Neon Glow Signs</li>
-                        <li><i class="fas fa-check-circle"></i> Backlit Light Box Signage</li>
-                        <li><i class="fas fa-check-circle"></i> ACP Shop Name Boards</li>
-                    </ul>
-                    <a href="https://wa.me/919876543210?text=Hi%20Chhatrapati%20Digital,%20I%20am%20interested%20in%20Signage%20%26%20Boards." target="_blank" class="service-card-btn">Inquire Now <i class="fas fa-arrow-right"></i></a>
-                </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <p>No services found.</p>
+            {% endif %}
         </div>
     </section>
 
-    <!-- Portfolio Gallery Section with Category Filters -->
-    <section id="portfolio" class="portfolio-section">
-        <div class="container">
-            <h2 class="section-title">Our Amazing Work</h2>
-            <p class="section-subtitle">Browse through our portfolio by selecting a category. Click any image to view in high resolution.</p>
+    <!-- Portfolio Gallery Section -->
+    <section id="portfolio" class="portfolio-section" data-aos="fade-up">
+        <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Gallery</h2>
+        
+        <!-- Portfolio Filters -->
+        <div class="portfolio-filters" style="flex-wrap: wrap; display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem;">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="wedding-photography">Wedding</button>
+            <button class="filter-btn" data-filter="logo-design">Logos</button>
+            <button class="filter-btn" data-filter="branding">Branding</button>
+            <button class="filter-btn" data-filter="photography">Photography</button>
+            <button class="filter-btn" data-filter="video-editing">Video</button>
+            <button class="filter-btn" data-filter="signage">Signage</button>
+            <button class="filter-btn" data-filter="web-development">Web Dev</button>
+        </div>
 
-            <!-- Category Filter Tabs -->
-            <div class="filter-tabs">
-                <button class="filter-btn active" data-filter="all">All Works</button>
-                <button class="filter-btn" data-filter="photography">Photography</button>
-                <button class="filter-btn" data-filter="design">Graphic Design</button>
-                <button class="filter-btn" data-filter="signage">Neon Signage</button>
-            </div>
-            
-            <div class="gallery-grid">
-                <div class="gallery-item" data-category="photography" data-src="/static/assets/wedding_photography_1784128887323.png" data-caption="Premium Wedding Photography">
-                    <img src="/static/assets/wedding_photography_1784128887323.png" alt="Wedding Photography">
-                    <div class="gallery-overlay">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                        <span>Premium Wedding Photography</span>
-                    </div>
+        <div class="gallery-grid">
+            {% if portfolio %}
+                {% for port in portfolio %}
+                <div class="gallery-item" data-category="{{ port.category }}" data-title="{{ port.project_name }}" data-image="{{ port.image_url }}" data-process="{{ port.work_process|default('Detailed work process coming soon for this project. Stay tuned!', true) }}" onclick="openGalleryModal(this)">
+                    <img src="{{ port.image_url }}" alt="{{ port.project_name }}">
+                    <div class="gallery-overlay"><span>{{ port.project_name }}<br><small style="font-size:0.95rem; color:#cbd5e1; margin-top:5px; display:inline-block;">View Work Process</small></span></div>
                 </div>
-                <div class="gallery-item" data-category="design" data-src="/static/assets/graphic_design_logo_1784128898227.png" data-caption="3D Logo & Branding Design">
-                    <img src="/static/assets/graphic_design_logo_1784128898227.png" alt="3D Logo Design">
-                    <div class="gallery-overlay">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                        <span>3D Logo & Graphic Design</span>
-                    </div>
-                </div>
-                <div class="gallery-item" data-category="signage" data-src="/static/assets/neon_signage_1784128909986.png" data-caption="Custom Neon Signage & Boards">
-                    <img src="/static/assets/neon_signage_1784128909986.png" alt="Neon Signage">
-                    <div class="gallery-overlay">
-                        <i class="fas fa-search-plus gallery-zoom-icon"></i>
-                        <span>Signage & Neon Boards</span>
+                {% endfor %}
+            {% else %}
+                <p>No portfolio items found.</p>
+            {% endif %}
+        </div>
+        
+        <!-- Gallery Project Workflow Modal -->
+        <div id="galleryModal" class="gallery-modal">
+            <div class="gallery-modal-content">
+                <span class="close-modal" onclick="closeGalleryModal()">&times;</span>
+                <div style="display:flex; flex-direction:column; md:flex-direction:row; gap:2rem;">
+                    <img id="modalImage" src="" alt="Project Image" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+                    <div style="padding:1rem 0;">
+                        <h3 id="modalTitle" style="color:#004de6; font-size:1.8rem; font-weight:800; margin-bottom:0.5rem;">Project Title</h3>
+                        <div id="modalCategory" style="display:inline-block; background:rgba(0,77,230,0.1); color:#004de6; padding:6px 14px; border-radius:20px; font-size:1rem; font-weight:700; text-transform:uppercase; margin-bottom:1.5rem;">Category</div>
+                        <h4 style="font-size:1.1rem; color:#1a202c; font-weight:700; margin-bottom:0.8rem; border-bottom:2px solid #edf2f7; padding-bottom:5px;">Our Work Process</h4>
+                        <p id="modalProcess" style="color:#4a5568; font-size:1rem; line-height:1.7; white-space:pre-wrap;"></p>
                     </div>
                 </div>
             </div>
         </div>
+
+
     </section>
 
     <!-- Before & After Quality Showcase -->
-    <section class="before-after-section">
-        <div class="container">
-            <h2 class="section-title">Before & After Craftsmanship</h2>
-            <p class="section-subtitle">Experience the dramatic difference professional editing, printing, and lighting make.</p>
+    <section class="before-after-section" data-aos="fade-up">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
+            <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Before & After Craftsmanship</h2>
+            <p style="text-align:center; color:#64748b; font-size:1.05rem; margin-bottom:2.5rem;">Experience the dramatic difference professional editing, HD printing, and custom LED lighting make.</p>
             
             <div class="ba-card-container">
                 <div class="ba-card">
                     <div class="ba-box">
-                        <span class="ba-badge before">Concept / Raw</span>
-                        <img src="/static/assets/graphic_design_logo_1784128898227.png" alt="Raw Design" class="ba-img blur-subtle">
+                        <span class="ba-badge before">Raw Concept</span>
+                        <img src="{{ url_for('static', filename='assets/graphic_design_logo_1784128921146.png', _external=False) if false else url_for('static', filename='assets/graphic_design_logo_1784128898227.png') }}" alt="Raw Design" class="ba-img blur-subtle">
                     </div>
                     <div class="ba-box">
                         <span class="ba-badge after">Final 3D Glow Sign</span>
-                        <img src="/static/assets/neon_signage_1784128909986.png" alt="Final Neon Sign" class="ba-img">
+                        <img src="{{ url_for('static', filename='assets/neon_signage_1784128909986.png') }}" alt="Final Neon Sign" class="ba-img">
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Order & Price Estimator Section -->
-    <section id="order" class="order-section">
-        <div class="order-container">
-            <h2 class="section-title">Instant Quote & Order</h2>
-            <p class="section-subtitle">Select your requirements below to calculate an estimated price and send your order directly to WhatsApp.</p>
-            
-            <div class="order-box">
-                <div class="quote-calculator">
-                    <div class="form-group">
-                        <label for="quote-service"><i class="fas fa-list"></i> Select Service</label>
-                        <select id="quote-service" class="form-control">
-                            <option value="flex" data-rate="12">Flex Printing (₹12 / sq. ft.)</option>
-                            <option value="starflex" data-rate="25">Star Flex Banner (₹25 / sq. ft.)</option>
-                            <option value="vinyl" data-rate="35">Vinyl Printing (₹35 / sq. ft.)</option>
-                            <option value="logo" data-rate="1500" data-fixed="true">Custom 3D Logo Design (₹1,500)</option>
-                            <option value="visiting_cards" data-rate="600" data-fixed="true">Visiting Cards (1,000 Cards - ₹600)</option>
-                            <option value="neon" data-rate="4500" data-fixed="true">Neon Signboard (Starting ₹4,500)</option>
-                            <option value="wedding_photo" data-rate="15000" data-fixed="true">Wedding Photo Package (Starting ₹15,000)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="size-group">
-                        <label for="quote-size"><i class="fas fa-ruler-combined"></i> Total Area (Square Feet)</label>
-                        <input type="number" id="quote-size" class="form-control" value="100" min="1" placeholder="Enter sq ft size e.g. 100">
-                    </div>
-
-                    <div class="quote-summary">
-                        <div class="price-display">
-                            <span>Estimated Total:</span>
-                            <h3 id="estimated-price">₹1,200</h3>
-                        </div>
-                        <button id="send-whatsapp-quote" class="cta-button primary">
-                            <i class="fab fa-whatsapp"></i> Order This Quote on WhatsApp
-                        </button>
-                    </div>
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section" data-aos="fade-up">
+        <h2 class="section-title">Pricing Packages</h2>
+        <div class="pricing-grid">
+            {% if pricing %}
+                {% for pkg in pricing %}
+                <div class="pricing-card {% if pkg.is_popular %}popular{% endif %}">
+                    {% if pkg.is_popular %}
+                    <div class="popular-badge">Most Popular</div>
+                    {% endif %}
+                    <h3>{{ pkg.name }}</h3>
+                    <div class="price">{{ pkg.price }}</div>
+                    <ul>
+                        {% for feature in pkg.features_list %}
+                        <li><i class="fas fa-check"></i> {{ feature }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="#order" class="cta-button {% if not pkg.is_popular %}outline{% endif %}">Choose Plan</a>
                 </div>
-            </div>
+                {% endfor %}
+            {% else %}
+                <p>Pricing packages loading...</p>
+            {% endif %}
         </div>
     </section>
 
     <!-- Testimonials Section -->
-    <section id="testimonials" class="testimonials-section">
-        <div class="container">
-            <h2 class="section-title">What Our Clients Say</h2>
-            <p class="section-subtitle">Real feedback from business owners and couples who trusted us with their vision.</p>
-
+    <section id="testimonials" class="testimonials-section" style="background: #ffffff; padding: 6rem 5%;">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h2 style="font-size: 2.5rem; font-weight: 700; color: #111; margin-bottom: 3rem; text-align: left;">What our customers say</h2>
             <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="testimonial-text">"Chhatrapati Digital delivered our restaurant's 3D LED neon board within 48 hours! The print vibrancy and finish are unmatched."</p>
-                    <div class="client-info">
-                        <div class="client-avatar"><i class="fas fa-user-tie"></i></div>
-                        <div>
-                            <h4>Rajesh Sharma</h4>
-                            <span>Owner, Royal Dine Restaurant</span>
+                {% if reviews %}
+                    {% for review in reviews %}
+                    <div class="testimonial-card {% if review.video_path %}video-testimonial{% endif %}">
+                        <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                        {% if review.video_path %}
+                        <div class="video-placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            {% if review.video_path.startswith('data:image/') %}
+                            <img src="{{ review.video_path }}" alt="Customer Review Screenshot" style="width:100%; max-height:200px; object-fit:contain;">
+                            {% else %}
+                            <video controls style="width:100%; max-height:200px;">
+                                <source src="{{ review.video_path }}" type="video/mp4">
+                            </video>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <p>{{ review.review_text }}</p>
+                        <div class="client-info">
+                            <div class="client-name">{{ review.client_name }}</div>
                         </div>
                     </div>
-                </div>
-
+                    {% endfor %}
+                {% else %}
                 <div class="testimonial-card">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="testimonial-text">"Our wedding photography album and video editing exceeded all expectations. Every emotion was captured beautifully."</p>
+                    <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                    <p>No reviews published yet. Be the first to leave a review!</p>
                     <div class="client-info">
-                        <div class="client-avatar"><i class="fas fa-heart"></i></div>
-                        <div>
-                            <h4>Priya & Amit Patil</h4>
-                            <span>Wedding Clients</span>
-                        </div>
+                        <div class="client-name">Admin</div>
                     </div>
                 </div>
-
-                <div class="testimonial-card">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p class="testimonial-text">"We ordered 500 sq ft of Star Flex banners for our political campaign. Clear, crisp HD printing at very competitive pricing!"</p>
-                    <div class="client-info">
-                        <div class="client-avatar"><i class="fas fa-building"></i></div>
-                        <div>
-                            <h4>Sunil Kulkarni</h4>
-                            <span>Event Organizer</span>
-                        </div>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
     </section>
 
     <!-- FAQ Section -->
-    <section id="faq" class="faq-section">
-        <div class="container">
-            <h2 class="section-title">Frequently Asked Questions</h2>
-            <p class="section-subtitle">Got questions? We've got answers to help you get started quickly.</p>
+    <section id="faq" class="faq-section" data-aos="fade-up">
+        <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 1.5rem;">
+            <h2 class="section-title" style="color:#004de6; text-transform:uppercase;">Frequently Asked Questions</h2>
+            <p style="text-align:center; color:#64748b; font-size:1.05rem; margin-bottom:2.5rem;">Got questions? We've got answers to help you get started quickly.</p>
 
             <div class="faq-accordion">
                 <div class="faq-item">
                     <button class="faq-question">
-                        <span><i class="fas fa-question-circle"></i> What is the turnaround time for Flex & Vinyl printing?</span>
+                        <span><i class="fas fa-question-circle" style="color:#ef4444; margin-right:8px;"></i> What is the turnaround time for Flex & Vinyl printing?</span>
                         <i class="fas fa-chevron-down faq-icon"></i>
                     </button>
                     <div class="faq-answer">
@@ -311,7 +256,7 @@
 
                 <div class="faq-item">
                     <button class="faq-question">
-                        <span><i class="fas fa-question-circle"></i> Do you provide installation for 3D LED & Neon signboards?</span>
+                        <span><i class="fas fa-question-circle" style="color:#ef4444; margin-right:8px;"></i> Do you provide installation for 3D LED & Neon signboards?</span>
                         <i class="fas fa-chevron-down faq-icon"></i>
                     </button>
                     <div class="faq-answer">
@@ -321,7 +266,7 @@
 
                 <div class="faq-item">
                     <button class="faq-question">
-                        <span><i class="fas fa-question-circle"></i> What image resolution or format should I provide for design printing?</span>
+                        <span><i class="fas fa-question-circle" style="color:#ef4444; margin-right:8px;"></i> What image resolution or format should I provide for design printing?</span>
                         <i class="fas fa-chevron-down faq-icon"></i>
                     </button>
                     <div class="faq-answer">
@@ -331,108 +276,187 @@
 
                 <div class="faq-item">
                     <button class="faq-question">
-                        <span><i class="fas fa-question-circle"></i> How can I place a custom order or request a site visit?</span>
+                        <span><i class="fas fa-question-circle" style="color:#ef4444; margin-right:8px;"></i> How can I place a custom order or request a site visit?</span>
                         <i class="fas fa-chevron-down faq-icon"></i>
                     </button>
                     <div class="faq-answer">
-                        <p>You can use our Instant Quote calculator above or directly message us on WhatsApp with your location and size requirements.</p>
+                        <p>You can fill out the form below or directly message us on WhatsApp with your location and size requirements.</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Contact & Location Section -->
-    <section id="contact" class="contact-section">
-        <div class="container">
-            <h2 class="section-title">Contact & Visit Us</h2>
-            <p class="section-subtitle">Have questions or want to discuss a custom project? Reach out to us anytime!</p>
+    <!-- Order & Pricing Calculator Section -->
+    <section id="order" class="order-section">
+        <h2 class="section-title">Request a project</h2>
+        
 
-            <div class="contact-grid">
-                <!-- Contact Info Cards -->
-                <div class="contact-info">
-                    <div class="info-card">
-                        <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
-                        <div>
-                            <h4>Our Address</h4>
-                            <p>Main Market Road, Opp. City Bus Stand, Maharashtra</p>
-                        </div>
+
+        <div class="order-container">
+            <p style="text-align:center; margin-bottom: 2rem;">Tell us about your project requirements and we will get back to you.</p>
+            <div class="order-box">
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="serviceType">Service Needed</label>
+                        <select id="serviceType" required>
+                            <option value="">Select a service...</option>
+                            <option value="Photography">Video & Photography</option>
+                            <option value="Design">Graphic Design</option>
+                            <option value="Print">Flex & Vinyl</option>
+                            <option value="Signage">Signage & Boards</option>
+                        </select>
                     </div>
-
-                    <div class="info-card">
-                        <div class="info-icon"><i class="fas fa-phone-alt"></i></div>
-                        <div>
-                            <h4>Phone & WhatsApp</h4>
-                            <p><a href="tel:+919876543210">+91 98765 43210</a></p>
-                        </div>
+                    <div class="form-group">
+                        <label for="orderName">Name</label>
+                        <input type="text" id="orderName" placeholder="Your full name..." required>
                     </div>
-
-                    <div class="info-card">
-                        <div class="info-icon"><i class="fas fa-envelope"></i></div>
-                        <div>
-                            <h4>Email Us</h4>
-                            <p><a href="mailto:info@chhatrapatidigital.com">info@chhatrapatidigital.com</a></p>
-                        </div>
+                    <div class="form-group">
+                        <label for="orderContact">Email Address</label>
+                        <input type="email" id="orderContact" placeholder="Your email address..." required>
                     </div>
-
-                    <div class="info-card">
-                        <div class="info-icon"><i class="fas fa-clock"></i></div>
-                        <div>
-                            <h4>Working Hours</h4>
-                            <p>Monday – Saturday: 9:00 AM – 9:00 PM<br>Sunday: Closed</p>
-                        </div>
+                    <div class="form-group">
+                        <label for="orderDetails">Project Details & Custom Size</label>
+                        <textarea id="orderDetails" rows="4" placeholder="Describe your requirements..." required></textarea>
                     </div>
-                </div>
-
-                <!-- Quick Inquiry Form -->
-                <div class="contact-form-card">
-                    <h3><i class="fas fa-paper-plane"></i> Send Us a Message</h3>
-                    <form id="inquiry-form">
-                        <div class="form-group">
-                            <label for="contact-name">Your Name</label>
-                            <input type="text" id="contact-name" class="form-control" placeholder="John Doe" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contact-phone">Mobile / WhatsApp Number</label>
-                            <input type="tel" id="contact-phone" class="form-control" placeholder="+91 98765 43210" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="contact-message">Project Requirement Details</label>
-                            <textarea id="contact-message" class="form-control" rows="4" placeholder="Describe what you need (e.g. 10x4 ft flex banner, logo design...)" required></textarea>
-                        </div>
-                        <button type="submit" class="cta-button primary full-width">
-                            <i class="fas fa-paper-plane"></i> Submit Inquiry
-                        </button>
-                    </form>
-                </div>
+                    <div class="form-group">
+                        <label for="orderFile">Attach Reference File (Optional, max 5MB)</label>
+                        <input type="file" id="orderFile" accept="image/*,.pdf,.doc,.docx">
+                    </div>
+                    <button type="submit" class="cta-button primary">Submit Inquiry</button>
+                    <p id="formStatus" class="form-status"></p>
+                </form>
             </div>
         </div>
     </section>
 
-    <!-- Floating Help Button -->
-    <a href="#contact" class="help-float" aria-label="Need Help?">
+    <!-- Floating Need Help Button -->
+    <button id="openHelpBtn" class="help-float" aria-label="Need Help?" style="border: none; cursor: pointer; outline: none;">
         <i class="far fa-life-ring"></i> Need help?
-    </a>
+    </button>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919876543210?text=Hello%20Chhatrapati%20Digital,%20I%20need%20assistance." class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
+    <a href="https://wa.me/{{ config.whatsapp_num if config else '917483006958' }}" class="whatsapp-float" target="_blank" aria-label="Chat on WhatsApp">
         <i class="fab fa-whatsapp"></i>
+        <span class="whatsapp-status-indicator"></span>
     </a>
 
-    <!-- Lightbox Modal for Portfolio -->
-    <div id="lightbox" class="lightbox-modal">
-        <span class="lightbox-close" id="lightbox-close">&times;</span>
-        <img class="lightbox-content" id="lightbox-img" alt="Enlarged Preview">
-        <div id="lightbox-caption" class="lightbox-caption"></div>
-    </div>
+    <footer class="fat-footer">
+        <div class="footer-grid">
+            <div class="footer-col footer-brand">
+                <img src="{{ url_for('static', filename='assets/logo.png') }}" alt="Logo" class="footer-logo">
+                <p>Premium Design, Photography, and Signage Solutions crafted for bold brands.</p>
+                <div class="social-links">
+                    <a href="{{ config.instagram_link if config else '#' }}" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="{{ config.linkedin_link if config else '#' }}" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="{{ config.facebook_link if config else '#' }}" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                </div>
+            </div>
+            <div class="footer-col footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#portfolio">Portfolio</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <p>&copy; 2026 <strong>Chhatrapati Digital</strong>. All Rights Reserved. | Crafted with Excellence</p>
+                </ul>
+            </div>
+            <div class="footer-col footer-map">
+                <h3>Find Us</h3>
+                <p><i class="fas fa-phone-alt"></i> {{ config.contact_phone if config else '+91 74830 06958' }}</p>
+                <p><i class="fas fa-envelope"></i> {{ config.contact_email if config else 'raochethan604@gmail.com' }}</p>
+                <div style="position: relative; cursor: pointer; margin-top: 1rem;">
+                    <a href="https://www.google.com/maps/search/?api=1&query=VQ6P%2BMXJ%2C+Sarjapura%2C+Karnataka+562125" target="_blank" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;" title="Open in Google Maps"></a>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.712170362595!2d77.59357491482218!3d12.990264090843232!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae16719b48b945%3A0xb35fa4ce469614c!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1689255845012!5m2!1sen!2sin" width="100%" height="150" style="border:0; border-radius: 8px; pointer-events: none;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Chhatrapati Digital. All Rights Reserved.</p>
         </div>
     </footer>
 
-    <script src="/static/js/script.js"></script>
+    <!-- Project Planner Modal -->
+    <div id="plannerModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Project Planner Form</h3>
+                <button id="closePlannerBtn" class="close-btn">&times;</button>
+            </div>
+            <form id="plannerForm">
+                <div class="form-group">
+                    <label for="modalName">Name</label>
+                    <input type="text" id="modalName" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalEmail">Email Address</label>
+                    <input type="email" id="modalEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalProjectType">Project Type</label>
+                    <select id="modalProjectType" required>
+                        <option value="">Select an option...</option>
+                        <option value="Branding">Branding & Logo</option>
+                        <option value="Photography">Photography/Video</option>
+                        <option value="Signage">Signage & Printing</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="modalDetails">Details</label>
+                    <textarea id="modalDetails" rows="4" placeholder="Describe your vision..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="modalTimeline">Timeline</label>
+                    <input type="text" id="modalTimeline" placeholder="e.g. 2 weeks, ASAP" required>
+                </div>
+                <div class="form-group">
+                    <label for="modalFile">Attach Reference File (Optional, max 5MB)</label>
+                    <input type="file" id="modalFile" accept="image/*,.pdf,.doc,.docx">
+                </div>
+                <button type="submit" class="cta-button primary modal-submit">Request Estimate</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 400px; padding: 2rem; border-radius: 12px; background: white;">
+            <div class="modal-header" style="border-bottom: 1px solid #edf2f7; padding-bottom: 1rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="background: #f7a93b; color: #1a202c; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                        <i class="far fa-life-ring"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.4rem; color: #111; font-weight: 700;">Need help?</h3>
+                        <p style="margin: 0; color: #718096; font-size: 0.95rem; margin-top: 4px;">Support & escalation</p>
+                    </div>
+                </div>
+                <button id="closeHelpBtn" class="close-btn" style="background: transparent; border: none; font-size: 1.5rem; color: #718096; cursor: pointer;">&times;</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 0.5rem 0;">
+                <span style="display: inline-block; width: 10px; height: 10px; background-color: #f7a93b; border-radius: 50%;"></span>
+                <p style="margin: 0; font-weight: 600; color: #111; font-size: 1.05rem;">CHETHAN RAO - +91 74830 06958</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox Gallery Modal -->
+    <div id="lightbox" class="lightbox-overlay">
+        <span class="lightbox-close">&times;</span>
+        <button class="lightbox-nav lightbox-prev" aria-label="Previous Image"><i class="fas fa-chevron-left"></i></button>
+        <img class="lightbox-image" src="" alt="Gallery Image">
+        <button class="lightbox-nav lightbox-next" aria-label="Next Image"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
