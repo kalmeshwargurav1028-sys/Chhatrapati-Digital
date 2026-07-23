@@ -756,51 +756,57 @@ def pay_invoice(po_num):
 @app.route('/print/<po_num>')
 def print_invoice(po_num):
     invoice = find_invoice_by_num(po_num)
+    po_display = str(invoice['po_num']) if str(invoice['po_num']).startswith('Invoice') else f"Invoice #{str(invoice['po_num']).replace('#', '')}"
     
     html = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Invoice {invoice['po_num']}</title>
+        <title>{po_display}</title>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
         <style>
             body {{ font-family: 'Outfit', sans-serif; padding: 40px; color: #333; max-width: 800px; margin: 0 auto; }}
-            .header {{ display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 40px; }}
-            .title {{ font-size: 24px; font-weight: bold; color: #0f172a; }}
+            .header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 40px; }}
+            .title {{ font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1.2; }}
             .total {{ font-size: 20px; font-weight: bold; margin-top: 40px; border-top: 1px solid #ccc; padding-top: 20px; text-align: right; }}
         </style>
     </head>
     <body onload="window.print()">
         <div class="header">
-            <div>
-                <div class="title">Chhatrapati Digital</div>
-                <div style="color:#64748b;">Official GST / Tax Invoice Receipt</div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <img src="/static/assets/logo.png" alt="Chhatrapati Digital Logo" style="max-height: 60px; width: auto;" onerror="this.style.display='none'">
+                <div>
+                    <div class="title">Chhatrapati<span style="color: #ef4444;">Digital</span></div>
+                    <div style="color: #64748b; font-weight: 600; font-size: 0.9rem;">Official GST / Tax Invoice Receipt</div>
+                </div>
             </div>
-            <div style="text-align: right;">
-                <div><strong>Invoice #:</strong> {invoice['po_num']}</div>
+            <div style="text-align: right; font-size: 0.95rem; color: #1e293b;">
+                <div><strong>Invoice #:</strong> {po_display.replace('Invoice ', '')}</div>
                 <div><strong>Date:</strong> {str(invoice['timestamp']).split(' ')[0]}</div>
             </div>
         </div>
         
-        <div><strong>Billed To:</strong> {invoice['client_name']}</div>
+        <div style="background: #f8fafc; padding: 1.2rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 2rem;">
+            <strong>Billed To:</strong> {invoice['client_name']}
+        </div>
         
-        <table style="width: 100%; margin-top: 40px; border-collapse: collapse;">
-            <tr style="border-bottom: 1px solid #ccc; text-align: left;">
-                <th style="padding: 10px 0;">Description</th>
-                <th style="padding: 10px 0; text-align: right;">Amount</th>
+        <table style="width: 100%; margin-top: 20px; border-collapse: collapse;">
+            <tr style="border-bottom: 2px solid #e2e8f0; text-align: left; background: #f1f5f9;">
+                <th style="padding: 12px 15px; color: #475569; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">Description</th>
+                <th style="padding: 12px 15px; text-align: right; color: #475569; font-size: 0.85rem; font-weight: 700; text-transform: uppercase;">Amount</th>
             </tr>
-            <tr>
-                <td style="padding: 20px 0;">{invoice.get('description', 'Digital Agency Services')}</td>
-                <td style="padding: 20px 0; text-align: right;">₹{invoice['total']:.2f}</td>
+            <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 20px 15px; font-weight: 600; color: #0f172a;">{invoice.get('description', 'Digital Agency Services')}</td>
+                <td style="padding: 20px 15px; text-align: right; font-weight: 700; font-size: 1.1rem; color: #0f172a;">₹{invoice['total']:.2f}</td>
             </tr>
         </table>
         
         <div class="total">
-            Total Paid / Due: ₹{invoice['total']:.2f}
+            Total Paid / Due: <span style="color: #0f172a; font-size: 1.5rem;">₹{invoice['total']:.2f}</span>
         </div>
         
-        <div style="margin-top: 40px; font-size: 0.85rem; color: #666; text-align: center;">
-            This is a computer-generated tax invoice. Thank you for choosing Chhatrapati Digital!
+        <div style="margin-top: 60px; font-size: 0.85rem; color: #64748b; text-align: center; border-top: 1px dashed #cbd5e1; padding-top: 20px;">
+            This is an official computer-generated tax invoice. Thank you for choosing Chhatrapati Digital!
         </div>
     </body>
     </html>
