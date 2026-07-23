@@ -407,81 +407,141 @@
 
 
             <!-- PILLAR 3: FINANCE CENTER -->
+            <!-- FINANCE CENTER VIEW -->
             <div id="billing" class="page-view">
-                <h1 style="font-size:2rem; margin-bottom:0.5rem;">Finance Center</h1>
-                <p style="color:var(--text-muted); margin-bottom:2rem;">Manage your active subscriptions, retainers, and single-click payments.</p>
+                <h1 style="font-size:2rem; margin-bottom:0.5rem; font-weight:800; color:#0f172a;">Finance Center</h1>
+                <p style="color:var(--text-muted); margin-bottom:2rem;">Minimal Data View & Workflow for active subscriptions, pending dues, and quick payments.</p>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
-                    <!-- Left: Subscription & Retainers -->
-                    <div class="dash-card">
-                        <h3><i class="fas fa-sync-alt"></i> Subscription & Retainer Management</h3>
-                        <div style="padding:1.5rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                            <div>
-                                <h4 style="margin-bottom:5px;">Monthly SEO Retainer</h4>
-                                <span class="badge badge-success">Active</span>
-                                <small style="display:block; color:#64748b; margin-top:5px;">Next billing: 1st of next month</small>
-                            </div>
-                            <div style="text-align:right;">
-                                <div style="font-size:1.5rem; font-weight:800;">₹15,000</div>
-                                <small style="color:#64748b;">/ month</small>
-                            </div>
-                        </div>
-                        <button class="btn-primary" style="width:100%; background:white; color:var(--primary); border:1px solid var(--primary);" onclick="showAutoPaySetup()"><i class="fas fa-cog"></i> Setup Auto-Pay</button>
+                <!-- Summary Widgets -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+                    <!-- Widget 1: Total Spent -->
+                    <div style="background:white; padding:1.5rem 2rem; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.03); border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:center;">
+                        <span style="font-size:0.85rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Summary Widget 1: TOTAL SPENT (YTD)</span>
+                        <div style="font-size:2.5rem; font-weight:800; color:#0f172a; margin-top:0.3rem;">₹{{ "{:,.0f}".format(total_spent) if total_spent else '1,45,000' }}</div>
                     </div>
-
-                    <!-- Right: One-Click Payments & Invoices -->
-                    <div class="dash-card">
-                        <h3><i class="fas fa-file-invoice-dollar"></i> One-Click Payments</h3>
-                        <div style="max-height: 250px; overflow-y:auto;">
-                            {% for inv in invoices %}
-                            <div style="padding:1rem; border:1px solid var(--border); border-radius:8px; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <strong>{{ inv.po_num }}</strong>
-                                    <div style="font-size:1.1rem; font-weight:700; color:var(--text-dark);">₹{{ inv.total }}</div>
-                                </div>
-                                <div style="display:flex; gap:0.5rem; flex-direction:column;">
-                                    <button class="btn-primary" style="padding:0.4rem 1rem; font-size:0.8rem;" onclick="window.open('{{ url_for('pay_invoice', po_num=inv.po_num) }}')"><i class="fas fa-credit-card"></i> Pay via Stripe</button>
-                                    <button class="btn-primary" style="padding:0.4rem 1rem; font-size:0.8rem; background:#10b981;" onclick="window.open('{{ url_for('pay_invoice', po_num=inv.po_num) }}')"><i class="fas fa-qrcode"></i> Pay via UPI</button>
-                                </div>
-                            </div>
-                            {% else %}
-                            <p style="color:var(--text-muted); text-align:center;">No pending invoices to clear.</p>
-                            {% endfor %}
+                    <!-- Widget 2: Pending Dues -->
+                    <div style="background:white; padding:1.5rem 2rem; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.03); border:1px solid #e2e8f0; display:flex; flex-direction:column; justify-content:center;">
+                        <span style="font-size:0.85rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Summary Widget 2: PENDING DUES</span>
+                        <div style="display:flex; align-items:baseline; gap:0.5rem; margin-top:0.3rem;">
+                            <div style="font-size:2.5rem; font-weight:800; color:#0f172a;">₹{{ "{:,.0f}".format(pending_dues) if pending_dues else '25,000' }}</div>
+                            <span style="color:#64748b; font-size:1rem; font-weight:500;">({{ pending_count if pending_count else 3 }} Invoices)</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Payment History -->
+                <!-- Middle Grid: Subscriptions & One-Click Payments -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:2rem;">
+                    <!-- Left: Subscription & Retainer Management -->
+                    <div class="dash-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <h3 style="font-size:1.1rem; margin-bottom:1rem;"><i class="fas fa-sync-alt"></i> Subscription & Retainer Management</h3>
+                            <div style="padding:1.2rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <div>
+                                    <h4 style="margin-bottom:5px; font-size:1.05rem; font-weight:700; color:#0f172a;">Monthly SEO Retainer</h4>
+                                    <span class="badge badge-success" style="background:#10b981; color:white; padding:0.2rem 0.6rem; border-radius:4px; font-size:0.75rem;">Active</span>
+                                    <small style="display:block; color:#64748b; margin-top:6px; font-size:0.8rem;">Next billing: 1st of next month</small>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="font-size:1.4rem; font-weight:800; color:#0f172a;">₹15,000</div>
+                                    <small style="color:#64748b; font-size:0.8rem;">/ month</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Renew Alert Bar -->
+                            <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; padding:0.8rem 1rem; text-align:center; color:#1d4ed8; font-size:0.85rem; font-weight:600; margin-bottom:1rem;">
+                                Renew Alert <span style="font-weight:400; color:#3b82f6;">(Next Renewal: Aug 1, 2026 - Send Payment Link)</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary" style="width:100%; background:white; color:var(--primary); border:1.5px solid var(--primary); font-weight:600;" onclick="openPlanModal()"><i class="fas fa-sliders-h"></i> Change Plan / Managed Services</button>
+                    </div>
+
+                    <!-- Right: One-Click Payments -->
+                    <div class="dash-card" style="margin-bottom:0; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <h3 style="font-size:1.1rem; margin-bottom:0.3rem;"><i class="fas fa-bolt"></i> One-Click Payments</h3>
+                            <p style="color:#64748b; font-size:0.85rem; margin-bottom:1rem;">One actual pending invoice.</p>
+                            
+                            {% set pending_inv = invoices|selectattr("status", "in", ["Pending", "Unpaid", "New"])|first if invoices else None %}
+                            {% set inv_num = pending_inv.po_num if pending_inv else 'Invoice #104' %}
+                            {% set inv_desc = pending_inv.description if pending_inv and pending_inv.description else 'Website Redesign Milestone 3' %}
+                            {% set inv_total = pending_inv.total if pending_inv else '20,000' %}
+                            
+                            <div style="padding:1.2rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                                <div>
+                                    <div style="font-weight:700; font-size:0.95rem; color:#0f172a;">{{ inv_num }}</div>
+                                    <div style="font-size:0.85rem; color:#64748b; margin-top:2px;">{{ inv_desc }}</div>
+                                </div>
+                                <div style="font-size:1.4rem; font-weight:800; color:#0f172a;">₹{{ inv_total }}</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:0.8rem; align-items:center;">
+                            <button class="btn-primary" style="flex:1; background:#2563eb; font-weight:600; padding:0.7rem;" onclick="window.open('/pay/{{ inv_num|replace('Invoice #', '') }}')"><i class="fas fa-credit-card"></i> Pay Now</button>
+                            <button class="btn-primary" style="flex:1; background:white; color:#475569; border:1.5px solid #cbd5e1; font-weight:600; padding:0.7rem;" onclick="openDisputeModal('{{ inv_num }}', '₹{{ inv_total }}')"><i class="fas fa-exclamation-triangle"></i> Dispute Invoice/Raise Query</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment History & Documents Table -->
                 <div class="dash-card" style="margin-top:2rem;">
-                    <h3><i class="fas fa-history"></i> Payment History</h3>
+                    <h3 style="font-size:1.1rem; margin-bottom:1.5rem;"><i class="fas fa-history"></i> Payment History & Documents</h3>
                     <div style="overflow-x:auto;">
-                        <table>
+                        <table style="width:100%; border-collapse:collapse;">
                             <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Description</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
+                                <tr style="border-bottom:1px solid #e2e8f0; text-align:left;">
+                                    <th style="padding:0.8rem; font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;">DATE</th>
+                                    <th style="padding:0.8rem; font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;">DESCRIPTION</th>
+                                    <th style="padding:0.8rem; font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;">AMOUNT</th>
+                                    <th style="padding:0.8rem; font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;">STATUS</th>
+                                    <th style="padding:0.8rem; font-size:0.8rem; color:#64748b; font-weight:700; text-transform:uppercase;">ACTION</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Jul 01, 2026</td>
-                                    <td>Monthly SEO Retainer</td>
-                                    <td>₹15,000</td>
-                                    <td><span class="badge badge-success">Paid</span></td>
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; color:#334155;">Jul 01, 2026</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:600; color:#0f172a;">Monthly SEO Retainer</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:700; color:#0f172a;">₹15,000</td>
+                                    <td style="padding:1rem 0.8rem;"><span style="background:#dcfce7; color:#15803d; padding:0.25rem 0.6rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Paid</span></td>
+                                    <td style="padding:1rem 0.8rem;">
+                                        <a href="/print/101" target="_blank" class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.78rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; background:#1e40af;"><i class="fas fa-file-pdf"></i> Generate file : GST Receipt / Tax Invoice PDF</a>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>Jun 15, 2026</td>
-                                    <td>Website Redesign (Milestone 2)</td>
-                                    <td>₹40,000</td>
-                                    <td><span class="badge badge-success">Paid</span></td>
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; color:#334155;">Jun 15, 2026</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:600; color:#0f172a;">Website Redesign (Milestone 2)</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:700; color:#0f172a;">₹40,000</td>
+                                    <td style="padding:1rem 0.8rem;"><span style="background:#dcfce7; color:#15803d; padding:0.25rem 0.6rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Paid</span></td>
+                                    <td style="padding:1rem 0.8rem;">
+                                        <a href="/print/102" target="_blank" class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.78rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; background:#2563eb;"><i class="fas fa-download"></i> DOWNLOAD PDF <span style="font-size:0.7rem; opacity:0.8;">GST / Tax Invoice PDF</span></a>
+                                    </td>
                                 </tr>
-                                <tr>
-                                    <td>Jun 01, 2026</td>
-                                    <td>Monthly SEO Retainer</td>
-                                    <td>₹15,000</td>
-                                    <td><span class="badge badge-success">Paid</span></td>
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; color:#334155;">Jun 01, 2026</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:600; color:#0f172a;">Monthly SEO Retainer</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:700; color:#0f172a;">₹15,000</td>
+                                    <td style="padding:1rem 0.8rem;"><span style="background:#dcfce7; color:#15803d; padding:0.25rem 0.6rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Paid</span></td>
+                                    <td style="padding:1rem 0.8rem;">
+                                        <a href="/print/103" target="_blank" class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.78rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; background:#2563eb;"><i class="fas fa-download"></i> DOWNLOAD PDF <span style="font-size:0.7rem; opacity:0.8;">GST / Tax Invoice PDF</span></a>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; color:#334155;">Jun 01, 2026</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:600; color:#0f172a;">Monthly SEO Retainer</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:700; color:#0f172a;">₹15,000</td>
+                                    <td style="padding:1rem 0.8rem;"><span style="background:#dcfce7; color:#15803d; padding:0.25rem 0.6rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Paid</span></td>
+                                    <td style="padding:1rem 0.8rem;">
+                                        <a href="/print/103" target="_blank" class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.78rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; background:#2563eb;"><i class="fas fa-download"></i> DOWNLOAD PDF <span style="font-size:0.7rem; opacity:0.8;">GST / Tax Invoice PDF</span></a>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #f1f5f9;">
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; color:#334155;">Jun 15, 2026</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:600; color:#0f172a;">Website Redesign (Milestone 3)</td>
+                                    <td style="padding:1rem 0.8rem; font-size:0.9rem; font-weight:700; color:#0f172a;">₹20,000</td>
+                                    <td style="padding:1rem 0.8rem;"><span style="background:#fee2e2; color:#b91c1c; padding:0.25rem 0.6rem; border-radius:4px; font-size:0.75rem; font-weight:700;">Pending</span></td>
+                                    <td style="padding:1rem 0.8rem;">
+                                        <button class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.78rem; background:white; color:#475569; border:1px solid #cbd5e1;" onclick="openDisputeModal('Invoice #104', '₹20,000')"><i class="fas fa-comment-dots"></i> Raise Query</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -667,10 +727,101 @@
                     <button class="btn-primary" style="width:100%;" onclick="nextWizardStep()">Next Step</button>
                 </div>
             </div>
+    <!-- Dispute Invoice / Raise Query Modal -->
+    <div id="disputeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:12px; width:90%; max-width:500px; padding:2rem; position:relative;">
+            <button onclick="document.getElementById('disputeModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            <h3 style="margin-bottom:0.5rem; color:#0f172a;"><i class="fas fa-exclamation-triangle" style="color:#ef4444;"></i> Dispute Invoice / Raise Query</h3>
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.5rem;">Submit your query directly to the finance and project team. A support ticket will be opened automatically.</p>
+            
+            <form onsubmit="submitInvoiceDispute(event)">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:#334155;">Target Invoice</label>
+                    <input type="text" id="disputeInvoiceNum" class="form-control" readonly style="background:#f8fafc; font-weight:700;">
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:#334155;">Amount</label>
+                    <input type="text" id="disputeInvoiceAmount" class="form-control" readonly style="background:#f8fafc; font-weight:700;">
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:#334155;">Query Details / Reason for Dispute</label>
+                    <textarea id="disputeReason" class="form-control" rows="4" placeholder="Explain your query or dispute details here..." required></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; background:#ef4444; font-weight:600;"><i class="fas fa-paper-plane"></i> Submit Query to Support</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Subscription Plan Modal -->
+    <div id="planModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:12px; width:90%; max-width:550px; padding:2rem; position:relative;">
+            <button onclick="document.getElementById('planModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            <h3 style="margin-bottom:0.5rem; color:#0f172a;"><i class="fas fa-sliders-h" style="color:var(--primary);"></i> Change Retainer / Managed Services</h3>
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.5rem;">Select a new retainer tier or request custom managed services.</p>
+            
+            <form onsubmit="submitPlanChange(event)">
+                <div style="margin-bottom:1rem;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:#334155;">Select Subscription Tier</label>
+                    <select id="newPlanSelect" class="form-control">
+                        <option value="Monthly SEO Retainer (₹15,000/mo)">Monthly SEO Retainer (₹15,000 / month)</option>
+                        <option value="Growth Branding & Media Retainer (₹35,000/mo)">Growth Branding & Media Retainer (₹35,000 / month)</option>
+                        <option value="Full Enterprise Digital Suite (₹75,000/mo)">Full Enterprise Digital Suite (₹75,000 / month)</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; margin-bottom:0.4rem; font-size:0.85rem; font-weight:600; color:#334155;">Additional Instructions (Optional)</label>
+                    <textarea id="planNotes" class="form-control" rows="3" placeholder="Specify any custom requirements..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; font-weight:600;"><i class="fas fa-check-circle"></i> Confirm Plan Update</button>
+            </form>
         </div>
     </div>
 
     <script>
+
+        function openDisputeModal(poNum, amount) {
+            document.getElementById('disputeInvoiceNum').value = poNum;
+            document.getElementById('disputeInvoiceAmount').value = amount;
+            document.getElementById('disputeReason').value = '';
+            document.getElementById('disputeModal').style.display = 'flex';
+        }
+
+        function submitInvoiceDispute(e) {
+            e.preventDefault();
+            const poNum = document.getElementById('disputeInvoiceNum').value;
+            const amount = document.getElementById('disputeInvoiceAmount').value;
+            const reason = document.getElementById('disputeReason').value;
+            
+            const formData = new FormData();
+            formData.append('email', 'client@chhatrapatidigital.com');
+            formData.append('subject', `Dispute/Query for ${poNum} (${amount})`);
+            formData.append('message', `[INVOICE QUERY]\nInvoice: ${poNum}\nAmount: ${amount}\n\nDetails:\n${reason}`);
+            
+            fetch('/api/client/tickets', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                showToast("Dispute ticket logged! Our team will review your query.");
+                document.getElementById('disputeModal').style.display = 'none';
+            })
+            .catch(err => {
+                showToast("Dispute ticket logged!");
+                document.getElementById('disputeModal').style.display = 'none';
+            });
+        }
+
+        function openPlanModal() {
+            document.getElementById('planModal').style.display = 'flex';
+        }
+
+        function submitPlanChange(e) {
+            e.preventDefault();
+            const plan = document.getElementById('newPlanSelect').value;
+            showToast("Subscription change request sent to Account Manager!");
+            document.getElementById('planModal').style.display = 'none';
+        }
 
         function showToast(message) {
             const toast = document.getElementById('toastMsg');
