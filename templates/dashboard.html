@@ -288,8 +288,10 @@
         <header class="topbar">
             <h2 style="font-size:1.2rem; font-weight:600;">Client Portal</h2>
             <div style="display:flex; align-items:center; gap:1.5rem;">
-                <div style="text-align:right; line-height:1.2;">
-                    <div id="topbarClock" style="font-weight:700; font-size:1.1rem; color:var(--text-dark);">--:--:--</div>
+                <div style="text-align:right; line-height:1.2; cursor:pointer; padding:0.3rem 0.6rem; border-radius:8px; transition:background 0.2s;" onclick="toggleCalendarWidget()" title="Click to view Interactive Calendar" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                    <div id="topbarClock" style="font-weight:700; font-size:1.1rem; color:var(--text-dark); display:flex; align-items:center; justify-content:flex-end; gap:0.4rem;">
+                        <i class="fas fa-calendar-alt" style="color:var(--primary); font-size:0.95rem;"></i> <span id="clockText">--:--:--</span>
+                    </div>
                     <div id="topbarDate" style="font-size:0.8rem; color:var(--text-gray);">---</div>
                 </div>
                 <button class="btn-primary" onclick="switchView('profile', document.querySelectorAll('.nav-item')[4])" style="padding:0.5rem 1rem; font-size:0.9rem; display:flex; align-items:center; gap:0.5rem;">
@@ -774,10 +776,109 @@
                 </div>
                 <button type="submit" class="btn-primary" style="width:100%; font-weight:600;"><i class="fas fa-check-circle"></i> Confirm Plan Update</button>
             </form>
+    <!-- Interactive Calendar Modal -->
+    <div id="calendarModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:16px; width:90%; max-width:650px; padding:2rem; position:relative; box-shadow:0 20px 40px rgba(0,0,0,0.15);">
+            <button onclick="document.getElementById('calendarModal').style.display='none'" style="position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:#64748b;">&times;</button>
+            <h3 style="margin-bottom:0.3rem; color:#0f172a; display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-calendar-alt" style="color:var(--primary);"></i> Interactive Project & Billing Calendar</h3>
+            <p style="font-size:0.85rem; color:#64748b; margin-bottom:1.5rem;">Track key dates, project deliverables, and retainer billing cycles.</p>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding:0.5rem; background:#f8fafc; border-radius:8px;">
+                <button class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.8rem; background:white; color:#334155; border:1px solid #cbd5e1;" onclick="changeCalMonth(-1)"><i class="fas fa-chevron-left"></i> Prev</button>
+                <h4 id="calMonthTitle" style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0;">July 2026</h4>
+                <button class="btn-primary" style="padding:0.4rem 0.8rem; font-size:0.8rem; background:white; color:#334155; border:1px solid #cbd5e1;" onclick="changeCalMonth(1)">Next <i class="fas fa-chevron-right"></i></button>
+            </div>
+            
+            <!-- Calendar Days Header -->
+            <div style="display:grid; grid-template-columns: repeat(7, 1fr); text-align:center; font-weight:700; font-size:0.8rem; color:#64748b; margin-bottom:0.5rem;">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            
+            <!-- Days Grid -->
+            <div id="calendarDaysGrid" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; text-align:center; margin-bottom:1.5rem;">
+                <!-- Generated dynamically via JS -->
+            </div>
+            
+            <!-- Upcoming Events Legend -->
+            <div style="background:#f8fafc; border-radius:10px; padding:1rem; border:1px solid #e2e8f0;">
+                <div style="font-weight:700; font-size:0.85rem; color:#0f172a; margin-bottom:0.5rem;"><i class="fas fa-bookmark" style="color:var(--primary);"></i> Key Dates & Milestones</div>
+                <div style="display:flex; flex-direction:column; gap:0.4rem; font-size:0.8rem; color:#334155;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;"><span style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block;"></span> <strong>Jul 01:</strong> Monthly SEO Retainer Paid</div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;"><span style="width:10px; height:10px; border-radius:50%; background:#ef4444; display:inline-block;"></span> <strong>Jul 15:</strong> Website Redesign Milestone 3 Due</div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;"><span style="width:10px; height:10px; border-radius:50%; background:#2563eb; display:inline-block;"></span> <strong>Jul 23 (Today):</strong> Active Sprint & Project Review</div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;"><span style="width:10px; height:10px; border-radius:50%; background:#f59e0b; display:inline-block;"></span> <strong>Aug 01:</strong> Retainer Renewal Date</div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+
+        let currentCalDate = new Date(2026, 6, 23);
+
+        function toggleCalendarWidget() {
+            renderCalendarGrid();
+            document.getElementById('calendarModal').style.display = 'flex';
+        }
+
+        function changeCalMonth(delta) {
+            currentCalDate.setMonth(currentCalDate.getMonth() + delta);
+            renderCalendarGrid();
+        }
+
+        function renderCalendarGrid() {
+            const year = currentCalDate.getFullYear();
+            const month = currentCalDate.getMonth();
+            
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            const titleEl = document.getElementById('calMonthTitle');
+            if(titleEl) titleEl.innerText = `${monthNames[month]} ${year}`;
+            
+            const grid = document.getElementById('calendarDaysGrid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            for(let i = 0; i < firstDay; i++) {
+                const cell = document.createElement('div');
+                cell.style.padding = '0.6rem';
+                cell.style.color = '#cbd5e1';
+                grid.appendChild(cell);
+            }
+            
+            for(let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.style.padding = '0.6rem';
+                cell.style.borderRadius = '8px';
+                cell.style.fontSize = '0.85rem';
+                cell.style.fontWeight = '600';
+                cell.style.cursor = 'pointer';
+                cell.innerText = day;
+                
+                if(day === 23 && month === 6 && year === 2026) {
+                    cell.style.background = '#2563eb';
+                    cell.style.color = 'white';
+                    cell.title = 'Today: Active Sprint Review';
+                } else if(day === 1 && month === 6) {
+                    cell.style.background = '#dcfce7';
+                    cell.style.color = '#15803d';
+                    cell.title = 'Monthly SEO Retainer Paid';
+                } else if(day === 15 && month === 6) {
+                    cell.style.background = '#fee2e2';
+                    cell.style.color = '#b91c1c';
+                    cell.title = 'Website Redesign Milestone 3 Due';
+                } else {
+                    cell.style.background = '#f8fafc';
+                    cell.style.color = '#334155';
+                    cell.onmouseover = () => cell.style.background = '#e2e8f0';
+                    cell.onmouseout = () => cell.style.background = '#f8fafc';
+                }
+                
+                grid.appendChild(cell);
+            }
+        }
 
         function openDisputeModal(poNum, amount) {
             document.getElementById('disputeInvoiceNum').value = poNum;
